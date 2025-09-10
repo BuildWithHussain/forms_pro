@@ -13,6 +13,12 @@ export function sessionUser() {
 	return _sessionUser;
 }
 
+function fullName() {
+	const cookies = new URLSearchParams(document.cookie.split("; ").join("&"));
+	let _fullName = cookies.get("full_name");
+	return _fullName;
+}
+
 export const session = reactive({
 	login: createResource({
 		url: "login",
@@ -34,9 +40,10 @@ export const session = reactive({
 		onSuccess() {
 			userResource.reset();
 			session.user = sessionUser();
-			router.replace({ name: "Login" });
+			window.location.href = `/login?redirect-to=/forms`;
 		},
 	}),
 	user: sessionUser(),
+	full_name: fullName(),
 	isLoggedIn: computed(() => !!session.user),
 });

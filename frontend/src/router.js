@@ -5,13 +5,13 @@ import { session } from "./data/session";
 const routes = [
 	{
 		path: "/",
-		name: "Home",
-		component: () => import("@/pages/Home.vue"),
+		name: "Dashboard",
+		component: () => import("@/pages/Dashboard.vue"),
 	},
 ];
 
 const router = createRouter({
-	history: createWebHistory("/frontend"),
+	history: createWebHistory("/forms"),
 	routes,
 });
 

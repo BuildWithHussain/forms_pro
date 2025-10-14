@@ -8,10 +8,24 @@ const props = defineProps({
     },
 });
 
+const value = defineModel();
 const getComponent = computed(() => {
     return formFields.find((field) => field.name === props.field.fieldtype);
 });
+
+const getBinds = computed(() => {
+    return {
+        ...props.field,
+        ...props.field.options,
+        ...props.field.default,
+    };
+});
 </script>
 <template>
-    <component :is="getComponent.component" :field="props.field" v-bind="getComponent.props" />
+    <component
+        v-model="value"
+        :is="getComponent.component"
+        :field="props.field"
+        v-bind="getComponent.props"
+    />
 </template>

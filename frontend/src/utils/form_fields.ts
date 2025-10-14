@@ -100,7 +100,7 @@ export const TextareaField = {
 export const TextEditorField = {
   component: TextEditor,
   props: {
-    editorClass: "bg-surface-white w-full rounded-b form-description",
+    editorClass: "bg-surface-white w-full rounded-b form-description border rounded-b min-h-24",
     fixedMenu: true,
     bubbleMenu: true,
     starterkitOptions: {

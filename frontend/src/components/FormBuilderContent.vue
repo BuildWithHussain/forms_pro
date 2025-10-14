@@ -82,6 +82,7 @@ onClickOutside(fieldContentRef, (event) => {
                                 (updatedField: FormField) =>
                                     editFormStore.updateField(element, updatedField)
                             "
+                            :inEditMode="true"
                         />
                         <Button
                             icon="x"

@@ -72,7 +72,10 @@
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" v-else>
                     <div v-for="form in userForms.data" :key="form.name">
-                        <FormPreviewCard :form="form" />
+                        <FormPreviewCard 
+                            :form="form" 
+                            @deleted="userForms.reload()"
+                        />
                     </div>
                 </div>
             </div>

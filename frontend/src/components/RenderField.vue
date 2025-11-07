@@ -155,7 +155,7 @@ watch([linkOptions, doctypeName], ([options, doctype]) => {
             value.value = null;
         } else if (options && options.length > 0) {
             // If we have options but the value is still the DocType name, clear it
-            const hasMatchingOption = options.some((opt: any) => opt.value === doctype);
+            const hasMatchingOption = options.some((opt) => opt.value === doctype);
             if (!hasMatchingOption) {
                 value.value = null;
             }

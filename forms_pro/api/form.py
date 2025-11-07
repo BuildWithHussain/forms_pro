@@ -355,6 +355,38 @@ def get_link_field_options(
 
 
 @frappe.whitelist()
+def delete_form(form_id: str) -> dict:
+    """
+    Delete a form.
+    
+    Args:
+        form_id: The Form document name to delete
+    
+    Returns:
+        dict with 'success' and 'message' keys
+    """
+    try:
+        # Check if form exists
+        if not frappe.db.exists("Form", form_id):
+            frappe.throw(f"Form {form_id} does not exist")
+        
+        # Check permissions
+        if not frappe.has_permission("Form", "delete", form_id):
+            frappe.throw("You do not have permission to delete this form", frappe.PermissionError)
+        
+        # Delete the form
+        frappe.delete_doc("Form", form_id, force=True)
+        
+        return {
+            "success": True,
+            "message": "Form deleted successfully"
+        }
+    except Exception as e:
+        frappe.log_error(f"Error deleting form {form_id}: {str(e)}")
+        frappe.throw(f"Failed to delete form: {str(e)}")
+
+
+@frappe.whitelist()
 def auto_populate_fields_from_doctype(form_id: str, replace_existing: bool = False) -> dict:
     """
     Auto-populate form fields from the linked DocType.

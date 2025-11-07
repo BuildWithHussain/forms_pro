@@ -71,6 +71,12 @@ export const useEditForm = defineStore("editForm", () => {
             // Keep title as is, but allow empty for display purposes
             // The backend will handle validation
             title: doc.title || "",
+            // Styling fields with defaults
+            background_image: doc.background_image || null,
+            background_color: doc.background_color || "#ffffff",
+            glass_morphism_enabled: doc.glass_morphism_enabled || false,
+            overlay_opacity: doc.overlay_opacity !== undefined ? doc.overlay_opacity : 0.5,
+            theme_color: doc.theme_color || "#3b82f6",
           };
         },
         onSuccess: () => {
@@ -109,6 +115,12 @@ export const useEditForm = defineStore("editForm", () => {
           description: formResource.value.doc.description,
           route: formResource.value.doc.route,
           allow_incomplete: formResource.value.doc.allow_incomplete,
+          // Styling fields
+          background_image: formResource.value.doc.background_image || null,
+          background_color: formResource.value.doc.background_color || "#ffffff",
+          glass_morphism_enabled: formResource.value.doc.glass_morphism_enabled || false,
+          overlay_opacity: formResource.value.doc.overlay_opacity !== undefined ? formResource.value.doc.overlay_opacity : 0.5,
+          theme_color: formResource.value.doc.theme_color || "#3b82f6",
         },
         {
           onSuccess: () => {

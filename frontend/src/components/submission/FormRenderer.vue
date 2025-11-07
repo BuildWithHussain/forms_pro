@@ -1,8 +1,24 @@
 <script setup lang="ts">
 import { ErrorMessage, LoadingIndicator, Button } from "frappe-ui";
 import { useSubmissionForm } from "@/stores/submissionForm";
+import { computed } from "vue";
+import FieldRenderer from "@/components/builder/FieldRenderer.vue";
+
+const props = defineProps({
+    themeColor: {
+        type: String,
+        default: '#3b82f6'
+    }
+});
 
 const submissionFormStore = useSubmissionForm();
+
+const buttonStyle = computed(() => {
+    return {
+        backgroundColor: props.themeColor,
+        borderColor: props.themeColor
+    };
+});
 </script>
 <template>
     <div v-if="submissionFormStore.isLoading">
@@ -14,15 +30,17 @@ const submissionFormStore = useSubmissionForm();
                 v-model="submissionFormStore.fields[field.fieldname]"
                 :field="field"
                 :inEditMode="false"
+                :theme-color="themeColor"
             />
         </div>
-        <hr />
+        <hr class="border-gray-200" />
         <ErrorMessage :message="submissionFormStore.errors.join('\n')" />
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <Button
                 v-if="submissionFormStore.allowIncompleteForms"
                 @click="submissionFormStore.saveAsDraft"
                 :loading="submissionFormStore.isLoading"
+                variant="outline"
             >
                 Save as draft
             </Button>
@@ -34,6 +52,7 @@ const submissionFormStore = useSubmissionForm();
                     }
                 "
                 :loading="submissionFormStore.isLoading"
+                :style="buttonStyle"
             >
                 Submit
             </Button>

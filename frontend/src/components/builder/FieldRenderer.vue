@@ -13,6 +13,10 @@ const props = defineProps({
         type: Boolean,
         required: true,
     },
+    themeColor: {
+        type: String,
+        default: '#3b82f6'
+    },
 });
 
 const emit = defineEmits(["update:field"]);
@@ -56,6 +60,7 @@ const getClasses = computed(() => {
             v-model="modelValue"
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
+            :theme-color="props.themeColor"
         />
         <div class="flex flex-col gap-1">
             <div class="flex gap-2 items-start">
@@ -80,6 +85,7 @@ const getClasses = computed(() => {
             :field="fieldData"
             class="mt-1"
             :class="{ 'pointer-events-none': inEditMode }"
+            :theme-color="props.themeColor"
         />
         <div class="flex flex-col gap-1">
             <div class="flex gap-2 items-start">
@@ -119,6 +125,7 @@ const getClasses = computed(() => {
                 :field="fieldData"
                 @change="(value) => (modelValue = value)"
                 :class="{ 'pointer-events-none': inEditMode }"
+                :theme-color="props.themeColor"
             />
         </div>
     </div>
@@ -138,6 +145,7 @@ const getClasses = computed(() => {
             v-model="modelValue"
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
+            :theme-color="props.themeColor"
         />
         <small class="text-gray-500">
             {{ fieldData.description }}

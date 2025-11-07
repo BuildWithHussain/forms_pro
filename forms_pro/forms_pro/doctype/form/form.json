@@ -15,6 +15,13 @@
   "login_required",
   "column_break_xocw",
   "allow_incomplete",
+  "styling_section",
+  "background_image",
+  "background_color",
+  "column_break_styling",
+  "glass_morphism_enabled",
+  "overlay_opacity",
+  "theme_color",
   "section_break_vdhw",
   "description",
   "fields_section",
@@ -107,6 +114,45 @@
    "fieldname": "allow_incomplete",
    "fieldtype": "Check",
    "label": "Allow Incomplete Forms"
+  },
+  {
+   "fieldname": "styling_section",
+   "fieldtype": "Section Break",
+   "label": "Form Styling"
+  },
+  {
+   "fieldname": "background_image",
+   "fieldtype": "Attach Image",
+   "label": "Background Image"
+  },
+  {
+   "fieldname": "background_color",
+   "fieldtype": "Data",
+   "label": "Background Color",
+   "description": "Hex color code (e.g., #ffffff)"
+  },
+  {
+   "fieldname": "column_break_styling",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "glass_morphism_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Glass Morphism"
+  },
+  {
+   "default": "0.5",
+   "fieldname": "overlay_opacity",
+   "fieldtype": "Float",
+   "label": "Overlay Opacity",
+   "description": "Opacity for background overlay (0-1)"
+  },
+  {
+   "fieldname": "theme_color",
+   "fieldtype": "Data",
+   "label": "Theme Color",
+   "description": "Hex color code for accents (e.g., #3b82f6)"
   }
  ],
  "grid_page_length": 50,

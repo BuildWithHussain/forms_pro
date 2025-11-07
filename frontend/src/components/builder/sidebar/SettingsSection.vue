@@ -3,7 +3,7 @@ import { Checkbox, FormControl, Button, Dialog, Combobox, createResource } from 
 import { useEditForm } from "@/stores/editForm";
 import { validateFormRoute } from "@/utils/form_generator";
 import { ref, computed, watch } from "vue";
-import { CircleCheck } from "lucide-vue-next";
+import { CircleCheck, Upload } from "lucide-vue-next";
 
 const editFormStore = useEditForm();
 
@@ -14,6 +14,8 @@ const replaceExisting = ref(false);
 const isAutoPopulating = ref(false);
 const showChangeDoctypeDialog = ref(false);
 const newDoctype = ref(null);
+const isUploadingImage = ref(false);
+const fileInputRef = ref(null);
 
 // Load doctype list
 const doctypes = createResource({
@@ -84,6 +86,102 @@ const handleDoctypeChange = (newValue) => {
     } else {
         updateDoctype();
     }
+};
+
+// Helper function to get image URL
+const getImageUrl = (filePath) => {
+    if (!filePath) return '';
+    // If it's already a full URL, return as is
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        return filePath;
+    }
+    // Otherwise, construct the URL using Frappe's file URL format
+    // Frappe stores file paths like "folder/filename.ext" or just "filename.ext"
+    // We need to prepend /files/ to access them
+    if (filePath.startsWith('/')) {
+        return filePath;
+    }
+    return `/files/${filePath}`;
+};
+
+// Handle file upload
+const handleFileSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+    }
+    
+    isUploadingImage.value = true;
+    try {
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('doctype', 'Form');
+        formData.append('docname', editFormStore.formData.name);
+        formData.append('fieldname', 'background_image');
+        formData.append('folder', 'Home/Attachments');
+        formData.append('is_private', '0');
+        
+        // Upload file using Frappe's file upload endpoint
+        const response = await fetch('/api/method/upload_file', {
+            method: 'POST',
+            headers: {
+                'X-Frappe-CSRF-Token': window.csrf_token || frappe?.csrf_token || '',
+            },
+            body: formData,
+        });
+        
+        if (!response.ok) {
+            throw new Error('File upload failed');
+        }
+        
+        const result = await response.json();
+        
+        if (result.message) {
+            // Frappe returns file info in result.message
+            // The file path is typically in result.message.file_url or result.message.file_name
+            let filePath = null;
+            
+            if (result.message.file_url) {
+                // Remove leading slash if present
+                filePath = result.message.file_url.startsWith('/') 
+                    ? result.message.file_url.substring(1) 
+                    : result.message.file_url;
+            } else if (result.message.file_name) {
+                filePath = result.message.file_name;
+            } else if (result.message.name) {
+                filePath = result.message.name;
+            }
+            
+            if (filePath) {
+                // Update the form data with the file path
+                editFormStore.formData.background_image = filePath;
+                
+                // Save the form to persist the change
+                await editFormStore.save();
+            } else {
+                throw new Error('Could not determine file path from upload response');
+            }
+        } else {
+            throw new Error('Invalid response from server');
+        }
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('Failed to upload image. Please try again.');
+    } finally {
+        isUploadingImage.value = false;
+        // Reset file input
+        if (fileInputRef.value) {
+            fileInputRef.value.value = '';
+        }
+    }
+};
+
+const triggerFileSelect = () => {
+    fileInputRef.value?.click();
 };
 
 const updateDoctype = async () => {
@@ -183,6 +281,115 @@ const updateDoctype = async () => {
                 >
                     Auto-populate from DocType
                 </Button>
+            </div>
+
+            <h5 class="text-sm font-medium mt-6 mb-1">Form Styling</h5>
+            <div class="space-y-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Background Image</label>
+                    <input
+                        ref="fileInputRef"
+                        type="file"
+                        accept="image/*"
+                        @change="handleFileSelect"
+                        class="hidden"
+                    />
+                    <Button
+                        variant="outline"
+                        @click="triggerFileSelect"
+                        :loading="isUploadingImage"
+                        class="w-full"
+                        :icon="Upload"
+                    >
+                        {{ isUploadingImage ? 'Uploading...' : (editFormStore.formData.background_image ? 'Change Image' : 'Upload Image') }}
+                    </Button>
+                    <div v-if="editFormStore.formData.background_image" class="mt-2">
+                        <img 
+                            :src="getImageUrl(editFormStore.formData.background_image)" 
+                            alt="Background preview"
+                            class="w-full h-32 object-cover rounded border border-gray-200"
+                        />
+                        <div class="flex items-center justify-between mt-2">
+                            <p class="text-xs text-gray-500 truncate flex-1">
+                                {{ editFormStore.formData.background_image }}
+                            </p>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                @click="editFormStore.formData.background_image = null; editFormStore.save()"
+                                class="text-red-500"
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Upload an image file for the form background
+                    </p>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Background Color</label>
+                    <div class="flex gap-2">
+                        <input
+                            type="color"
+                            v-model="editFormStore.formData.background_color"
+                            class="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                        />
+                        <FormControl
+                            variant="outline"
+                            type="text"
+                            v-model="editFormStore.formData.background_color"
+                            placeholder="#ffffff"
+                            class="flex-1"
+                        />
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Theme Color</label>
+                    <div class="flex gap-2">
+                        <input
+                            type="color"
+                            v-model="editFormStore.formData.theme_color"
+                            class="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                        />
+                        <FormControl
+                            variant="outline"
+                            type="text"
+                            v-model="editFormStore.formData.theme_color"
+                            placeholder="#3b82f6"
+                            class="flex-1"
+                        />
+                    </div>
+                </div>
+
+                <Checkbox
+                    size="sm"
+                    label="Enable Glass Morphism"
+                    variant="outline"
+                    v-model="editFormStore.formData.glass_morphism_enabled"
+                />
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Overlay Opacity</label>
+                    <div class="flex gap-2 items-center">
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            v-model.number="editFormStore.formData.overlay_opacity"
+                            class="flex-1"
+                        />
+                        <span class="text-xs text-gray-500 w-12 text-right">
+                            {{ (editFormStore.formData.overlay_opacity || 0.5) * 100 }}%
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Adjust the opacity of the background overlay for better text readability
+                    </p>
+                </div>
             </div>
         </div>
     </div>

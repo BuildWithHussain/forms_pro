@@ -14,6 +14,10 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    themeColor: {
+        type: String,
+        default: '#3b82f6'
+    },
 });
 
 const editFormStore = useEditForm();

@@ -4,13 +4,65 @@ import { LoadingIndicator, TextEditor } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { GripVertical } from "lucide-vue-next";
 import { FormField } from "@/types/formfield";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
 import FieldRenderer from "@/components/builder/FieldRenderer.vue";
 import Button from "frappe-ui/src/components/Button/Button.vue";
 
 const editFormStore = useEditForm();
+
+// Computed styles for real-time preview
+const previewStyles = computed(() => {
+    const formData = editFormStore.formData;
+    if (!formData) return {};
+    
+    const styles: Record<string, string> = {};
+    
+    // Background image
+    if (formData.background_image) {
+        styles.backgroundImage = `url(${formData.background_image})`;
+        styles.backgroundSize = 'cover';
+        styles.backgroundPosition = 'center';
+        styles.backgroundRepeat = 'no-repeat';
+    }
+    
+    // Background color (fallback if no image)
+    if (formData.background_color) {
+        styles.backgroundColor = formData.background_color;
+    }
+    
+    return styles;
+});
+
+const containerStyles = computed(() => {
+    const formData = editFormStore.formData;
+    if (!formData) return {};
+    
+    const styles: Record<string, string> = {};
+    
+    // Glass morphism effect
+    if (formData.glass_morphism_enabled) {
+        styles.backdropFilter = 'blur(10px)';
+        styles.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        styles.border = '1px solid rgba(255, 255, 255, 0.3)';
+        styles.boxShadow = '0 8px 32px 0 rgba(31, 38, 135, 0.37)';
+    }
+    
+    // Overlay opacity
+    if (formData.overlay_opacity !== undefined && formData.overlay_opacity > 0) {
+        const opacity = formData.overlay_opacity;
+        if (formData.glass_morphism_enabled) {
+            styles.backgroundColor = `rgba(255, 255, 255, ${0.7 * opacity})`;
+        }
+    }
+    
+    return styles;
+});
+
+const themeColor = computed(() => {
+    return editFormStore.formData?.theme_color || '#3b82f6';
+});
 
 // Ref for the entire FormBuilderContent component
 const fieldContentRef = ref<HTMLElement | null>(null);
@@ -37,8 +89,23 @@ onClickOutside(fieldContentRef, (event) => {
     </div>
     <div
         v-if="editFormStore.formData"
-        class="bg-secondary min-h-[800px] max-w-screen-md w-full border rounded my-12 p-4 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+        class="min-h-[800px] max-w-screen-md w-full border rounded my-12 p-4 relative overflow-hidden"
+        :style="previewStyles"
     >
+        <!-- Overlay for background -->
+        <div
+            v-if="editFormStore.formData.background_image && editFormStore.formData.overlay_opacity"
+            class="absolute inset-0 z-0"
+            :style="{
+                backgroundColor: `rgba(0, 0, 0, ${(editFormStore.formData.overlay_opacity || 0.5) * 0.3})`
+            }"
+        ></div>
+        
+        <!-- Form content container with glass morphism -->
+        <div
+            class="relative z-10"
+            :style="containerStyles"
+        >
         <div class="flex flex-col gap-2">
             <input
                 type="text"
@@ -83,6 +150,7 @@ onClickOutside(fieldContentRef, (event) => {
                                     editFormStore.updateField(element, updatedField)
                             "
                             :inEditMode="true"
+                            :theme-color="themeColor"
                         />
                         <Button
                             icon="x"
@@ -93,6 +161,7 @@ onClickOutside(fieldContentRef, (event) => {
                     </div>
                 </template>
             </draggableComponent>
+        </div>
         </div>
     </div>
 </template>

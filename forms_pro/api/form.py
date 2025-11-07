@@ -16,6 +16,17 @@ def get_form(form_id: str) -> dict:
         "Form",
         form_id,
     )
+    
+    # Format background image URL if present
+    background_image_url = None
+    if form.background_image:
+        # If it's already a full URL, use it as is
+        if form.background_image.startswith(('http://', 'https://')):
+            background_image_url = form.background_image
+        else:
+            # Convert file path to URL
+            background_image_url = frappe.utils.get_url(form.background_image)
+    
     return {
         "name": form.name,
         "title": form.title,
@@ -25,6 +36,12 @@ def get_form(form_id: str) -> dict:
         "is_published": form.is_published,
         "allow_incomplete": form.allow_incomplete,
         "linked_doctype": form.linked_doctype,  # Include linked_doctype for filter support
+        # Styling fields
+        "background_image": background_image_url,
+        "background_color": form.background_color or "#ffffff",
+        "glass_morphism_enabled": bool(form.glass_morphism_enabled) if hasattr(form, 'glass_morphism_enabled') else False,
+        "overlay_opacity": float(form.overlay_opacity) if hasattr(form, 'overlay_opacity') and form.overlay_opacity else 0.5,
+        "theme_color": form.theme_color or "#3b82f6",
     }
 
 

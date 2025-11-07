@@ -77,6 +77,8 @@ export const useEditForm = defineStore("editForm", () => {
             glass_morphism_enabled: doc.glass_morphism_enabled || false,
             overlay_opacity: doc.overlay_opacity !== undefined ? doc.overlay_opacity : 0.5,
             theme_color: doc.theme_color || "#3b82f6",
+            font_family: doc.font_family || "System Default",
+            logo: doc.logo || null,
           };
         },
         onSuccess: () => {
@@ -121,6 +123,8 @@ export const useEditForm = defineStore("editForm", () => {
           glass_morphism_enabled: formResource.value.doc.glass_morphism_enabled || false,
           overlay_opacity: formResource.value.doc.overlay_opacity !== undefined ? formResource.value.doc.overlay_opacity : 0.5,
           theme_color: formResource.value.doc.theme_color || "#3b82f6",
+          font_family: formResource.value.doc.font_family || "System Default",
+          logo: formResource.value.doc.logo || null,
         },
         {
           onSuccess: () => {

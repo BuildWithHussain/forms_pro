@@ -182,17 +182,25 @@ onClickOutside(fieldContentRef, (event) => {
         <!-- Main content - matches SubmissionPage -->
         <div class="relative z-10 min-h-screen p-8">
             <div
-                class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300"
-                :style="containerStyles"
-                style="position: relative; z-index: 1;"
+                class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300 form-container"
+                :style="{ ...containerStyles, fontFamily: fontFamily }"
             >
         <div class="flex flex-col gap-2">
-            <input
-                type="text"
-                class="outline-none bg-transparent border-none text-3xl font-semibold focus:ring-0 p-2"
-                placeholder="Untitled Form"
-                v-model="editFormStore.formData.title"
-            />
+            <div class="flex items-start justify-between gap-4">
+                <input
+                    type="text"
+                    class="outline-none bg-transparent border-none text-3xl font-semibold focus:ring-0 p-2 flex-1"
+                    placeholder="Untitled Form"
+                    v-model="editFormStore.formData.title"
+                />
+                <img 
+                    v-if="logoUrl"
+                    :src="logoUrl"
+                    alt="Logo"
+                    class="max-w-[150px] max-h-[60px] object-contain"
+                    style="flex-shrink: 0;"
+                />
+            </div>
             <TextEditor
                 :model-value="editFormStore.formData.description"
                 editor-class="h-fit !w-full p-2 form-description"
@@ -252,6 +260,29 @@ onClickOutside(fieldContentRef, (event) => {
     cursor: grab;
 }
 
+/* Form container should have low z-index and create isolation context */
+.form-container {
+    position: relative;
+    z-index: 1 !important;
+    isolation: isolate;
+}
+
+/* Ensure form container doesn't create stacking context that traps popups */
+.form-container * {
+    position: relative;
+}
+
+/* Exception: popups should be fixed and high z-index */
+.form-container :deep([role="dialog"]),
+.form-container :deep([data-popper-placement]),
+.form-container :deep(.v-calendar),
+.form-container :deep(.v-date-picker),
+.form-container :deep(.popover),
+.form-container :deep(.dropdown-menu) {
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
 /* Ensure all popups (date pickers, dropdowns, etc.) appear above the form container */
 :deep(.v-calendar),
 :deep(.v-date-picker),
@@ -263,46 +294,89 @@ onClickOutside(fieldContentRef, (event) => {
 :deep(.calendar-popup),
 :deep(.popover-content),
 :deep(.dropdown-menu) {
-    z-index: 9999 !important;
-    position: relative;
+    z-index: 999999 !important;
+    position: fixed !important;
 }
 
 /* Ensure form field popups are above everything */
 :deep(.form-field-popup) {
-    z-index: 9999 !important;
+    z-index: 999999 !important;
+    position: fixed !important;
 }
 </style>
 
 <style>
-/* Global styles for Frappe UI components - ensure popups are above form container */
-.v-calendar,
-.v-date-picker,
-.v-popover,
-.v-dropdown,
-.v-menu,
-[data-popper-placement],
-.date-picker-popup,
-.calendar-popup,
-.popover-content,
-.dropdown-menu,
-.frappe-ui-date-picker-popup,
-.frappe-ui-dropdown-popup,
-.v-calendar-popup,
-.calendar-container,
-.date-picker-container {
-    z-index: 99999 !important;
+/* Global styles - ensure ALL popups are above form container with maximum z-index */
+/* Use body selector for maximum specificity */
+body .v-calendar,
+body .v-date-picker,
+body .v-popover,
+body .v-dropdown,
+body .v-menu,
+body [data-popper-placement],
+body .date-picker-popup,
+body .calendar-popup,
+body .popover-content,
+body .dropdown-menu,
+body .frappe-ui-date-picker-popup,
+body .frappe-ui-dropdown-popup,
+body .v-calendar-popup,
+body .calendar-container,
+body .date-picker-container,
+body .v-calendar-wrapper,
+body .date-picker-wrapper,
+body .calendar-dropdown,
+body .date-dropdown {
+    z-index: 999999 !important;
     position: fixed !important;
 }
 
-/* Ensure date picker calendar appears in front */
-div[role="dialog"],
-div[data-radix-popper-content-wrapper],
-div[data-floating-ui-portal],
-div[data-floating-ui-root],
-.popover,
-.dropdown-content,
-[data-headlessui-portal] {
-    z-index: 99999 !important;
+/* Ensure date picker calendar appears in front - target all possible structures */
+body div[role="dialog"],
+body div[data-radix-popper-content-wrapper],
+body div[data-floating-ui-portal],
+body div[data-floating-ui-root],
+body .popover,
+body .dropdown-content,
+body [data-headlessui-portal],
+body [data-radix-portal],
+body [data-floating-ui-root] {
+    z-index: 999999 !important;
+    position: fixed !important;
+}
+
+/* Target any element that contains calendar/date picker classes */
+body div:has(.v-calendar),
+body div:has(.v-date-picker),
+body div:has(.calendar),
+body div:has([role="dialog"]),
+body div:has([data-popper-placement]) {
+    z-index: 999999 !important;
+    position: fixed !important;
+}
+
+/* Very aggressive - target any fixed/absolute positioned element that might be a popup */
+body > div[style*="position: fixed"],
+body > div[style*="position:absolute"] {
+    z-index: 999999 !important;
+}
+
+/* Target Frappe UI specific popup structures */
+body .frappe-ui-popup,
+body .frappe-ui-modal,
+body .frappe-ui-overlay {
+    z-index: 999999 !important;
+    position: fixed !important;
+}
+
+/* Nuclear option - any element with calendar/date in class name or data attribute */
+[class*="calendar"],
+[class*="date-picker"],
+[class*="datepicker"],
+[data-calendar],
+[data-date-picker],
+[data-datepicker] {
+    z-index: 999999 !important;
     position: fixed !important;
 }
 </style>

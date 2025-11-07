@@ -84,6 +84,15 @@ const overlayStyles = computed(() => {
 const themeColor = computed(() => {
     return formData.value?.theme_color || '#3b82f6';
 });
+
+// Font family
+const fontFamily = computed(() => {
+    const font = formData.value?.font_family || 'System Default';
+    if (font === 'System Default') {
+        return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+    }
+    return font;
+});
 </script>
 <template>
     <div class="min-h-screen w-full relative" :style="backgroundStyles">
@@ -98,7 +107,7 @@ const themeColor = computed(() => {
         <div class="relative z-10 min-h-screen p-8">
             <div
                 class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300"
-                :style="containerStyles"
+                :style="{ ...containerStyles, fontFamily: fontFamily }"
             >
                 <div class="space-y-4" v-if="submissionFormStore.inFormSubmission">
                     <FormHeader :theme-color="themeColor" />

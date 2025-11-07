@@ -1,5 +1,5 @@
 <script setup>
-import { Checkbox, FormControl, Button, Dialog, Combobox, createResource } from "frappe-ui";
+import { Checkbox, FormControl, Button, Dialog, Combobox, createResource, Select } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { validateFormRoute } from "@/utils/form_generator";
 import { ref, computed, watch } from "vue";
@@ -17,6 +17,9 @@ const newDoctype = ref(null);
 const isUploadingImage = ref(false);
 const fileInputRef = ref(null);
 const imagePreviewError = ref(false);
+const isUploadingLogo = ref(false);
+const logoInputRef = ref(null);
+const logoPreviewError = ref(false);
 
 // Load doctype list
 const doctypes = createResource({
@@ -228,6 +231,124 @@ const handleFileSelect = async (event) => {
 
 const triggerFileSelect = () => {
     fileInputRef.value?.click();
+};
+
+// Font options for selector
+const fontOptions = [
+    { label: "System Default", value: "System Default" },
+    { label: "Arial", value: "Arial" },
+    { label: "Helvetica", value: "Helvetica" },
+    { label: "Times New Roman", value: "Times New Roman" },
+    { label: "Georgia", value: "Georgia" },
+    { label: "Verdana", value: "Verdana" },
+    { label: "Inter", value: "Inter" },
+    { label: "Roboto", value: "Roboto" },
+    { label: "Open Sans", value: "Open Sans" },
+    { label: "Lato", value: "Lato" },
+    { label: "Montserrat", value: "Montserrat" },
+    { label: "Merriweather", value: "Merriweather" },
+    { label: "Playfair Display", value: "Playfair Display" },
+    { label: "Lora", value: "Lora" },
+    { label: "Courier New", value: "Courier New" },
+    { label: "Monaco", value: "Monaco" },
+];
+
+// Handle logo upload
+const handleLogoSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+    }
+    
+    isUploadingLogo.value = true;
+    try {
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('doctype', 'Form');
+        formData.append('docname', editFormStore.formData.name);
+        formData.append('fieldname', 'logo');
+        formData.append('folder', 'Home/Attachments');
+        formData.append('is_private', '0');
+        
+        // Upload file using Frappe's file upload endpoint
+        const response = await fetch('/api/method/upload_file', {
+            method: 'POST',
+            headers: {
+                'X-Frappe-CSRF-Token': window.csrf_token || frappe?.csrf_token || '',
+            },
+            body: formData,
+        });
+        
+        if (!response.ok) {
+            throw new Error('File upload failed');
+        }
+        
+        const result = await response.json();
+        
+        console.log('Logo upload response:', result);
+        
+        if (result.message) {
+            let filePath = null;
+            
+            // Try different possible fields
+            if (result.message.file_url) {
+                filePath = result.message.file_url;
+            } else if (result.message.file_name) {
+                filePath = result.message.file_name;
+            } else if (result.message.name) {
+                filePath = result.message.name;
+            } else if (result.message.file) {
+                filePath = result.message.file;
+            }
+            
+            console.log('Extracted logo file path:', filePath);
+            
+            if (filePath) {
+                // Clean the file path - remove any /files/ or files/ prefix
+                if (filePath.startsWith('/files/')) {
+                    filePath = filePath.substring(7);
+                } else if (filePath.startsWith('files/')) {
+                    filePath = filePath.substring(6);
+                }
+                if (filePath.startsWith('/')) {
+                    filePath = filePath.substring(1);
+                }
+                
+                console.log('Cleaned logo file path (stored in DB):', filePath);
+                
+                // Reset preview error for new logo
+                logoPreviewError.value = false;
+                // Update the form data with the file path
+                editFormStore.formData.logo = filePath;
+                
+                // Save the form to persist the change
+                await editFormStore.save();
+            } else {
+                console.error('Logo upload response structure:', result);
+                throw new Error('Could not determine file path from upload response');
+            }
+        } else {
+            console.error('Invalid logo upload response structure:', result);
+            throw new Error('Invalid response from server');
+        }
+    } catch (error) {
+        console.error('Error uploading logo:', error);
+        alert('Failed to upload logo. Please try again.');
+    } finally {
+        isUploadingLogo.value = false;
+        // Reset file input
+        if (logoInputRef.value) {
+            logoInputRef.value.value = '';
+        }
+    }
+};
+
+const triggerLogoSelect = () => {
+    logoInputRef.value?.click();
 };
 
 const updateDoctype = async () => {
@@ -445,6 +566,72 @@ const updateDoctype = async () => {
                     </div>
                     <p class="text-xs text-gray-500">
                         Adjust the opacity of the background overlay for better text readability
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Font Family</label>
+                    <Select
+                        v-model="editFormStore.formData.font_family"
+                        :options="fontOptions"
+                        variant="outline"
+                    />
+                    <p class="text-xs text-gray-500">
+                        Choose a font family for the form text
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Logo</label>
+                    <input
+                        ref="logoInputRef"
+                        type="file"
+                        accept="image/*"
+                        @change="handleLogoSelect"
+                        class="hidden"
+                    />
+                    <Button
+                        variant="outline"
+                        @click="triggerLogoSelect"
+                        :loading="isUploadingLogo"
+                        class="w-full"
+                        :icon="Upload"
+                    >
+                        {{ isUploadingLogo ? 'Uploading...' : (editFormStore.formData.logo ? 'Change Logo' : 'Upload Logo') }}
+                    </Button>
+                    <div v-if="editFormStore.formData.logo" class="mt-2">
+                        <div class="relative w-full h-20 rounded border border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                            <img 
+                                v-if="!logoPreviewError"
+                                :src="getImageUrl(editFormStore.formData.logo)" 
+                                alt="Logo preview"
+                                class="max-w-full max-h-full object-contain"
+                                @error="logoPreviewError = true"
+                                @load="logoPreviewError = false"
+                            />
+                            <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                                <div class="text-center">
+                                    <Upload class="w-6 h-6 mx-auto mb-1" />
+                                    <p class="text-xs">Preview unavailable</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <p class="text-xs text-gray-500 truncate flex-1">
+                                {{ editFormStore.formData.logo }}
+                            </p>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                @click="editFormStore.formData.logo = null; editFormStore.save(); logoPreviewError = false"
+                                class="text-red-500"
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Upload a logo to display on the form header
                     </p>
                 </div>
             </div>

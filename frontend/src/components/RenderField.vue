@@ -349,7 +349,7 @@ const getBinds = computed(() => {
     z-index: 10;
 }
 
-/* Ensure popups from form fields appear above form container */
+/* Ensure popups from form fields appear above form container - maximum z-index */
 :deep(.v-calendar),
 :deep(.v-date-picker),
 :deep(.v-popover),
@@ -367,8 +367,20 @@ const getBinds = computed(() => {
 :deep([data-radix-popper-content-wrapper]),
 :deep([data-floating-ui-portal]),
 :deep(.popover),
-:deep(.dropdown-content) {
-    z-index: 99999 !important;
+:deep(.dropdown-content),
+:deep(.v-calendar-wrapper),
+:deep(.date-picker-wrapper),
+:deep(.calendar-dropdown),
+:deep(.date-dropdown) {
+    z-index: 999999 !important;
+    position: fixed !important;
+}
+
+/* Target parent containers of popups */
+:deep(div:has(.v-calendar)),
+:deep(div:has(.v-date-picker)),
+:deep(div:has([role="dialog"])) {
+    z-index: 999999 !important;
     position: fixed !important;
 }
 </style>

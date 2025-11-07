@@ -34,6 +34,22 @@ def get_form(form_id: str) -> dict:
                 # It's a file path, convert to /files/ format
                 background_image_url = '/files/' + form.background_image.lstrip('/')
     
+    # Format logo URL if present
+    logo_url = None
+    if hasattr(form, 'logo') and form.logo:
+        # If it's already a full URL, use it as is
+        if form.logo.startswith(('http://', 'https://')):
+            logo_url = form.logo
+        else:
+            # Convert file path to relative URL format for frontend
+            if form.logo.startswith('/files/'):
+                logo_url = form.logo
+            elif form.logo.startswith('files/'):
+                logo_url = '/' + form.logo
+            else:
+                # It's a file path, convert to /files/ format
+                logo_url = '/files/' + form.logo.lstrip('/')
+    
     return {
         "name": form.name,
         "title": form.title,
@@ -49,6 +65,8 @@ def get_form(form_id: str) -> dict:
         "glass_morphism_enabled": bool(form.glass_morphism_enabled) if hasattr(form, 'glass_morphism_enabled') else False,
         "overlay_opacity": float(form.overlay_opacity) if hasattr(form, 'overlay_opacity') and form.overlay_opacity else 0.5,
         "theme_color": form.theme_color or "#3b82f6",
+        "font_family": form.font_family if hasattr(form, 'font_family') and form.font_family else "System Default",
+        "logo": logo_url,
     }
 
 

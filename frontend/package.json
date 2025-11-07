@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/assets/forms_pro/frontend/ && yarn copy-html-entry",
+    "build": "vite build --base=/assets/forms_pro/frontend/ && yarn post-build",
     "preview": "vite preview",
     "lint": "biome check --write .",
-    "copy-html-entry": "cp ../forms_pro/public/frontend/index.html ../forms_pro/www/frontend.html"
+    "post-build": "node scripts/post-build.js"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-vue": "^0.10.4",

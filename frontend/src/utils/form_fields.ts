@@ -134,51 +134,74 @@ export const formFields = [
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {
-  const FIELD_TYPE_MAP = {
-    Autocomplete: "Data",
-    Attach: "File Uploader",
-    "Attach Image": "File Uploader",
-    Barcode: "Barcode",
-    Button: "Button",
-    Check: "Checkbox",
-    Code: "Code",
-    Color: "Color",
-    "Column Break": "Column Break",
-    Currency: "Number",
+  const FIELD_TYPE_MAP: Record<string, string> = {
+    // Text fields
     Data: "Data",
+    "Small Text": "Textarea",
+    Text: "Textarea",
+    "Long Text": "Textarea",
+    "Text Editor": "Text Editor",
+    "HTML Editor": "Text Editor",
+    "Markdown Editor": "Text Editor",
+    Code: "Textarea",
+    JSON: "Textarea",
+    
+    // Number fields
+    Int: "Number",
+    Float: "Number",
+    Currency: "Number",
+    Percent: "Number",
+    
+    // Date/Time fields
     Date: "Date",
     Datetime: "Date Time",
-    Duration: "Duration",
-    "Dynamic Link": "Dynamic Link",
-    Float: "Number",
-    Fold: "Fold",
-    Geolocation: "Geolocation",
-    Heading: "Heading",
-    HTML: "HTML",
-    "HTML Editor": "Text Editor",
-    Icon: "Icon",
-    Image: "Image",
-    Int: "Number",
-    JSON: "JSON",
-    Link: "Link",
-    "Long Text": "Textarea",
-    "Markdown Editor": "Text Editor",
-    Password: "Password",
-    Percent: "Number",
-    Phone: "Phone",
-    "Read Only": "Read Only",
-    Rating: "Rating",
-    "Section Break": "Section Break",
+    Time: "Time Picker",
+    Duration: "Data", // Duration not directly supported
+    
+    // Selection fields
     Select: "Select",
-    Signature: "Signature",
-    "Small Text": "Textarea",
-    "Tab Break": "Tab Break",
-    Table: "Table",
-    "Table MultiSelect": "Table MultiSelect",
-    Text: "Textarea",
-    "Text Editor": "Text Editor",
-    Time: "Time",
+    Autocomplete: "Data",
+    
+    // Boolean fields
+    Check: "Checkbox",
+    
+    // Link fields
+    Link: "Select", // Link fields become Select dropdowns
+    "Dynamic Link": "Data", // Dynamic Link not directly supported
+    
+    // File/Attachment fields
+    Attach: "File Uploader",
+    "Attach Image": "File Uploader",
+    Image: "File Uploader",
+    Signature: "File Uploader",
+    
+    // Special fields
+    Password: "Password",
+    Rating: "Rating",
+    Color: "Data", // Color picker not directly supported
+    Geolocation: "Data", // Geolocation not directly supported
+    Phone: "Data", // Phone with validation
+    Email: "Email", // Email field type
+    
+    // Read-only/Display fields
+    "Read Only": "Data", // Read-only fields as Data
+    Heading: "Data", // Heading as Data
+    HTML: "Textarea", // HTML content as Textarea
+    Icon: "Data", // Icon field as Data
+    Barcode: "Data", // Barcode as Data
+    
+    // Layout fields (filtered out but included for completeness)
+    "Section Break": "Section Break", // Will be filtered
+    "Column Break": "Column Break", // Will be filtered
+    "Tab Break": "Tab Break", // Will be filtered
+    Fold: "Fold", // Will be filtered
+    Button: "Button", // Will be filtered
+    
+    // Table fields (not supported in forms)
+    Table: "Data", // Tables not directly supported
+    "Table MultiSelect": "Data", // Not directly supported
   };
 
-  return FIELD_TYPE_MAP[fieldtype as keyof typeof FIELD_TYPE_MAP];
+  // Return mapped type or default to "Data" if not found
+  return FIELD_TYPE_MAP[fieldtype] || "Data";
 };

@@ -186,6 +186,53 @@ export const useEditForm = defineStore("editForm", () => {
     formResource.value.doc.fields.push(_newField);
   }
 
+  async function autoPopulateFieldsFromDoctype(replaceExisting: boolean = false) {
+    if (!formResource.value?.doc?.name) {
+      toast.error("No form available");
+      return Promise.reject(new Error("No form available"));
+    }
+
+    if (formResource.value.doc.is_published) {
+      toast.error("Cannot modify fields of a published form");
+      return Promise.reject(new Error("Form is published"));
+    }
+
+    if (!formResource.value.doc.linked_doctype) {
+      toast.error("Form must have a linked DocType");
+      return Promise.reject(new Error("No linked DocType"));
+    }
+
+    const autoPopulateResource = createResource({
+      url: "forms_pro.api.form.auto_populate_fields_from_doctype",
+      makeParams() {
+        return {
+          form_id: formResource.value.doc.name,
+          replace_existing: replaceExisting,
+        };
+      },
+    });
+
+    try {
+      await autoPopulateResource.fetch();
+      const result = autoPopulateResource.data;
+
+      if (result.success) {
+        toast.success(result.message || `Added ${result.fields_added} field(s)`);
+        // Reload the form to get updated fields
+        reload();
+      } else {
+        toast.warning(result.message || "No fields were added");
+      }
+
+      return result;
+    } catch (error: any) {
+      toast.error("Failed to auto-populate fields", {
+        description: error.message || "An error occurred",
+      });
+      return Promise.reject(error);
+    }
+  }
+
   function removeField(field: FormField) {
     if (formResource.value?.doc?.fields) {
       formResource.value.doc.fields = formResource.value.doc.fields.filter(
@@ -235,6 +282,7 @@ export const useEditForm = defineStore("editForm", () => {
     updateFormData,
     addField,
     addFieldFromDoctype,
+    autoPopulateFieldsFromDoctype,
     selectField,
     updateField,
     removeField,

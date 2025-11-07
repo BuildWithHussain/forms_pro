@@ -1,12 +1,6 @@
-import json
-import re
-
 import frappe
 
 no_cache = 1
-
-SCRIPT_TAG_PATTERN = re.compile(r"\<script[^<]*\</script\>")
-CLOSING_SCRIPT_TAG_PATTERN = re.compile(r"</script\>")
 
 
 def get_context(context):
@@ -23,11 +17,9 @@ def get_context(context):
         except Exception as e:
             raise frappe.SessionBootFailed from e
 
+    # Serialize boot data using frappe.as_json which handles datetime objects
+    # and other non-standard JSON types properly
     boot_json = frappe.as_json(boot, indent=None, separators=(",", ":"))
-    boot_json = SCRIPT_TAG_PATTERN.sub("", boot_json)
-
-    boot_json = CLOSING_SCRIPT_TAG_PATTERN.sub("", boot_json)
-    boot_json = json.dumps(boot_json)
 
     context.update(
         {

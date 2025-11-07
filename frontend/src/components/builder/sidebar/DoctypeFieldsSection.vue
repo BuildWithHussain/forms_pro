@@ -1,4 +1,5 @@
 <script setup>
+import { Button } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { formFields } from "@/utils/form_fields";
 import { ref, computed } from "vue";
@@ -9,6 +10,8 @@ const componentMap = formFields.reduce((acc, field) => {
 }, {});
 
 const search = ref("");
+const isAddingAll = ref(false);
+
 const filteredFields = computed(() => {
     return editFormStore.doctypeFields.filter((field) => {
         return field.label.toLowerCase().includes(search.value.toLowerCase());
@@ -16,11 +19,47 @@ const filteredFields = computed(() => {
 });
 
 const editFormStore = useEditForm();
+
+const canAddAllFields = computed(() => {
+    return (
+        editFormStore.doctypeFields.length > 0 &&
+        !editFormStore.isPublished &&
+        !isAddingAll.value
+    );
+});
+
+const handleAddAllFields = async () => {
+    if (!canAddAllFields.value) return;
+
+    isAddingAll.value = true;
+    try {
+        await editFormStore.autoPopulateFieldsFromDoctype(false);
+    } catch (error) {
+        // Error is already handled in the store
+    } finally {
+        isAddingAll.value = false;
+    }
+};
 </script>
 <template>
     <div class="flex flex-col gap-2">
-        <h3 class="text-lg font-medium">DocType Fields</h3>
-        <p class="text-sm text-gray-500">Add fields from the DocType to the form.</p>
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-medium">DocType Fields</h3>
+                <p class="text-sm text-gray-500">Add fields from the DocType to the form.</p>
+            </div>
+            <Button
+                v-if="canAddAllFields"
+                variant="outline"
+                size="sm"
+                icon="plus"
+                @click="handleAddAllFields"
+                :loading="isAddingAll"
+                title="Add all fields from DocType"
+            >
+                Add All
+            </Button>
+        </div>
         <hr />
         <div class="flex flex-col gap-2">
             <FormControl

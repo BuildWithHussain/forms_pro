@@ -7,13 +7,20 @@
             }"
         >
             <template #body-content>
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium">DocType</label>
-                    <Combobox
-                        v-model="selectedDoctype"
-                        :options="doctypes.data"
-                        label="DocType"
-                        id="doctype"
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">DocType</label>
+                        <Combobox
+                            v-model="selectedDoctype"
+                            :options="doctypes.data"
+                            label="DocType"
+                            id="doctype"
+                        />
+                    </div>
+                    <Checkbox
+                        v-model="autoPopulateOnCreate"
+                        label="Auto-populate fields from DocType"
+                        description="Automatically add all fields from the selected DocType to the form."
                     />
                 </div>
             </template>
@@ -84,20 +91,33 @@ import {
     Card,
     createResource,
     Combobox,
+    Checkbox,
 } from "frappe-ui";
 import { session } from "@/data/session";
 import { createNewFormWithDoctype, createNewForm } from "@/utils/form_generator";
 import FormPreviewCard from "@/components/dashboard/FormPreviewCard.vue";
+import { useEditForm } from "@/stores/editForm";
+
 const router = useRouter();
+const editFormStore = useEditForm();
 const showSelectDoctypeDialog = ref(false);
+const autoPopulateOnCreate = ref(true);
 
 const handleCreateDraftFormWithDoctype = async () => {
     const data = await createNewFormWithDoctype(selectedDoctype.value);
+    
+    // Reset dialog state
+    showSelectDoctypeDialog.value = false;
+    const shouldAutoPopulate = autoPopulateOnCreate.value;
+    selectedDoctype.value = null;
+    
+    // Navigate to edit form
     router.push({
         name: "Edit Form",
         params: {
             id: data.form_document,
         },
+        query: shouldAutoPopulate ? { autoPopulate: "true" } : {},
     });
 };
 

@@ -12,27 +12,68 @@ import Button from "frappe-ui/src/components/Button/Button.vue";
 
 const editFormStore = useEditForm();
 
-// Computed styles for real-time preview
+// Helper function to get image URL
+const getImageUrl = (filePath: string | null | undefined): string => {
+    if (!filePath) return '';
+    // If it's already a full URL, return as is
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        return filePath;
+    }
+    // If it already starts with /files/, return as is
+    if (filePath.startsWith('/files/')) {
+        return filePath;
+    }
+    // Otherwise, construct the URL using Frappe's file URL format
+    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+    return `/files/${cleanPath}`;
+};
+
+// Computed styles for real-time preview background - matching SubmissionPage exactly
 const previewStyles = computed(() => {
     const formData = editFormStore.formData;
     if (!formData) return {};
     
     const styles: Record<string, string> = {};
     
-    // Background image
+    // Background image - convert file path to URL like the API does
     if (formData.background_image) {
-        styles.backgroundImage = `url(${formData.background_image})`;
+        // Convert file path to URL (same as backend API does with frappe.utils.get_url)
+        let imageUrl = formData.background_image;
+        
+        // If it's not already a full URL, convert it
+        if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            // Convert to /files/ URL format
+            imageUrl = getImageUrl(imageUrl);
+        }
+        
+        styles.backgroundImage = `url(${imageUrl})`;
         styles.backgroundSize = 'cover';
         styles.backgroundPosition = 'center';
         styles.backgroundRepeat = 'no-repeat';
+        styles.backgroundAttachment = 'fixed';
     }
     
-    // Background color (fallback if no image)
+    // Background color (fallback or solid) - same logic as SubmissionPage
     if (formData.background_color) {
-        styles.backgroundColor = formData.background_color;
+        if (!formData.background_image) {
+            styles.backgroundColor = formData.background_color;
+        }
+    } else if (!formData.background_image) {
+        styles.backgroundColor = '#f9fafb';
     }
     
     return styles;
+});
+
+// Overlay styles for background
+const overlayStyles = computed(() => {
+    const formData = editFormStore.formData;
+    if (!formData || !formData.background_image) return {};
+    
+    const opacity = formData.overlay_opacity || 0.5;
+    return {
+        backgroundColor: `rgba(0, 0, 0, ${opacity * 0.4})`
+    };
 });
 
 const containerStyles = computed(() => {
@@ -43,17 +84,22 @@ const containerStyles = computed(() => {
     
     // Glass morphism effect
     if (formData.glass_morphism_enabled) {
-        styles.backdropFilter = 'blur(10px)';
-        styles.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        styles.backdropFilter = 'blur(10px) saturate(180%)';
+        styles.webkitBackdropFilter = 'blur(10px) saturate(180%)';
+        styles.backgroundColor = 'rgba(255, 255, 255, 0.75)';
         styles.border = '1px solid rgba(255, 255, 255, 0.3)';
-        styles.boxShadow = '0 8px 32px 0 rgba(31, 38, 135, 0.37)';
+        styles.boxShadow = '0 8px 32px 0 rgba(31, 38, 135, 0.2)';
+    } else {
+        styles.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        styles.border = '1px solid rgba(0, 0, 0, 0.1)';
+        styles.boxShadow = '0 4px 16px 0 rgba(0, 0, 0, 0.1)';
     }
     
-    // Overlay opacity
-    if (formData.overlay_opacity !== undefined && formData.overlay_opacity > 0) {
+    // Overlay opacity adjustment
+    if (formData.overlay_opacity !== undefined) {
         const opacity = formData.overlay_opacity;
         if (formData.glass_morphism_enabled) {
-            styles.backgroundColor = `rgba(255, 255, 255, ${0.7 * opacity})`;
+            styles.backgroundColor = `rgba(255, 255, 255, ${0.75 * opacity})`;
         }
     }
     
@@ -87,25 +133,25 @@ onClickOutside(fieldContentRef, (event) => {
     <div v-if="editFormStore.isLoading">
         <LoadingIndicator />
     </div>
+    <!-- Background container - matches SubmissionPage structure exactly -->
     <div
         v-if="editFormStore.formData"
-        class="min-h-[800px] max-w-screen-md w-full border rounded my-12 p-4 relative overflow-hidden"
+        class="min-h-screen relative flex-1"
         :style="previewStyles"
     >
         <!-- Overlay for background -->
         <div
-            v-if="editFormStore.formData.background_image && editFormStore.formData.overlay_opacity"
+            v-if="editFormStore.formData.background_image"
             class="absolute inset-0 z-0"
-            :style="{
-                backgroundColor: `rgba(0, 0, 0, ${(editFormStore.formData.overlay_opacity || 0.5) * 0.3})`
-            }"
+            :style="overlayStyles"
         ></div>
         
-        <!-- Form content container with glass morphism -->
-        <div
-            class="relative z-10"
-            :style="containerStyles"
-        >
+        <!-- Main content - matches SubmissionPage -->
+        <div class="relative z-10 min-h-screen p-8">
+            <div
+                class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300"
+                :style="containerStyles"
+            >
         <div class="flex flex-col gap-2">
             <input
                 type="text"
@@ -162,6 +208,7 @@ onClickOutside(fieldContentRef, (event) => {
                 </template>
             </draggableComponent>
         </div>
+            </div>
         </div>
     </div>
 </template>

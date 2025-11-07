@@ -16,6 +16,7 @@ const showChangeDoctypeDialog = ref(false);
 const newDoctype = ref(null);
 const isUploadingImage = ref(false);
 const fileInputRef = ref(null);
+const imagePreviewError = ref(false);
 
 // Load doctype list
 const doctypes = createResource({
@@ -95,13 +96,15 @@ const getImageUrl = (filePath) => {
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
         return filePath;
     }
-    // Otherwise, construct the URL using Frappe's file URL format
-    // Frappe stores file paths like "folder/filename.ext" or just "filename.ext"
-    // We need to prepend /files/ to access them
-    if (filePath.startsWith('/')) {
+    // If it already starts with /files/, return as is
+    if (filePath.startsWith('/files/')) {
         return filePath;
     }
-    return `/files/${filePath}`;
+    // Otherwise, construct the URL using Frappe's file URL format
+    // Frappe stores file paths like "folder/filename.ext" or just "filename.ext"
+    // Remove leading slash if present, then prepend /files/
+    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+    return `/files/${cleanPath}`;
 };
 
 // Handle file upload
@@ -157,6 +160,8 @@ const handleFileSelect = async (event) => {
             }
             
             if (filePath) {
+                // Reset preview error for new image
+                imagePreviewError.value = false;
                 // Update the form data with the file path
                 editFormStore.formData.background_image = filePath;
                 
@@ -304,11 +309,22 @@ const updateDoctype = async () => {
                         {{ isUploadingImage ? 'Uploading...' : (editFormStore.formData.background_image ? 'Change Image' : 'Upload Image') }}
                     </Button>
                     <div v-if="editFormStore.formData.background_image" class="mt-2">
-                        <img 
-                            :src="getImageUrl(editFormStore.formData.background_image)" 
-                            alt="Background preview"
-                            class="w-full h-32 object-cover rounded border border-gray-200"
-                        />
+                        <div class="relative w-full h-32 rounded border border-gray-200 overflow-hidden bg-gray-100">
+                            <img 
+                                v-if="!imagePreviewError"
+                                :src="getImageUrl(editFormStore.formData.background_image)" 
+                                alt="Background preview"
+                                class="w-full h-full object-cover"
+                                @error="imagePreviewError = true"
+                                @load="imagePreviewError = false"
+                            />
+                            <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                                <div class="text-center">
+                                    <Upload class="w-8 h-8 mx-auto mb-1" />
+                                    <p class="text-xs">Preview unavailable</p>
+                                </div>
+                            </div>
+                        </div>
                         <div class="flex items-center justify-between mt-2">
                             <p class="text-xs text-gray-500 truncate flex-1">
                                 {{ editFormStore.formData.background_image }}
@@ -316,7 +332,7 @@ const updateDoctype = async () => {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                @click="editFormStore.formData.background_image = null; editFormStore.save()"
+                                @click="editFormStore.formData.background_image = null; editFormStore.save(); imagePreviewError = false"
                                 class="text-red-500"
                             >
                                 Remove

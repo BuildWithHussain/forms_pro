@@ -1,4 +1,7 @@
 import frappe
+import os
+import re
+import json
 
 
 @frappe.whitelist(allow_guest=True)
@@ -21,6 +24,7 @@ def get_form(form_id: str) -> dict:
         "route": form.route,
         "is_published": form.is_published,
         "allow_incomplete": form.allow_incomplete,
+        "linked_doctype": form.linked_doctype,  # Include linked_doctype for filter support
     }
 
 
@@ -56,8 +60,186 @@ def get_doctype_list() -> list[str]:
     )
 
 
+def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
+    """
+    Parse the parent DocType's JavaScript file to extract set_query filters for a specific field.
+    
+    Args:
+        parent_doctype: The parent DocType name
+        fieldname: The field name to get filters for
+    
+    Returns:
+        dict with filters to apply, or empty dict if no filters found
+    """
+    if not parent_doctype or not fieldname:
+        frappe.log_error(f"get_field_query_filters: Missing parameters - parent_doctype={parent_doctype}, fieldname={fieldname}")
+        return {}
+    
+    try:
+        # Get the DocType document to find its module
+        doctype_doc = frappe.get_doc("DocType", parent_doctype)
+        module = doctype_doc.module
+        
+        # Construct the path to the JavaScript file
+        # Format: apps/{app_name}/{app_name}/{module}/doctype/{doctype_name}/{doctype_name}.js
+        app_name = frappe.db.get_value("Module Def", module, "app_name")
+        if not app_name:
+            return {}
+        
+        # Try to find the JS file path
+        # First, try the standard path structure
+        possible_paths = [
+            os.path.join(
+                frappe.get_app_path(app_name),
+                frappe.scrub(app_name),
+                frappe.scrub(module),
+                "doctype",
+                frappe.scrub(parent_doctype),
+                f"{frappe.scrub(parent_doctype)}.js"
+            ),
+            # Alternative path structure (some apps use different conventions)
+            os.path.join(
+                frappe.get_app_path(app_name),
+                frappe.scrub(app_name),
+                frappe.scrub(module),
+                "doctype",
+                frappe.scrub(parent_doctype),
+                f"{frappe.scrub(parent_doctype)}.js"
+            ),
+        ]
+        
+        js_content = None
+        js_path = None
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                js_path = path
+                break
+        
+        # If not found, try to search in the app directory
+        if not js_path:
+            app_path = frappe.get_app_path(app_name)
+            # Search for the JS file
+            for root, dirs, files in os.walk(app_path):
+                if f"{frappe.scrub(parent_doctype)}.js" in files:
+                    js_path = os.path.join(root, f"{frappe.scrub(parent_doctype)}.js")
+                    break
+        
+        if not js_path or not os.path.exists(js_path):
+            frappe.log_error(f"get_field_query_filters: JS file not found for {parent_doctype} at {js_path}")
+            return {}
+        
+        # Read the JavaScript file
+        with open(js_path, 'r', encoding='utf-8') as f:
+            js_content = f.read()
+        
+        if not js_content:
+            frappe.log_error(f"get_field_query_filters: JS file is empty for {parent_doctype}")
+            return {}
+        
+        # Pattern to match: frm.set_query('fieldname', function() { return { filters: {...} }; })
+        # This regex handles various formats:
+        # - frm.set_query('fieldname', function() { return { filters: {...} }; })
+        # - frm.set_query("fieldname", function() { return { filters: {...} }; })
+        # - frm.set_query('fieldname', function() { return { filters: {...} } })
+        
+        # Escape the fieldname for regex
+        escaped_fieldname = re.escape(fieldname)
+        
+        # Pattern to find set_query for this specific field
+        # Match: frm.set_query('fieldname' or "fieldname", function() { return { filters: {...} }; })
+        # Handle tabs, newlines, and various whitespace
+        # First try a comprehensive pattern
+        pattern = rf"frm\.set_query\(['\"]{escaped_fieldname}['\"]\s*,\s*function\s*\([^)]*\)\s*{{\s*return\s*{{\s*filters:\s*{{\s*([^}}]+)\s*}}\s*}}\s*;?\s*}}\s*\)"
+        
+        match = re.search(pattern, js_content, re.DOTALL | re.MULTILINE)
+        
+        if not match:
+            # Try a simpler pattern that matches the filters object more flexibly
+            # This pattern looks for frm.set_query('fieldname', ...) and then finds filters: {...}
+            # Handle tabs and newlines
+            pattern2 = rf"frm\.set_query\(['\"]{escaped_fieldname}['\"]\s*,\s*[^}}]*?filters:\s*{{\s*([^}}]+)\s*}}"
+            match = re.search(pattern2, js_content, re.DOTALL | re.MULTILINE)
+        
+        if not match:
+            # Try even simpler - just find the fieldname and then filters
+            pattern3 = rf"set_query\(['\"]{escaped_fieldname}['\"][\s\S]*?filters:\s*{{\s*([^}}]+)\s*}}"
+            match = re.search(pattern3, js_content, re.DOTALL | re.MULTILINE)
+        
+        if not match:
+            frappe.log_error(f"get_field_query_filters: No set_query found for {parent_doctype}.{fieldname}")
+            return {}
+        
+        filters_str = match.group(1).strip()
+        frappe.log_error(f"get_field_query_filters: Found filters string for {parent_doctype}.{fieldname}: {filters_str}")
+        
+        # Parse the filters string into a Python dict
+        # The filters string might look like: 'ga_is_partner': 1 or "ga_is_partner": 1
+        # We need to convert this to a proper dict
+        
+        filters = {}
+        
+        # Pattern to match key-value pairs in the filters object
+        # Handles: 'key': value, "key": value, key: value
+        # Value can be: number, string (quoted or unquoted), boolean
+        filter_pattern = r"['\"]?([a-zA-Z_][a-zA-Z0-9_]*)['\"]?\s*:\s*([^,}\n]+)"
+        filter_matches = re.findall(filter_pattern, filters_str)
+        
+        for key, value in filter_matches:
+            key = key.strip()
+            value = value.strip()
+            
+            # Remove quotes if present (both single and double)
+            if (value.startswith("'") and value.endswith("'")) or \
+               (value.startswith('"') and value.endswith('"')):
+                value = value[1:-1]
+            
+            # Remove any remaining whitespace
+            value = value.strip()
+            
+            # Try to convert to appropriate type
+            if value.isdigit():
+                filters[key] = int(value)
+            elif value.lower() == 'true':
+                filters[key] = True
+            elif value.lower() == 'false':
+                filters[key] = False
+            else:
+                # Try to parse as number (float or int)
+                try:
+                    # Try int first
+                    if '.' not in value:
+                        filters[key] = int(value)
+                    else:
+                        filters[key] = float(value)
+                except ValueError:
+                    # Keep as string (remove quotes if still present)
+                    if (value.startswith("'") and value.endswith("'")) or \
+                       (value.startswith('"') and value.endswith('"')):
+                        filters[key] = value[1:-1]
+                    else:
+                        filters[key] = value
+        
+        frappe.log_error(f"get_field_query_filters: Parsed filters for {parent_doctype}.{fieldname}: {filters}")
+        return filters
+        
+    except Exception as e:
+        # Log error but don't fail - just return empty filters
+        frappe.log_error(
+            f"Error parsing field query filters for {parent_doctype}.{fieldname}: {str(e)}",
+            "get_field_query_filters"
+        )
+        return {}
+
+
 @frappe.whitelist(allow_guest=True)
-def get_link_field_options(doctype: str, search_term: str = None, limit: int = 20) -> dict:
+def get_link_field_options(
+    doctype: str, 
+    search_term: str = None, 
+    limit: int = 20,
+    parent_doctype: str = None,
+    fieldname: str = None
+) -> dict:
     """
     Get options for a Link field (Select field with DocType options).
     Returns a list of records from the specified DocType.
@@ -66,6 +248,8 @@ def get_link_field_options(doctype: str, search_term: str = None, limit: int = 2
         doctype: The DocType name to fetch records from
         search_term: Optional search term to filter records
         limit: Maximum number of records to return
+        parent_doctype: Optional parent DocType name (to apply field-specific filters)
+        fieldname: Optional field name in the parent DocType (to apply field-specific filters)
     
     Returns:
         dict with 'options' list containing {label, value} pairs
@@ -81,19 +265,70 @@ def get_link_field_options(doctype: str, search_term: str = None, limit: int = 2
     meta = frappe.get_meta(doctype)
     title_field = meta.title_field or "name"
     
-    # Build filters
+    # Get field-specific filters from parent DocType if provided
+    field_filters = {}
+    if parent_doctype and fieldname:
+        frappe.log_error(f"get_link_field_options: Attempting to get filters for parent_doctype={parent_doctype}, fieldname={fieldname}")
+        field_filters = get_field_query_filters(parent_doctype, fieldname)
+        frappe.log_error(f"get_link_field_options: Retrieved field_filters: {field_filters}")
+    else:
+        frappe.log_error(f"get_link_field_options: No parent_doctype or fieldname provided - parent_doctype={parent_doctype}, fieldname={fieldname}")
+    
+    # Build filters - merge field filters with search filters
+    # Frappe filters format: {key: value} for simple filters, or {and: [...], or: [...]} for complex
     filters = {}
+    
+    # Start with field-specific filters
+    if field_filters:
+        # Convert dict filters to list format for Frappe
+        # Simple filters: {key: value} becomes [[key, "=", value]]
+        filter_list = []
+        for key, value in field_filters.items():
+            filter_list.append([key, "=", value])
+        
+        if len(filter_list) == 1:
+            # Single filter - use simple format
+            filters = {filter_list[0][0]: filter_list[0][2]}
+        else:
+            # Multiple filters - combine with AND
+            filters = {"and": filter_list}
+    
+    # Add search term filters if provided
     if search_term:
-        # Search in title field and name
-        filters = {
+        search_filter = {
             "or": [
                 [title_field, "like", f"%{search_term}%"],
                 ["name", "like", f"%{search_term}%"],
             ]
         }
+        
+        # Combine with existing filters
+        if filters:
+            # We have both field filters and search filters
+            # Combine them with AND
+            if "and" in filters:
+                # Already have AND filters, add search OR to the list
+                filters["and"].append(search_filter["or"])
+            else:
+                # Single field filter in dict format, convert to AND format
+                # Convert dict filter to list format
+                field_filter_list = []
+                for key, value in filters.items():
+                    field_filter_list.append([key, "=", value])
+                
+                # Combine with search filter
+                filters = {
+                    "and": field_filter_list + [search_filter["or"]]
+                }
+        else:
+            # No field filters, just use search
+            filters = search_filter
     
     # Get records
     try:
+        # Log the filters being applied for debugging
+        frappe.log_error(f"get_link_field_options: Fetching {doctype} with filters: {filters}")
+        
         records = frappe.get_list(
             doctype,
             fields=["name", title_field],
@@ -101,6 +336,8 @@ def get_link_field_options(doctype: str, search_term: str = None, limit: int = 2
             limit=limit,
             order_by=title_field or "name",
         )
+        
+        frappe.log_error(f"get_link_field_options: Found {len(records)} records for {doctype}")
         
         # Format as options for Select component
         options = []
@@ -113,7 +350,7 @@ def get_link_field_options(doctype: str, search_term: str = None, limit: int = 2
         
         return {"options": options}
     except Exception as e:
-        frappe.log_error(f"Error fetching options for {doctype}: {str(e)}")
+        frappe.log_error(f"Error fetching options for {doctype} with filters {filters}: {str(e)}")
         return {"options": []}
 
 

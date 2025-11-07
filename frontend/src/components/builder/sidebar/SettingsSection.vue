@@ -19,6 +19,10 @@ const newDoctype = ref(null);
 const doctypes = createResource({
     url: "forms_pro.api.form.get_doctype_list",
     auto: true,
+    transform: (data) => {
+        // Ensure we always return an array
+        return Array.isArray(data) ? data : [];
+    },
 });
 
 const canAutoPopulate = computed(() => {
@@ -86,9 +90,13 @@ const updateDoctype = async () => {
     if (!newDoctype.value) return;
     
     try {
-        // Update the linked_doctype
+        // Ensure title is not empty before updating
+        const currentTitle = editFormStore.formData?.title || "Untitled Form";
+        
+        // Update the linked_doctype along with title to avoid mandatory error
         await editFormStore.formResource.setValue.submit({
             linked_doctype: newDoctype.value,
+            title: currentTitle, // Ensure title is preserved
         });
         
         // Update the form data
@@ -114,13 +122,17 @@ const updateDoctype = async () => {
                 <label class="text-sm font-medium">Linked DocType</label>
                 <Combobox
                     v-model="editFormStore.formData.linked_doctype"
-                    :options="doctypes.data"
+                    :options="doctypes.data || []"
                     label="DocType"
-                    :disabled="!canChangeDoctype"
+                    :disabled="!canChangeDoctype || doctypes.loading"
+                    :loading="doctypes.loading"
                     @update:modelValue="handleDoctypeChange"
                 />
                 <p v-if="!canChangeDoctype" class="text-xs text-gray-500">
                     Cannot change DocType for published forms
+                </p>
+                <p v-if="doctypes.loading" class="text-xs text-gray-500">
+                    Loading DocTypes...
                 </p>
             </div>
             <FormControl

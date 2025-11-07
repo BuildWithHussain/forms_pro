@@ -12,9 +12,10 @@
                         <label class="text-sm font-medium">DocType</label>
                         <Combobox
                             v-model="selectedDoctype"
-                            :options="doctypes.data"
+                            :options="doctypes.data || []"
                             label="DocType"
                             id="doctype"
+                            :loading="doctypes.loading"
                         />
                     </div>
                     <Checkbox

@@ -56,6 +56,67 @@ def get_doctype_list() -> list[str]:
     )
 
 
+@frappe.whitelist(allow_guest=True)
+def get_link_field_options(doctype: str, search_term: str = None, limit: int = 20) -> dict:
+    """
+    Get options for a Link field (Select field with DocType options).
+    Returns a list of records from the specified DocType.
+    
+    Args:
+        doctype: The DocType name to fetch records from
+        search_term: Optional search term to filter records
+        limit: Maximum number of records to return
+    
+    Returns:
+        dict with 'options' list containing {label, value} pairs
+    """
+    if not doctype:
+        return {"options": []}
+    
+    # Validate that the DocType exists
+    if not frappe.db.exists("DocType", doctype):
+        return {"options": []}
+    
+    # Get the DocType meta to find the title field
+    meta = frappe.get_meta(doctype)
+    title_field = meta.title_field or "name"
+    
+    # Build filters
+    filters = {}
+    if search_term:
+        # Search in title field and name
+        filters = {
+            "or": [
+                [title_field, "like", f"%{search_term}%"],
+                ["name", "like", f"%{search_term}%"],
+            ]
+        }
+    
+    # Get records
+    try:
+        records = frappe.get_list(
+            doctype,
+            fields=["name", title_field],
+            filters=filters,
+            limit=limit,
+            order_by=title_field or "name",
+        )
+        
+        # Format as options for Select component
+        options = []
+        for record in records:
+            label = record.get(title_field) or record.name
+            options.append({
+                "label": label,
+                "value": record.name,
+            })
+        
+        return {"options": options}
+    except Exception as e:
+        frappe.log_error(f"Error fetching options for {doctype}: {str(e)}")
+        return {"options": []}
+
+
 @frappe.whitelist()
 def auto_populate_fields_from_doctype(form_id: str, replace_existing: bool = False) -> dict:
     """

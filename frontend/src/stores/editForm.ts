@@ -68,7 +68,9 @@ export const useEditForm = defineStore("editForm", () => {
         transform: (doc: Form) => {
           return {
             ...doc,
-            title: doc.title === "Untitled Form" ? "" : doc.title,
+            // Keep title as is, but allow empty for display purposes
+            // The backend will handle validation
+            title: doc.title || "",
           };
         },
         onSuccess: () => {
@@ -97,9 +99,12 @@ export const useEditForm = defineStore("editForm", () => {
         }
       });
 
+      // Ensure title is not empty (required field)
+      const title = formResource.value.doc.title?.trim() || "Untitled Form";
+      
       return formResource.value.setValue.submit(
         {
-          title: formResource.value.doc.title,
+          title: title,
           fields: formResource.value.doc.fields,
           description: formResource.value.doc.description,
           route: formResource.value.doc.route,

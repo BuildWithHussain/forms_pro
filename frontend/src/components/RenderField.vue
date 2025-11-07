@@ -31,8 +31,14 @@ const getComponent = computed(() => {
     return formFields.find((field) => field.name === props.field.fieldtype);
 });
 
-// Check if this is a Select field with a DocType name as options
+// Check if this is a Link field or Select field with a DocType name as options
 const isLinkField = computed(() => {
+    // If fieldtype is Link, it's definitely a link field
+    if (props.field.fieldtype === "Link") {
+        return true;
+    }
+    
+    // If fieldtype is Select, check if options looks like a DocType name
     return (
         props.field.fieldtype === "Select" &&
         props.field.options &&
@@ -45,7 +51,14 @@ const isLinkField = computed(() => {
 // We'll try to fetch and if it fails, fall back to regular options
 const doctypeName = computed(() => {
     if (!isLinkField.value) return null;
-    const optionsStr = props.field.options.trim();
+    
+    // For Link fieldtype, options is the DocType name
+    if (props.field.fieldtype === "Link" && props.field.options) {
+        return props.field.options.trim();
+    }
+    
+    // For Select fields, check if options looks like a DocType name
+    const optionsStr = props.field.options?.trim() || '';
     
     // Skip if it looks like a regular options list (has newlines or multiple values)
     if (optionsStr.includes("\n") || optionsStr.split(",").length > 1) {
@@ -170,9 +183,33 @@ watch([linkOptions, doctypeName], ([options, doctype]) => {
 // Fetch options on mount if it's a link field
 onMounted(() => {
     if (isLinkField.value && doctypeName.value) {
-        fetchLinkOptions();
+        // Don't fetch immediately - wait for user interaction
+        // This prevents unnecessary API calls
     }
 });
+
+// Handle field click to fetch options for Link fields
+const handleFieldClick = (event) => {
+    // Only handle if it's a Link field and we haven't fetched yet
+    if (isLinkField.value && doctypeName.value) {
+        // Check if click is on the field itself or its children (but not on a popup)
+        const target = event.target;
+        if (!target.closest('[role="dialog"]') && !target.closest('.popover') && !target.closest('.dropdown-menu')) {
+            if (!linkOptions.value || linkOptions.value.length === 0) {
+                fetchLinkOptions();
+            }
+        }
+    }
+};
+
+// Handle field focus to fetch options for Link fields
+const handleFieldFocus = (event) => {
+    if (isLinkField.value && doctypeName.value) {
+        if (!linkOptions.value || linkOptions.value.length === 0) {
+            fetchLinkOptions();
+        }
+    }
+};
 
 // Get the options to pass to the Select component
 const selectOptions = computed(() => {
@@ -231,22 +268,48 @@ const getBinds = computed(() => {
         ...getComponent.value?.props,
     };
     
-    // For Select fields, override options
-    if (props.field.fieldtype === "Select") {
+    // For Select and Link fields, override options
+    if (props.field.fieldtype === "Select" || props.field.fieldtype === "Link") {
         baseBinds.options = selectOptions.value;
         baseBinds.loading = isLoadingOptions.value;
+        
+        // Add click/focus handler to fetch options when field is interacted with (for Link fields)
+        if (isLinkField.value && doctypeName.value) {
+            // Try multiple event handlers that Select component might support
+            baseBinds.onClick = () => {
+                if (!linkOptions.value || linkOptions.value.length === 0) {
+                    fetchLinkOptions();
+                }
+            };
+            baseBinds.onFocus = () => {
+                if (!linkOptions.value || linkOptions.value.length === 0) {
+                    fetchLinkOptions();
+                }
+            };
+            baseBinds.onOpen = () => {
+                if (!linkOptions.value || linkOptions.value.length === 0) {
+                    fetchLinkOptions();
+                }
+            };
+        }
     }
     
     return baseBinds;
 });
 </script>
 <template>
-    <div class="render-field-wrapper" style="position: relative; z-index: 1;">
+    <div 
+        class="render-field-wrapper" 
+        style="position: relative; z-index: 1;"
+        @click="handleFieldClick"
+        @focusin="handleFieldFocus"
+    >
         <component
             v-model="value"
             :is="getComponent.component"
             :field="props.field"
             v-bind="getBinds"
+            :class="{ 'has-dropdown-indicator': (props.field.fieldtype === 'Select' || props.field.fieldtype === 'Link') }"
         />
     </div>
 </template>
@@ -254,6 +317,36 @@ const getBinds = computed(() => {
 <style scoped>
 .render-field-wrapper {
     position: relative;
+}
+
+/* Add dropdown indicator to Select fields */
+.render-field-wrapper:has(.has-dropdown-indicator) {
+    position: relative;
+}
+
+:deep(.has-dropdown-indicator) {
+    position: relative;
+}
+
+:deep(.has-dropdown-indicator input),
+:deep(.has-dropdown-indicator .form-control),
+:deep(.has-dropdown-indicator button) {
+    padding-right: 2.5rem !important;
+}
+
+.render-field-wrapper:has(.has-dropdown-indicator)::after {
+    content: '';
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #6b7280;
+    pointer-events: none;
+    z-index: 10;
 }
 
 /* Ensure popups from form fields appear above form container */
@@ -266,7 +359,16 @@ const getBinds = computed(() => {
 :deep(.date-picker-popup),
 :deep(.calendar-popup),
 :deep(.popover-content),
-:deep(.dropdown-menu) {
-    z-index: 9999 !important;
+:deep(.dropdown-menu),
+:deep(.v-calendar-popup),
+:deep(.calendar-container),
+:deep(.date-picker-container),
+:deep([role="dialog"]),
+:deep([data-radix-popper-content-wrapper]),
+:deep([data-floating-ui-portal]),
+:deep(.popover),
+:deep(.dropdown-content) {
+    z-index: 99999 !important;
+    position: fixed !important;
 }
 </style>

@@ -286,14 +286,23 @@ onClickOutside(fieldContentRef, (event) => {
 .popover-content,
 .dropdown-menu,
 .frappe-ui-date-picker-popup,
-.frappe-ui-dropdown-popup {
-    z-index: 9999 !important;
+.frappe-ui-dropdown-popup,
+.v-calendar-popup,
+.calendar-container,
+.date-picker-container {
+    z-index: 99999 !important;
+    position: fixed !important;
 }
 
 /* Ensure date picker calendar appears in front */
 div[role="dialog"],
 div[data-radix-popper-content-wrapper],
-div[data-floating-ui-portal] {
-    z-index: 9999 !important;
+div[data-floating-ui-portal],
+div[data-floating-ui-root],
+.popover,
+.dropdown-content,
+[data-headlessui-portal] {
+    z-index: 99999 !important;
+    position: fixed !important;
 }
 </style>

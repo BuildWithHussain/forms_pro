@@ -241,10 +241,32 @@ const getBinds = computed(() => {
 });
 </script>
 <template>
-    <component
-        v-model="value"
-        :is="getComponent.component"
-        :field="props.field"
-        v-bind="getBinds"
-    />
+    <div class="render-field-wrapper" style="position: relative; z-index: 1;">
+        <component
+            v-model="value"
+            :is="getComponent.component"
+            :field="props.field"
+            v-bind="getBinds"
+        />
+    </div>
 </template>
+
+<style scoped>
+.render-field-wrapper {
+    position: relative;
+}
+
+/* Ensure popups from form fields appear above form container */
+:deep(.v-calendar),
+:deep(.v-date-picker),
+:deep(.v-popover),
+:deep(.v-dropdown),
+:deep(.v-menu),
+:deep([data-popper-placement]),
+:deep(.date-picker-popup),
+:deep(.calendar-popup),
+:deep(.popover-content),
+:deep(.dropdown-menu) {
+    z-index: 9999 !important;
+}
+</style>

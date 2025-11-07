@@ -91,20 +91,41 @@ const handleDoctypeChange = (newValue) => {
 
 // Helper function to get image URL
 const getImageUrl = (filePath) => {
-    if (!filePath) return '';
+    if (!filePath) {
+        console.log('getImageUrl: No file path provided');
+        return '';
+    }
+    
+    console.log('getImageUrl: Input path:', filePath);
+    
     // If it's already a full URL, return as is
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        console.log('getImageUrl: Full URL detected, returning as is');
         return filePath;
     }
+    
     // If it already starts with /files/, return as is
     if (filePath.startsWith('/files/')) {
+        console.log('getImageUrl: /files/ prefix detected, returning as is');
         return filePath;
     }
-    // Otherwise, construct the URL using Frappe's file URL format
-    // Frappe stores file paths like "folder/filename.ext" or just "filename.ext"
-    // Remove leading slash if present, then prepend /files/
-    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-    return `/files/${cleanPath}`;
+    
+    // If it starts with "files/" (without leading slash), remove it first
+    let cleanPath = filePath;
+    if (cleanPath.startsWith('files/')) {
+        cleanPath = cleanPath.substring(6); // Remove 'files/'
+        console.log('getImageUrl: Removed "files/" prefix, clean path:', cleanPath);
+    }
+    
+    // Remove leading slash if present
+    if (cleanPath.startsWith('/')) {
+        cleanPath = cleanPath.substring(1);
+    }
+    
+    // Construct the URL
+    const finalUrl = `/files/${cleanPath}`;
+    console.log('getImageUrl: Constructed URL:', finalUrl);
+    return finalUrl;
 };
 
 // Handle file upload
@@ -143,23 +164,41 @@ const handleFileSelect = async (event) => {
         
         const result = await response.json();
         
+        console.log('File upload response:', result);
+        
         if (result.message) {
             // Frappe returns file info in result.message
-            // The file path is typically in result.message.file_url or result.message.file_name
+            // The file path can be in different fields depending on Frappe version
             let filePath = null;
             
+            // Try different possible fields
             if (result.message.file_url) {
-                // Remove leading slash if present
-                filePath = result.message.file_url.startsWith('/') 
-                    ? result.message.file_url.substring(1) 
-                    : result.message.file_url;
+                filePath = result.message.file_url;
             } else if (result.message.file_name) {
                 filePath = result.message.file_name;
             } else if (result.message.name) {
                 filePath = result.message.name;
+            } else if (result.message.file) {
+                filePath = result.message.file;
             }
             
+            console.log('Extracted file path:', filePath);
+            
             if (filePath) {
+                // Clean the file path - remove any /files/ or files/ prefix
+                // We want to store just the relative path (e.g., "pexels-elijah-pilchard-269100825-12792393.jpg")
+                if (filePath.startsWith('/files/')) {
+                    filePath = filePath.substring(7); // Remove '/files/'
+                } else if (filePath.startsWith('files/')) {
+                    filePath = filePath.substring(6); // Remove 'files/'
+                }
+                // Remove leading slash if present
+                if (filePath.startsWith('/')) {
+                    filePath = filePath.substring(1);
+                }
+                
+                console.log('Cleaned file path (stored in DB):', filePath);
+                
                 // Reset preview error for new image
                 imagePreviewError.value = false;
                 // Update the form data with the file path
@@ -168,9 +207,11 @@ const handleFileSelect = async (event) => {
                 // Save the form to persist the change
                 await editFormStore.save();
             } else {
+                console.error('Upload response structure:', result);
                 throw new Error('Could not determine file path from upload response');
             }
         } else {
+            console.error('Invalid response structure:', result);
             throw new Error('Invalid response from server');
         }
     } catch (error) {

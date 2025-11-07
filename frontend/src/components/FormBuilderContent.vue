@@ -14,29 +14,57 @@ const editFormStore = useEditForm();
 
 // Helper function to get image URL
 const getImageUrl = (filePath: string | null | undefined): string => {
-    if (!filePath) return '';
+    if (!filePath) {
+        console.log('[FormBuilderContent] getImageUrl: No file path provided');
+        return '';
+    }
+    
+    console.log('[FormBuilderContent] getImageUrl: Input path:', filePath);
+    
     // If it's already a full URL, return as is
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        console.log('[FormBuilderContent] getImageUrl: Full URL detected');
         return filePath;
     }
+    
     // If it already starts with /files/, return as is
     if (filePath.startsWith('/files/')) {
+        console.log('[FormBuilderContent] getImageUrl: /files/ prefix detected');
         return filePath;
     }
-    // Otherwise, construct the URL using Frappe's file URL format
-    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-    return `/files/${cleanPath}`;
+    
+    // If it starts with "files/" (without leading slash), remove it first
+    let cleanPath = filePath;
+    if (cleanPath.startsWith('files/')) {
+        cleanPath = cleanPath.substring(6); // Remove 'files/'
+        console.log('[FormBuilderContent] getImageUrl: Removed "files/" prefix, clean path:', cleanPath);
+    }
+    
+    // Remove leading slash if present
+    if (cleanPath.startsWith('/')) {
+        cleanPath = cleanPath.substring(1);
+    }
+    
+    // Construct the URL
+    const finalUrl = `/files/${cleanPath}`;
+    console.log('[FormBuilderContent] getImageUrl: Constructed URL:', finalUrl);
+    return finalUrl;
 };
 
 // Computed styles for real-time preview background - matching SubmissionPage exactly
 const previewStyles = computed(() => {
     const formData = editFormStore.formData;
-    if (!formData) return {};
+    if (!formData) {
+        console.log('[FormBuilderContent] previewStyles: No form data');
+        return {};
+    }
     
     const styles: Record<string, string> = {};
     
     // Background image - convert file path to URL like the API does
     if (formData.background_image) {
+        console.log('[FormBuilderContent] previewStyles: Background image found:', formData.background_image);
+        
         // Convert file path to URL (same as backend API does with frappe.utils.get_url)
         let imageUrl = formData.background_image;
         
@@ -46,11 +74,15 @@ const previewStyles = computed(() => {
             imageUrl = getImageUrl(imageUrl);
         }
         
+        console.log('[FormBuilderContent] previewStyles: Final image URL:', imageUrl);
+        
         styles.backgroundImage = `url(${imageUrl})`;
         styles.backgroundSize = 'cover';
         styles.backgroundPosition = 'center';
         styles.backgroundRepeat = 'no-repeat';
         styles.backgroundAttachment = 'fixed';
+    } else {
+        console.log('[FormBuilderContent] previewStyles: No background image');
     }
     
     // Background color (fallback or solid) - same logic as SubmissionPage
@@ -62,6 +94,7 @@ const previewStyles = computed(() => {
         styles.backgroundColor = '#f9fafb';
     }
     
+    console.log('[FormBuilderContent] previewStyles: Final styles:', styles);
     return styles;
 });
 
@@ -151,6 +184,7 @@ onClickOutside(fieldContentRef, (event) => {
             <div
                 class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300"
                 :style="containerStyles"
+                style="position: relative; z-index: 1;"
             >
         <div class="flex flex-col gap-2">
             <input
@@ -216,5 +250,50 @@ onClickOutside(fieldContentRef, (event) => {
 <style scoped>
 .handle {
     cursor: grab;
+}
+
+/* Ensure all popups (date pickers, dropdowns, etc.) appear above the form container */
+:deep(.v-calendar),
+:deep(.v-date-picker),
+:deep(.v-popover),
+:deep(.v-dropdown),
+:deep(.v-menu),
+:deep([data-popper-placement]),
+:deep(.date-picker-popup),
+:deep(.calendar-popup),
+:deep(.popover-content),
+:deep(.dropdown-menu) {
+    z-index: 9999 !important;
+    position: relative;
+}
+
+/* Ensure form field popups are above everything */
+:deep(.form-field-popup) {
+    z-index: 9999 !important;
+}
+</style>
+
+<style>
+/* Global styles for Frappe UI components - ensure popups are above form container */
+.v-calendar,
+.v-date-picker,
+.v-popover,
+.v-dropdown,
+.v-menu,
+[data-popper-placement],
+.date-picker-popup,
+.calendar-popup,
+.popover-content,
+.dropdown-menu,
+.frappe-ui-date-picker-popup,
+.frappe-ui-dropdown-popup {
+    z-index: 9999 !important;
+}
+
+/* Ensure date picker calendar appears in front */
+div[role="dialog"],
+div[data-radix-popper-content-wrapper],
+div[data-floating-ui-portal] {
+    z-index: 9999 !important;
 }
 </style>

@@ -24,8 +24,15 @@ def get_form(form_id: str) -> dict:
         if form.background_image.startswith(('http://', 'https://')):
             background_image_url = form.background_image
         else:
-            # Convert file path to URL
-            background_image_url = frappe.utils.get_url(form.background_image)
+            # Convert file path to relative URL format for frontend
+            # Check if it's already a relative path starting with /files/
+            if form.background_image.startswith('/files/'):
+                background_image_url = form.background_image
+            elif form.background_image.startswith('files/'):
+                background_image_url = '/' + form.background_image
+            else:
+                # It's a file path, convert to /files/ format
+                background_image_url = '/files/' + form.background_image.lstrip('/')
     
     return {
         "name": form.name,

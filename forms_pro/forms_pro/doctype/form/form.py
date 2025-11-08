@@ -27,8 +27,17 @@ class Form(Document):
         title: DF.Data
     # end: auto-generated types
 
-    pass
-
+    def validate(self):
+        """Validate form settings"""
+        # Ensure allow_anonymous and login_required are mutually exclusive
+        if hasattr(self, 'allow_anonymous') and self.allow_anonymous and self.login_required:
+            frappe.throw("Cannot enable both 'Allow Anonymous Submissions' and 'Login Required'", frappe.ValidationError)
+        
+        # Validate max_attachment_size if set (0 or None means use system default)
+        if hasattr(self, 'max_attachment_size') and self.max_attachment_size is not None and self.max_attachment_size != 0:
+            if self.max_attachment_size < 0:
+                frappe.throw("Max Attachment Size cannot be negative", frappe.ValidationError)
+    
     @property
     def linked_doctype_doc(self) -> Document:
         return frappe.get_doc("DocType", self.linked_doctype)
@@ -42,6 +51,10 @@ class Form(Document):
         self.route = self.generate_initial_route()
 
     def on_update(self) -> None:
+        # Prevent changing allow_anonymous if form is published (similar to linked_doctype)
+        if self.is_published and self.has_value_changed("allow_anonymous"):
+            frappe.throw("Cannot change 'Allow Anonymous Submissions' for published forms. Please unpublish first.", frappe.ValidationError)
+        
         self.set_doctype_fields()
 
     def set_doctype_fields(self) -> None:

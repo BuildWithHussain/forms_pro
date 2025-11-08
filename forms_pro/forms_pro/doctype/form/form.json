@@ -14,7 +14,9 @@
   "settings_section",
   "login_required",
   "column_break_xocw",
+  "allow_anonymous",
   "allow_incomplete",
+  "max_attachment_size",
   "styling_section",
   "background_image",
   "background_color",
@@ -112,10 +114,24 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:!doc.login_required",
+   "description": "If enabled, guests can submit this form without logging in",
+   "fieldname": "allow_anonymous",
+   "fieldtype": "Check",
+   "label": "Allow Anonymous Submissions"
+  },
+  {
+   "default": "0",
    "description": "Allow saving Draft forms",
    "fieldname": "allow_incomplete",
    "fieldtype": "Check",
    "label": "Allow Incomplete Forms"
+  },
+  {
+   "description": "Maximum file size for attachments in MB. Leave empty to use system default (350 MB)",
+   "fieldname": "max_attachment_size",
+   "fieldtype": "Int",
+   "label": "Max Attachment Size (MB)"
   },
   {
    "fieldname": "styling_section",

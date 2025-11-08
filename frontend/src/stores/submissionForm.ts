@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { FormField } from "@/types/formfield";
 import { useStorage } from "@vueuse/core";
+import { session } from "@/data/session";
 
 export const useSubmissionForm = defineStore("submissionForm", () => {
   const formResource = ref<any>(null);
@@ -84,21 +85,83 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     toast.success("Draft saved successfully");
   }
 
+  // Helper function to convert File to base64
+  async function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        resolve(result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function submitForm() {
     validateValues();
     if (errors.value.length > 0) {
       return;
     }
 
+    // Check if guest uploads are allowed
+    const isGuest = !session.isLoggedIn || session.user === "Guest";
+    const formData = formResource.value?.data;
+    
+    if (isGuest && formData?.login_required) {
+      toast.error("You must login to submit this form");
+      return;
+    }
+    
+    if (isGuest && !formData?.allow_anonymous) {
+      toast.error("Anonymous submissions are not allowed for this form");
+      return;
+    }
+
+    // Process form data and convert File objects to base64
+    const processedFormData = await Promise.all(
+      Object.entries(fields.value).map(async ([fieldname, value]) => {
+        // Check if this field is a file upload field
+        const field = formData?.fields?.find((f: FormField) => f.fieldname === fieldname);
+        const isFileField = field && (field.fieldtype === "File Uploader" || field.fieldtype === "Attach" || field.fieldtype === "Attach Image");
+        
+        // If value is a File object, convert to base64
+        if (value instanceof File) {
+          try {
+            const base64Value = await fileToBase64(value);
+            return {
+              fieldname: fieldname,
+              value: base64Value,
+            };
+          } catch (error) {
+            console.error("Error converting file to base64:", error);
+            toast.error("Error processing file. Please try again.");
+            throw error;
+          }
+        }
+        
+        // If value is already a base64 string (data:...), pass as is
+        if (isFileField && typeof value === "string" && value.startsWith("data:")) {
+          return {
+            fieldname: fieldname,
+            value: value,
+          };
+        }
+        
+        // For non-file values, pass as is
+        return {
+          fieldname: fieldname,
+          value: value,
+        };
+      })
+    );
+
     const _submit_doc = createResource({
       url: "forms_pro.api.submission.submit_form_response",
       makeParams() {
         return {
           form_id: formResource.value.data.name,
-          form_data: Object.entries(fields.value).map(([fieldname, value]) => ({
-            fieldname: fieldname,
-            value: value,
-          })),
+          form_data: processedFormData,
         };
       },
       onSuccess() {

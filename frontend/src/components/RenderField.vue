@@ -91,6 +91,13 @@ const parentDoctype = computed(() => {
            null;
 });
 
+// Get form ID from either edit or submission store
+const formId = computed(() => {
+    return editFormStore.formData?.name || 
+           submissionFormStore.formResource?.data?.name || 
+           null;
+});
+
 // Fetch options for Link fields
 const fetchLinkOptions = async (searchTerm = null) => {
     if (!doctypeName.value || fetchFailed.value) return;
@@ -121,6 +128,11 @@ const fetchLinkOptions = async (searchTerm = null) => {
                         fieldname: props.field.fieldname,
                         doctype: doctypeName.value
                     });
+                }
+                
+                // Add form_id for guest permission checks
+                if (formId.value) {
+                    params.form_id = formId.value;
                 }
                 
                 return params;

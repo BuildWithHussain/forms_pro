@@ -4,6 +4,8 @@ import { createResource, Button } from "frappe-ui";
 import { Plus, Trash2 } from "lucide-vue-next";
 import RenderField from "@/components/RenderField.vue";
 import { FormField } from "@/types/formfield";
+import { useSubmissionForm } from "@/stores/submissionForm";
+import { useEditForm } from "@/stores/editForm";
 
 const props = defineProps<{
     field: FormField;
@@ -16,11 +18,22 @@ const emit = defineEmits<{
     "update:modelValue": [value: any[]];
 }>();
 
+const submissionFormStore = useSubmissionForm();
+const editFormStore = useEditForm();
+
+// Get form ID from either edit or submission store
+const formId = computed(() => {
+    return editFormStore.formData?.name || 
+           submissionFormStore.formResource?.data?.name || 
+           null;
+});
+
 // Fetch child table field definitions
 const childTableFields = createResource({
     url: "forms_pro.api.form.get_child_table_fields",
     makeParams: () => ({
         child_doctype: props.field.options,
+        form_id: formId.value,
     }),
     auto: true,
     // No transform needed - createResource from frappe-ui automatically unwraps { message: [...] }

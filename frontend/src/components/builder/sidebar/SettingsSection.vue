@@ -429,9 +429,32 @@ const updateDoctype = async () => {
                 </div>
                 <Checkbox
                     size="sm"
+                    label="Login Required"
+                    variant="outline"
+                    v-model="editFormStore.formData.login_required"
+                    description="Require users to be logged in to submit this form"
+                />
+                <Checkbox
+                    v-if="!editFormStore.formData.login_required"
+                    size="sm"
+                    label="Allow Anonymous Submissions"
+                    variant="outline"
+                    v-model="editFormStore.formData.allow_anonymous"
+                    description="Allow guests to submit this form without logging in"
+                />
+                <Checkbox
+                    size="sm"
                     label="Allow Incomplete Forms"
                     variant="outline"
                     v-model="editFormStore.formData.allow_incomplete"
+                />
+                <FormControl
+                    label="Max Attachment Size (MB)"
+                    variant="outline"
+                    type="number"
+                    v-model="editFormStore.formData.max_attachment_size"
+                    description="Maximum file size for attachments. Leave empty to use system default (350 MB)"
+                    :min="1"
                 />
             </div>
 

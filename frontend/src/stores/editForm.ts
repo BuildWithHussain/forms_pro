@@ -77,6 +77,11 @@ export const useEditForm = defineStore("editForm", () => {
             // Keep title as is, but allow empty for display purposes
             // The backend will handle validation
             title: doc.title || "",
+            // Settings fields with defaults
+            login_required: doc.login_required || false,
+            allow_anonymous: doc.allow_anonymous || false,
+            allow_incomplete: doc.allow_incomplete || false,
+            max_attachment_size: doc.max_attachment_size || null,
             // Styling fields with defaults
             background_image: doc.background_image || null,
             background_color: doc.background_color || "#ffffff",

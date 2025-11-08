@@ -121,9 +121,9 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     // Process form data and convert File objects to base64
     const processedFormData = await Promise.all(
       Object.entries(fields.value).map(async ([fieldname, value]) => {
-        // Check if this field is a file upload field
+        // Check if this field is a file upload field or signature field
         const field = formData?.fields?.find((f: FormField) => f.fieldname === fieldname);
-        const isFileField = field && (field.fieldtype === "File Uploader" || field.fieldtype === "Attach" || field.fieldtype === "Attach Image");
+        const isFileField = field && (field.fieldtype === "File Uploader" || field.fieldtype === "Attach" || field.fieldtype === "Attach Image" || field.fieldtype === "Signature");
         
         // If value is a File object, convert to base64
         if (value instanceof File) {

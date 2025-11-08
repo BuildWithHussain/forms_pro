@@ -14,6 +14,7 @@ import {
   Password,
 } from "frappe-ui";
 import TableField from "@/components/submission/TableField.vue";
+import SignatureField from "@/components/submission/SignatureField.vue";
 
 // Individual form field components as dictionaries
 export const DataField = {
@@ -164,6 +165,11 @@ export const TableFieldComponent = {
   props: {},
 };
 
+export const SignatureFieldComponent = {
+  component: SignatureField,
+  props: {},
+};
+
 export const formFields = [
   { name: "Data", ...DataField },
   { name: "Number", ...NumberField },
@@ -185,6 +191,7 @@ export const formFields = [
   { name: "Float", ...FloatField },
   { name: "Phone", ...PhoneField },
   { name: "Table", ...TableFieldComponent },
+  { name: "Signature", ...SignatureFieldComponent },
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {
@@ -227,7 +234,7 @@ export const mapDoctypeFieldForForm = (fieldtype: string): string => {
     Attach: "File Uploader",
     "Attach Image": "File Uploader",
     Image: "File Uploader",
-    Signature: "File Uploader",
+    Signature: "Signature",
     
     // Special fields
     Password: "Password",

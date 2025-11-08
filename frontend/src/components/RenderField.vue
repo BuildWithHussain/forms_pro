@@ -5,6 +5,7 @@ import { createResource } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { useSubmissionForm } from "@/stores/submissionForm";
 import TableField from "@/components/submission/TableField.vue";
+import SignatureField from "@/components/submission/SignatureField.vue";
 
 const props = defineProps({
     field: {
@@ -467,6 +468,14 @@ const getBinds = computed(() => {
             @update:model-value="(val) => value = val"
             :parent-doctype="parentDoctype"
             :theme-color="props.themeColor"
+        />
+        
+        <!-- Signature Field -->
+        <SignatureField
+            v-else-if="props.field.fieldtype === 'Signature'"
+            :field="props.field"
+            :model-value="value"
+            @update:model-value="(val) => value = val"
         />
         
         <!-- All other field types -->

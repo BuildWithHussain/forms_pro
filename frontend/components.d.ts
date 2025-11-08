@@ -111,6 +111,7 @@ declare module 'vue' {
     SidebarRail: typeof import('./src/components/ui/sidebar/SidebarRail.vue')['default']
     SidebarSeparator: typeof import('./src/components/ui/sidebar/SidebarSeparator.vue')['default']
     SidebarTrigger: typeof import('./src/components/ui/sidebar/SidebarTrigger.vue')['default']
+    SignatureField: typeof import('./src/components/submission/SignatureField.vue')['default']
     Skeleton: typeof import('./src/components/ui/skeleton/Skeleton.vue')['default']
     StatisticsCards: typeof import('./src/components/dashboard/StatisticsCards.vue')['default']
     SuccessSection: typeof import('./src/components/submission/SuccessSection.vue')['default']

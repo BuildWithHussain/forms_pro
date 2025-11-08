@@ -37,9 +37,9 @@ def submit_form_response(form_id: str, form_data: list[dict]):
         
         df = meta.get_field(fieldname)
         
-        # Handle file uploads
-        if df and df.fieldtype in ("Attach", "Attach Image"):
-            # Check if this is a base64 encoded file
+        # Handle file uploads and signatures
+        if df and df.fieldtype in ("Attach", "Attach Image", "Signature"):
+            # Check if this is a base64 encoded file or signature
             if value and isinstance(value, str) and "data:" in value and "base64" in value:
                 # Check guest upload permissions
                 if user == "Guest" and not can_guest_upload_files():

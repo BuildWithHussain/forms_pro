@@ -70,8 +70,9 @@ def submit_form_response(form_id: str, form_data: list[dict]):
         
         df = meta.get_field(fieldname)
         
-        # Handle file uploads and signatures
-        if df and df.fieldtype in ("Attach", "Attach Image", "Signature"):
+        # Handle file uploads, images, and signatures
+        # Note: "Image" field type maps to "Attach Image" in Frappe, so we check for both
+        if df and df.fieldtype in ("Attach", "Attach Image", "Signature", "Image"):
             # Check if this is a base64 encoded file or signature
             if value and isinstance(value, str) and "data:" in value and "base64" in value:
                 # Check guest upload permissions

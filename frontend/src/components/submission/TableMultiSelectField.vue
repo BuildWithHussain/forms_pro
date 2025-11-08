@@ -105,9 +105,9 @@ watch(() => props.field.options, async () => {
                 value: opt,
             }));
         }
-    } catch (error) {
-        console.error('Error fetching table multiselect options:', error);
-    } finally {
+        } catch (error) {
+            // Silently handle error - user will see empty options
+        } finally {
         optionsLoading.value = false;
     }
 }, { immediate: true });

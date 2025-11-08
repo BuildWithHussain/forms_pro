@@ -77,7 +77,7 @@ async function handleSearch(searchTerm: string) {
                 }));
             }
         } catch (error) {
-            console.error('Error fetching autocomplete options:', error);
+            // Silently handle error - user will see empty options
         } finally {
             isLoading.value = false;
         }

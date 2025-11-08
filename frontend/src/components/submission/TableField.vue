@@ -104,12 +104,6 @@ const fields = computed(() => {
     // So childTableFields.data is already the array of fields
     const data = childTableFields.data;
     
-    // Debug logging
-    if (props.field.options && !data && !isLoading.value) {
-        console.warn('[TableField] No data received for child doctype:', props.field.options);
-        console.warn('[TableField] Resource error:', childTableFields.error);
-    }
-    
     if (!data) return [];
     
     // Data should already be an array (unwrapped by createResource)
@@ -122,9 +116,9 @@ const fields = computed(() => {
         return data.message;
     }
     
-    // If data exists but isn't an array, log warning
+    // If data exists but isn't an array, return empty array
     if (data) {
-        console.warn('[TableField] Expected array but got:', typeof data, data);
+        return [];
     }
     
     return [];

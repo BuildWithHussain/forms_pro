@@ -86,7 +86,7 @@ watch(() => props.field.options, async () => {
                 }));
             }
         } catch (error) {
-            console.error('Error fetching doctypes:', error);
+            // Silently handle error - user will see empty options
         } finally {
             doctypesLoading.value = false;
         }
@@ -128,7 +128,7 @@ watch(selectedDoctype, async (doctype) => {
             }));
         }
     } catch (error) {
-        console.error('Error fetching link options:', error);
+        // Silently handle error - user will see empty options
         linkOptions.value = [];
     } finally {
         linksLoading.value = false;

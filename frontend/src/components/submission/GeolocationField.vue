@@ -146,7 +146,7 @@ function loadGeolocationData(value: string) {
             map.fitBounds(editableLayers.getBounds(), { padding: [50, 50] });
         }
     } catch (error) {
-        console.error('Error loading geolocation data:', error);
+        // Silently handle error - map will just be empty
     }
 }
 
@@ -177,7 +177,7 @@ function getCurrentLocation() {
                 }
             },
             (error) => {
-                console.error('Error getting location:', error);
+                // Silently handle error - user can manually set location
             }
         );
     }

@@ -190,32 +190,41 @@ watch([linkOptions, doctypeName], ([options, doctype]) => {
     }
 }, { immediate: true });
 
-// Fetch options on mount if it's a link field
+// Fetch options immediately on mount if it's a link field
 onMounted(() => {
-    if (isLinkField.value && doctypeName.value) {
-        // Don't fetch immediately - wait for user interaction
-        // This prevents unnecessary API calls
+    if (isLinkField.value && doctypeName.value && !linkOptions.value) {
+        fetchLinkOptions();
     }
 });
 
-// Handle field click to fetch options for Link fields
+// Watch for when isLinkField or doctypeName becomes available and fetch options
+watch([isLinkField, doctypeName], ([isLink, doctype]) => {
+    if (isLink && doctype && !linkOptions.value && !isLoadingOptions.value) {
+        fetchLinkOptions();
+    }
+}, { immediate: true });
+
+// Handle field click (options are pre-fetched, but keep as fallback)
 const handleFieldClick = (event) => {
-    // Only handle if it's a Link field and we haven't fetched yet
+    // Only handle if it's a Link field and we haven't fetched yet (fallback)
     if (isLinkField.value && doctypeName.value) {
         // Check if click is on the field itself or its children (but not on a popup)
         const target = event.target;
         if (!target.closest('[role="dialog"]') && !target.closest('.popover') && !target.closest('.dropdown-menu')) {
-            if (!linkOptions.value || linkOptions.value.length === 0) {
+            // Only fetch if we don't have options and aren't already loading
+            if ((!linkOptions.value || linkOptions.value.length === 0) && !isLoadingOptions.value && !fetchFailed.value) {
                 fetchLinkOptions();
             }
         }
     }
 };
 
-// Handle field focus to fetch options for Link fields
+// Handle field focus (options are pre-fetched, but keep as fallback)
 const handleFieldFocus = (event) => {
+    // Only handle if it's a Link field and we haven't fetched yet (fallback)
     if (isLinkField.value && doctypeName.value) {
-        if (!linkOptions.value || linkOptions.value.length === 0) {
+        // Only fetch if we don't have options and aren't already loading
+        if ((!linkOptions.value || linkOptions.value.length === 0) && !isLoadingOptions.value && !fetchFailed.value) {
             fetchLinkOptions();
         }
     }
@@ -426,22 +435,15 @@ const getBinds = computed(() => {
         baseBinds.options = selectOptions.value;
         baseBinds.loading = isLoadingOptions.value;
         
-        // Add click/focus handler to fetch options when field is interacted with (for Link fields)
+        // Options are pre-fetched on mount, so we don't need click/focus handlers
+        // But keep them as fallback in case options failed to load initially
         if (isLinkField.value && doctypeName.value) {
-            // Try multiple event handlers that Select component might support
             baseBinds.onClick = () => {
+                // Only fetch if we don't have options yet (fallback)
                 if (!linkOptions.value || linkOptions.value.length === 0) {
-                    fetchLinkOptions();
-                }
-            };
-            baseBinds.onFocus = () => {
-                if (!linkOptions.value || linkOptions.value.length === 0) {
-                    fetchLinkOptions();
-                }
-            };
-            baseBinds.onOpen = () => {
-                if (!linkOptions.value || linkOptions.value.length === 0) {
-                    fetchLinkOptions();
+                    if (!isLoadingOptions.value && !fetchFailed.value) {
+                        fetchLinkOptions();
+                    }
                 }
             };
         }

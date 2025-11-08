@@ -49,9 +49,9 @@ router.beforeEach(async (to, from, next) => {
         isLoggedIn = false;
     }
 
-        // Handle authentication - only protect dashboard, categories, submissions, and edit form routes
-        // Submission pages should be accessible to guests
-        const protectedRoutes = ["Dashboard", "Categories", "Submissions", "Edit Form"];
+    // Handle authentication - only protect dashboard, categories, submissions, and edit form routes
+    // Submission pages should be accessible to guests
+    const protectedRoutes = ["Dashboard", "Categories", "Submissions", "Edit Form"];
     const isProtectedRoute = protectedRoutes.includes(to.name || "");
     
     if (to.name === "Login" && isLoggedIn) {
@@ -61,6 +61,20 @@ router.beforeEach(async (to, from, next) => {
         const returnPath = to.fullPath.startsWith("/") ? to.fullPath : `/${to.fullPath}`;
         window.location.href = `/login?redirect-to=/forms${returnPath}`;
     } else {
+        // Check for unsaved changes when leaving the Edit Form page
+        if (from.name === "Edit Form" && to.name !== "Edit Form") {
+            // Dynamically import the store to check for unsaved changes
+            const { useEditForm } = await import("@/stores/editForm");
+            const editFormStore = useEditForm();
+            
+            if (editFormStore.isUnsaved) {
+                const confirmed = confirm("You have unsaved changes. Are you sure you want to leave?");
+                if (!confirmed) {
+                    next(false); // Cancel navigation
+                    return;
+                }
+            }
+        }
         next();
     }
 });

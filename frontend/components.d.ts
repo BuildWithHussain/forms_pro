@@ -54,6 +54,7 @@ declare module 'vue' {
     FieldEditorSidebar: typeof import('./src/components/FieldEditorSidebar.vue')['default']
     FieldPropertiesForm: typeof import('./src/components/builder/FieldPropertiesForm.vue')['default']
     FieldRenderer: typeof import('./src/components/builder/FieldRenderer.vue')['default']
+    FileUploadField: typeof import('./src/components/submission/FileUploadField.vue')['default']
     FormBuilderContent: typeof import('./src/components/FormBuilderContent.vue')['default']
     FormBuilderHeader: typeof import('./src/components/FormBuilderHeader.vue')['default']
     FormBuilderSidebar: typeof import('./src/components/FormBuilderSidebar.vue')['default']

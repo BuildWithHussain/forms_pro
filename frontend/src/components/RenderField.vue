@@ -6,6 +6,7 @@ import { useEditForm } from "@/stores/editForm";
 import { useSubmissionForm } from "@/stores/submissionForm";
 import TableField from "@/components/submission/TableField.vue";
 import SignatureField from "@/components/submission/SignatureField.vue";
+import FileUploadField from "@/components/submission/FileUploadField.vue";
 
 const props = defineProps({
     field: {
@@ -473,6 +474,14 @@ const getBinds = computed(() => {
         <!-- Signature Field -->
         <SignatureField
             v-else-if="props.field.fieldtype === 'Signature'"
+            :field="props.field"
+            :model-value="value"
+            @update:model-value="(val) => value = val"
+        />
+        
+        <!-- File Upload Field -->
+        <FileUploadField
+            v-else-if="props.field.fieldtype === 'File Uploader'"
             :field="props.field"
             :model-value="value"
             @update:model-value="(val) => value = val"

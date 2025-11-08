@@ -150,7 +150,7 @@ def get_form_statistics() -> dict:
 
 
 @frappe.whitelist(allow_guest=True)
-def get_child_table_fields(child_doctype: str, form_id: str = None) -> list[dict]:
+def get_child_table_fields(child_doctype: str = None, form_id: str = None) -> list[dict]:
     """
     Get field definitions for a child table DocType.
     Used to render table rows in forms.

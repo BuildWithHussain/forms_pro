@@ -113,10 +113,17 @@ export const useEditForm = defineStore("editForm", () => {
 
   function save() {
     if (formResource.value) {
-      formResource.value.doc.fields.forEach((field: FormField) => {
+      // Filter out incomplete fields (missing label or fieldname) before saving
+      const validFields = formResource.value.doc.fields.filter((field: FormField) => {
+        // Skip fields that are missing required properties
+        if (!field.label || field.label.trim() === "") {
+          return false;
+        }
+        // Generate fieldname if missing
         if (!field.fieldname || field.fieldname.trim() === "") {
           field.fieldname = scrubFieldname(field.label);
         }
+        return true;
       });
 
       // Ensure title is not empty (required field)
@@ -125,7 +132,7 @@ export const useEditForm = defineStore("editForm", () => {
       return formResource.value.setValue.submit(
         {
           title: title,
-          fields: formResource.value.doc.fields,
+          fields: validFields, // Use filtered fields
           description: formResource.value.doc.description,
           route: formResource.value.doc.route,
           // Settings fields

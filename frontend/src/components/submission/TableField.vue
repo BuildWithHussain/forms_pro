@@ -31,13 +31,26 @@ const formId = computed(() => {
 // Fetch child table field definitions
 const childTableFields = createResource({
     url: "forms_pro.api.form.get_child_table_fields",
-    makeParams: () => ({
-        child_doctype: props.field.options,
-        form_id: formId.value,
-    }),
-    auto: true,
+    makeParams: () => {
+        // Only make request if child_doctype (field.options) is available
+        if (!props.field.options) {
+            return null; // Return null to skip the request
+        }
+        return {
+            child_doctype: props.field.options,
+            form_id: formId.value,
+        };
+    },
+    auto: !!props.field.options, // Only auto-fetch if options exists
     // No transform needed - createResource from frappe-ui automatically unwraps { message: [...] }
     // The API returns a list directly, and createResource unwraps it
+});
+
+// Watch for when field.options becomes available
+watch(() => props.field.options, (newOptions) => {
+    if (newOptions && !childTableFields.data && !childTableFields.loading) {
+        childTableFields.fetch();
+    }
 });
 
 // Table rows data

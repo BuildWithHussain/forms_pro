@@ -83,37 +83,59 @@
                     </div>
                     
                     <!-- Forms List -->
-                    <div v-if="category.forms && category.forms.length > 0" class="space-y-2">
-                        <div
-                            v-for="form in category.forms"
-                            :key="form.name"
-                            class="flex items-center justify-between p-2 rounded-md border hover:bg-accent transition-colors"
+                    <div
+                        :class="[
+                            !category.forms || category.forms.length === 0
+                                ? 'border-2 border-dashed border-muted rounded-md'
+                                : ''
+                        ]"
+                    >
+                        <draggableComponent
+                            :list="category.forms || []"
+                            :group="{ name: 'forms', pull: true, put: true }"
+                            item-key="name"
+                            :animation="200"
+                            ghost-class="opacity-50"
+                            drag-class="cursor-grabbing"
+                            :class="[
+                                category.forms && category.forms.length > 0 
+                                    ? 'space-y-2 min-h-[60px]' 
+                                    : 'text-center py-4 min-h-[60px] flex items-center justify-center'
+                            ]"
+                            @change="(event: any) => handleFormDragChange(event, category)"
                         >
-                            <div class="flex items-center gap-2 flex-1 min-w-0">
-                                <FileText class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium truncate">{{ form.title }}</p>
-                                    <p class="text-xs text-muted-foreground">
-                                        {{ formatDate(form.modified) }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <Badge v-if="form.is_published" variant="default" class="text-xs">
-                                    Published
-                                </Badge>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    @click="goToForm(form.name)"
+                            <template #item="{ element: form }">
+                                <div
+                                    class="flex items-center justify-between p-2 rounded-md border hover:bg-accent transition-colors cursor-grab active:cursor-grabbing bg-white"
                                 >
-                                    <ExternalLink class="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-4">
-                        <p class="text-sm text-muted-foreground">No forms in this category</p>
+                                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                                        <GripVertical class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                        <FileText class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium truncate">{{ form.title }}</p>
+                                            <p class="text-xs text-muted-foreground">
+                                                {{ formatDate(form.modified) }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <Badge v-if="form.is_published" variant="default" class="text-xs">
+                                            Published
+                                        </Badge>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            @click.stop="goToForm(form.name)"
+                                        >
+                                            <ExternalLink class="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </template>
+                        </draggableComponent>
+                        <p v-if="!category.forms || category.forms.length === 0" class="text-sm text-muted-foreground text-center py-2">
+                            Drop forms here
+                        </p>
                     </div>
                 </CardContent>
             </Card>
@@ -199,6 +221,7 @@ import { useRouter } from "vue-router";
 import { ref, computed, watch } from "vue";
 import { createResource } from "frappe-ui";
 import { toast } from "vue-sonner";
+import draggableComponent from "vuedraggable";
 import {
     Dialog,
     DialogContent,
@@ -219,7 +242,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, FolderTree, MoreVertical, Edit, Trash2, FileText, ExternalLink } from "lucide-vue-next";
+import { Plus, FolderTree, MoreVertical, Edit, Trash2, FileText, ExternalLink, GripVertical } from "lucide-vue-next";
 import { call } from "frappe-ui";
 
 const router = useRouter();
@@ -331,6 +354,39 @@ const goToForm = (formId: string) => {
         name: "Edit Form",
         params: { id: formId },
     });
+};
+
+// Handle form drag change - update category when form is moved
+const handleFormDragChange = async (event: any, targetCategory: any) => {
+    // event.added is when a form is added to this category
+    // event.removed is when a form is removed from this category
+    if (event.added) {
+        const form = event.added.element;
+        const newCategoryId = targetCategory.name || null;
+        
+        // Only update if category actually changed
+        if (form.category === newCategoryId) {
+            return;
+        }
+        
+        try {
+            await call("frappe.client.set_value", {
+                doctype: "Form",
+                name: form.name,
+                fieldname: "category",
+                value: newCategoryId,
+            });
+            
+            toast.success(`Form moved to ${targetCategory.title || "Uncategorized"}`);
+            
+            // Reload categories to reflect the change
+            categoriesResource.reload();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to move form");
+            // Reload to revert the UI change
+            categoriesResource.reload();
+        }
+    }
 };
 
 watch(showCreateDialog, (isOpen) => {

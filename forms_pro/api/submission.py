@@ -201,25 +201,56 @@ def get_all_submissions() -> list[dict]:
             # Get submissions for this specific form
             # Filter by forms_pro_form_id field if it exists
             form_tracking_field = "forms_pro_form_id"
-            filters = {}
+            submissions = []
             
             # Check if the DocType has the tracking field
             if meta.has_field(form_tracking_field):
-                # Filter by form ID to only get submissions from this form
-                filters[form_tracking_field] = form.name
+                # First, get submissions that are explicitly tracked to this form
+                tracked_submissions = frappe.get_all(
+                    linked_doctype,
+                    fields=[f["fieldname"] for f in list_view_fields] + ["creation", "modified", "owner", form_tracking_field],
+                    filters={form_tracking_field: form.name},
+                    order_by="creation DESC",
+                    limit=1000
+                )
+                submissions.extend(tracked_submissions)
+                
+                # Check if there are multiple forms using this DocType
+                forms_using_doctype = frappe.get_all(
+                    "Form",
+                    filters={"linked_doctype": linked_doctype, "owner": user},
+                    fields=["name"],
+                    limit=1000
+                )
+                
+                # If only one form uses this DocType, also include submissions with None form_id
+                # (legacy submissions created before tracking was implemented)
+                if len(forms_using_doctype) == 1:
+                    legacy_submissions = frappe.get_all(
+                        linked_doctype,
+                        fields=[f["fieldname"] for f in list_view_fields] + ["creation", "modified", "owner", form_tracking_field],
+                        filters={form_tracking_field: ["is", "not set"]},
+                        order_by="creation DESC",
+                        limit=1000
+                    )
+                    submissions.extend(legacy_submissions)
+                
+                # Remove form_tracking_field from the result (not needed in list view)
+                for sub in submissions:
+                    if form_tracking_field in sub:
+                        del sub[form_tracking_field]
+                
+                # Sort by creation date (most recent first)
+                submissions.sort(key=lambda x: x.get("creation", ""), reverse=True)
             else:
-                # If tracking field doesn't exist, we can't filter properly
-                # In this case, we'll get all documents, but this is a fallback
-                # Ideally, the field should exist for proper filtering
-                pass
-            
-            submissions = frappe.get_all(
-                linked_doctype,
-                fields=[f["fieldname"] for f in list_view_fields] + ["creation", "modified", "owner"],
-                filters=filters,
-                order_by="creation DESC",
-                limit=1000  # Limit to prevent performance issues
-            )
+                # If tracking field doesn't exist, get all documents (fallback)
+                # This shouldn't happen in normal operation, but handle it gracefully
+                submissions = frappe.get_all(
+                    linked_doctype,
+                    fields=[f["fieldname"] for f in list_view_fields] + ["creation", "modified", "owner"],
+                    order_by="creation DESC",
+                    limit=1000
+                )
             
             result.append({
                 "form": form,

@@ -30,6 +30,14 @@ class FormField(Document):
             "Switch",
             "Textarea",
             "Text Editor",
+            "Checkbox",
+            "File Uploader",
+            "Currency",
+            "Int",
+            "Float",
+            "Phone",
+            "Table",
+            "Rating",
             "Signature",
         ]
         label: DF.Data

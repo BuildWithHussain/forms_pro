@@ -30,6 +30,7 @@ class FormField(Document):
             "Switch",
             "Textarea",
             "Text Editor",
+            "Signature",
         ]
         label: DF.Data
         options: DF.SmallText | None
@@ -82,6 +83,9 @@ class FormField(Document):
             _fieldtype = "Table"
         elif self.fieldtype == "Rating":
             _fieldtype = "Rating"
+        elif self.fieldtype == "Signature":
+            # Signature fields are stored as Attach Image in Frappe
+            _fieldtype = "Attach Image"
         elif self.fieldtype == "Select":
             # Check if options is a valid DocType name - if so, convert to Link
             # This handles the case where Link fields are stored as Select in forms

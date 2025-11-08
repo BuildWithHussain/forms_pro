@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useSubmissionForm } from "@/stores/submissionForm";
 import FormHeader from "@/components/submission/FormHeader.vue";
 import FormRenderer from "@/components/submission/FormRenderer.vue";
 import SuccessSection from "@/components/submission/SuccessSection.vue";
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, watch } from "vue";
 
 const route = useRoute();
+const router = useRouter();
 const submissionFormStore = useSubmissionForm();
-submissionFormStore.initialize(route.params.route as string);
+
+// Initialize form from route parameter - watch for route changes
+watch(
+    () => route.params.route,
+    (routeParam) => {
+        if (routeParam && typeof routeParam === "string") {
+            submissionFormStore.initialize(routeParam);
+        } else {
+            // If no route parameter, redirect to dashboard
+            console.error("[SubmissionPage] No route parameter found, redirecting to dashboard");
+            router.push({ name: "Dashboard" });
+        }
+    },
+    { immediate: true }
+);
 
 // Get form styling data
 const formData = computed(() => submissionFormStore.formResource?.data);

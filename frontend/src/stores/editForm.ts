@@ -60,6 +60,12 @@ export const useEditForm = defineStore("editForm", () => {
   }
 
   function initialize(formId: string) {
+    // Validate formId
+    if (!formId || typeof formId !== "string" || formId.trim() === "") {
+      console.error("[EditForm] Invalid form ID:", formId);
+      return;
+    }
+    
     if (formId !== currentFormId.value) {
       currentFormId.value = formId;
       formResource.value = createDocumentResource({

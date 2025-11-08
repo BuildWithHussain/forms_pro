@@ -4,11 +4,12 @@
 
 <script setup lang="ts">
 import FormBuilderLayout from "@/layouts/FormBuilderLayout.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useEditForm } from "@/stores/editForm";
 import { watch, nextTick } from "vue";
 
 const route = useRoute();
+const router = useRouter();
 const editFormStore = useEditForm();
 
 // Set the form ID when the route changes
@@ -16,6 +17,7 @@ watch(
     () => route.params.id,
     async (formId) => {
         if (formId && typeof formId === "string") {
+            // Initialize the form store with the form ID from route
             editFormStore.initialize(formId);
             
             // Check if auto-populate is requested from query params
@@ -43,6 +45,9 @@ watch(
                 
                 setTimeout(checkAndPopulate, 300);
             }
+        } else {
+            // If no form ID in route, redirect to dashboard
+            router.push({ name: "Dashboard" });
         }
     },
     { immediate: true }

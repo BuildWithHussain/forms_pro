@@ -39,12 +39,18 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   }
 
   async function initialize(route: string) {
+    // Validate route parameter
+    if (!route || typeof route !== "string" || route.trim() === "") {
+      console.error("[SubmissionForm] Invalid route parameter:", route);
+      return;
+    }
+    
     currentFormId.value = route;
     formResource.value = createResource({
       url: "forms_pro.api.form.get_form_by_route",
-      params: {
+      makeParams: () => ({
         route: route,
-      },
+      }),
       onSuccess(data: any) {
         // Initialize fields with defaults first
         initializeFields();

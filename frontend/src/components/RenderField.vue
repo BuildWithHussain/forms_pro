@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { formFields } from "@/utils/form_fields";
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { createResource } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { useSubmissionForm } from "@/stores/submissionForm";
@@ -211,6 +211,65 @@ const handleFieldFocus = (event) => {
     }
 };
 
+// Fix z-index for date picker popups using MutationObserver
+let observer: MutationObserver | null = null;
+let interval: number | null = null;
+
+onMounted(() => {
+    const fixDatePickerZIndex = () => {
+        // Find all potential date picker popups
+        const selectors = [
+            '[role="dialog"]',
+            '[data-popper-placement]',
+            '.v-calendar',
+            '.v-date-picker',
+            '.calendar',
+            '[class*="calendar"]',
+            '[class*="date-picker"]',
+            '[class*="datepicker"]',
+            '[data-calendar]',
+            '[data-date-picker]',
+        ];
+        
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach((el) => {
+                const htmlEl = el as HTMLElement;
+                if (htmlEl.style.position === 'fixed' || htmlEl.style.position === 'absolute') {
+                    htmlEl.style.zIndex = '2147483647';
+                    htmlEl.style.position = 'fixed';
+                }
+            });
+        });
+    };
+    
+    // Run immediately
+    fixDatePickerZIndex();
+    
+    // Watch for new popups being added
+    observer = new MutationObserver(() => {
+        fixDatePickerZIndex();
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class'],
+    });
+    
+    // Also run on interval as backup
+    interval = setInterval(fixDatePickerZIndex, 100);
+});
+
+onUnmounted(() => {
+    if (observer) {
+        observer.disconnect();
+    }
+    if (interval) {
+        clearInterval(interval);
+    }
+});
+
 // Get the options to pass to the Select component
 const selectOptions = computed(() => {
     // If it's a Link field with fetched options, use those
@@ -349,7 +408,7 @@ const getBinds = computed(() => {
     z-index: 10;
 }
 
-/* Ensure popups from form fields appear above form container - maximum z-index */
+/* Ensure popups from form fields appear above form container - use maximum z-index */
 :deep(.v-calendar),
 :deep(.v-date-picker),
 :deep(.v-popover),
@@ -372,7 +431,7 @@ const getBinds = computed(() => {
 :deep(.date-picker-wrapper),
 :deep(.calendar-dropdown),
 :deep(.date-dropdown) {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value (2^31 - 1) */
     position: fixed !important;
 }
 
@@ -380,7 +439,7 @@ const getBinds = computed(() => {
 :deep(div:has(.v-calendar)),
 :deep(div:has(.v-date-picker)),
 :deep(div:has([role="dialog"])) {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
 }
 </style>

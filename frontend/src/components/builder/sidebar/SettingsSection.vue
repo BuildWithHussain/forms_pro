@@ -606,13 +606,14 @@ const updateDoctype = async () => {
                                 :src="getImageUrl(editFormStore.formData.logo)" 
                                 alt="Logo preview"
                                 class="max-w-full max-h-full object-contain"
-                                @error="logoPreviewError = true"
-                                @load="logoPreviewError = false"
+                                @error="() => { console.error('Logo preview error for:', editFormStore.formData.logo); logoPreviewError = true; }"
+                                @load="() => { console.log('Logo preview loaded:', editFormStore.formData.logo); logoPreviewError = false; }"
                             />
                             <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
                                 <div class="text-center">
                                     <Upload class="w-6 h-6 mx-auto mb-1" />
                                     <p class="text-xs">Preview unavailable</p>
+                                    <p class="text-xs mt-1">{{ editFormStore.formData.logo }}</p>
                                 </div>
                             </div>
                         </div>

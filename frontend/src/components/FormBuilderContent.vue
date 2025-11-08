@@ -143,6 +143,28 @@ const themeColor = computed(() => {
     return editFormStore.formData?.theme_color || '#3b82f6';
 });
 
+// Font family for form
+const fontFamily = computed(() => {
+    const font = editFormStore.formData?.font_family || 'System Default';
+    if (font === 'System Default') {
+        return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+    }
+    return font;
+});
+
+// Logo URL - get from formData and convert to proper URL
+const logoUrl = computed(() => {
+    const logo = editFormStore.formData?.logo;
+    if (!logo) {
+        console.log('[FormBuilderContent] logoUrl: No logo in formData');
+        return null;
+    }
+    console.log('[FormBuilderContent] logoUrl: Logo found:', logo);
+    const url = getImageUrl(logo);
+    console.log('[FormBuilderContent] logoUrl: Constructed URL:', url);
+    return url;
+});
+
 // Ref for the entire FormBuilderContent component
 const fieldContentRef = ref<HTMLElement | null>(null);
 
@@ -180,7 +202,7 @@ onClickOutside(fieldContentRef, (event) => {
         ></div>
         
         <!-- Main content - matches SubmissionPage -->
-        <div class="relative z-10 min-h-screen p-8">
+        <div class="relative z-1 min-h-screen p-8">
             <div
                 class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300 form-container"
                 :style="{ ...containerStyles, fontFamily: fontFamily }"
@@ -260,27 +282,11 @@ onClickOutside(fieldContentRef, (event) => {
     cursor: grab;
 }
 
-/* Form container should have low z-index and create isolation context */
+/* Form container should have low z-index - DO NOT use isolation as it traps popups */
 .form-container {
     position: relative;
     z-index: 1 !important;
-    isolation: isolate;
-}
-
-/* Ensure form container doesn't create stacking context that traps popups */
-.form-container * {
-    position: relative;
-}
-
-/* Exception: popups should be fixed and high z-index */
-.form-container :deep([role="dialog"]),
-.form-container :deep([data-popper-placement]),
-.form-container :deep(.v-calendar),
-.form-container :deep(.v-date-picker),
-.form-container :deep(.popover),
-.form-container :deep(.dropdown-menu) {
-    position: fixed !important;
-    z-index: 999999 !important;
+    /* Removed isolation: isolate - it creates a stacking context that traps popups */
 }
 
 /* Ensure all popups (date pickers, dropdowns, etc.) appear above the form container */
@@ -294,13 +300,13 @@ onClickOutside(fieldContentRef, (event) => {
 :deep(.calendar-popup),
 :deep(.popover-content),
 :deep(.dropdown-menu) {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
 }
 
 /* Ensure form field popups are above everything */
 :deep(.form-field-popup) {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
 }
 </style>
@@ -327,7 +333,7 @@ body .v-calendar-wrapper,
 body .date-picker-wrapper,
 body .calendar-dropdown,
 body .date-dropdown {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value (2^31 - 1) */
     position: fixed !important;
 }
 
@@ -341,7 +347,7 @@ body .dropdown-content,
 body [data-headlessui-portal],
 body [data-radix-portal],
 body [data-floating-ui-root] {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
 }
 
@@ -351,21 +357,21 @@ body div:has(.v-date-picker),
 body div:has(.calendar),
 body div:has([role="dialog"]),
 body div:has([data-popper-placement]) {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
 }
 
 /* Very aggressive - target any fixed/absolute positioned element that might be a popup */
 body > div[style*="position: fixed"],
 body > div[style*="position:absolute"] {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
 }
 
 /* Target Frappe UI specific popup structures */
 body .frappe-ui-popup,
 body .frappe-ui-modal,
 body .frappe-ui-overlay {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
 }
 
@@ -376,7 +382,25 @@ body .frappe-ui-overlay {
 [data-calendar],
 [data-date-picker],
 [data-datepicker] {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
+}
+
+/* Ensure form container and its children have low z-index */
+.form-container,
+.form-container * {
+    position: relative;
+    z-index: auto !important;
+}
+
+/* Exception: popups inside form container should break out */
+.form-container [role="dialog"],
+.form-container [data-popper-placement],
+.form-container .v-calendar,
+.form-container .v-date-picker,
+.form-container .popover,
+.form-container .dropdown-menu {
+    position: fixed !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
 }
 </style>

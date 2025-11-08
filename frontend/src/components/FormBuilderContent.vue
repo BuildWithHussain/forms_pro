@@ -116,16 +116,21 @@ const containerStyles = computed(() => {
     const styles: Record<string, string> = {};
     
     // Glass morphism effect
+    // NOTE: backdrop-filter creates a stacking context, so we need to be careful
+    // We'll apply it but ensure popups can escape via JavaScript
     if (formData.glass_morphism_enabled) {
         styles.backdropFilter = 'blur(10px) saturate(180%)';
         styles.webkitBackdropFilter = 'blur(10px) saturate(180%)';
         styles.backgroundColor = 'rgba(255, 255, 255, 0.75)';
         styles.border = '1px solid rgba(255, 255, 255, 0.3)';
         styles.boxShadow = '0 8px 32px 0 rgba(31, 38, 135, 0.2)';
+        // Ensure z-index is low so popups can appear above
+        styles.zIndex = '1';
     } else {
         styles.backgroundColor = 'rgba(255, 255, 255, 0.95)';
         styles.border = '1px solid rgba(0, 0, 0, 0.1)';
         styles.boxShadow = '0 4px 16px 0 rgba(0, 0, 0, 0.1)';
+        styles.zIndex = '1';
     }
     
     // Overlay opacity adjustment
@@ -202,10 +207,11 @@ onClickOutside(fieldContentRef, (event) => {
         ></div>
         
         <!-- Main content - matches SubmissionPage -->
-        <div class="relative z-1 min-h-screen p-8">
+        <div class="relative min-h-screen p-8" style="z-index: 1;">
             <div
                 class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300 form-container"
                 :style="{ ...containerStyles, fontFamily: fontFamily }"
+                style="z-index: 1; position: relative;"
             >
         <div class="flex flex-col gap-2">
             <div class="flex items-start justify-between gap-4">
@@ -283,10 +289,14 @@ onClickOutside(fieldContentRef, (event) => {
 }
 
 /* Form container should have low z-index - DO NOT use isolation as it traps popups */
+/* Also ensure it doesn't create a stacking context that traps children */
 .form-container {
     position: relative;
     z-index: 1 !important;
     /* Removed isolation: isolate - it creates a stacking context that traps popups */
+    /* Ensure transform and opacity don't create stacking context */
+    transform: none !important;
+    opacity: 1 !important;
 }
 
 /* Ensure all popups (date pickers, dropdowns, etc.) appear above the form container */

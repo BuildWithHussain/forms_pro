@@ -4,7 +4,7 @@ import { useSubmissionForm } from "@/stores/submissionForm";
 import FormHeader from "@/components/submission/FormHeader.vue";
 import FormRenderer from "@/components/submission/FormRenderer.vue";
 import SuccessSection from "@/components/submission/SuccessSection.vue";
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 
 const route = useRoute();
 const submissionFormStore = useSubmissionForm();
@@ -93,6 +93,83 @@ const fontFamily = computed(() => {
     }
     return font;
 });
+
+// Fix z-index for popups on the published form page only
+let popupFixObserver: MutationObserver | null = null;
+let popupFixInterval: number | null = null;
+
+onMounted(() => {
+    const fixPopupZIndex = () => {
+        // Find all popups and ensure they're above the form
+        // Target reka popper (used by frappe-ui DatePicker)
+        document.querySelectorAll('[data-reka-popper-content-wrapper]').forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            htmlEl.style.setProperty('z-index', '2147483647', 'important');
+            // Ensure it stays fixed
+            if (window.getComputedStyle(htmlEl).position === 'fixed') {
+                htmlEl.style.setProperty('position', 'fixed', 'important');
+            }
+        });
+        
+        // Target the dialog inside
+        document.querySelectorAll('[role="dialog"]').forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computedStyle = window.getComputedStyle(htmlEl);
+            const position = computedStyle.position;
+            
+            if (position === 'fixed' || position === 'absolute') {
+                htmlEl.style.setProperty('z-index', '2147483647', 'important');
+                htmlEl.style.setProperty('position', 'fixed', 'important');
+            }
+        });
+        
+        // Also target other popup types
+        const popupSelectors = [
+            '[data-popper-placement]',
+            '.v-calendar',
+            '.v-date-picker',
+            '[class*="calendar"]',
+            '[class*="date-picker"]',
+            '[class*="datepicker"]',
+            '[class*="PopoverContent"]',
+        ];
+        
+        popupSelectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach((el) => {
+                const htmlEl = el as HTMLElement;
+                const computedStyle = window.getComputedStyle(htmlEl);
+                const position = computedStyle.position;
+                
+                if (position === 'fixed' || position === 'absolute') {
+                    htmlEl.style.setProperty('z-index', '2147483647', 'important');
+                    htmlEl.style.setProperty('position', 'fixed', 'important');
+                }
+            });
+        });
+    };
+    
+    // Run immediately and on interval
+    fixPopupZIndex();
+    popupFixInterval = setInterval(fixPopupZIndex, 50);
+    
+    // Watch for new popups
+    popupFixObserver = new MutationObserver(fixPopupZIndex);
+    popupFixObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'role', 'data-reka-popper-content-wrapper'],
+    });
+});
+
+onUnmounted(() => {
+    if (popupFixObserver) {
+        popupFixObserver.disconnect();
+    }
+    if (popupFixInterval) {
+        clearInterval(popupFixInterval);
+    }
+});
 </script>
 <template>
     <div class="min-h-screen w-full relative" :style="backgroundStyles">
@@ -125,3 +202,22 @@ const fontFamily = computed(() => {
         </div>
     </div>
 </template>
+
+<style>
+/* Ensure reka popper (frappe-ui DatePicker) appears above form */
+[data-reka-popper-content-wrapper] {
+    z-index: 2147483647 !important;
+}
+
+[data-reka-popper-content-wrapper][style*="position: fixed"],
+[data-reka-popper-content-wrapper][style*="position:fixed"] {
+    z-index: 2147483647 !important;
+    position: fixed !important;
+}
+
+/* Also target the PopoverContent inside */
+[data-reka-popper-content-wrapper] [role="dialog"],
+[data-reka-popper-content-wrapper] .PopoverContent {
+    z-index: 2147483647 !important;
+}
+</style>

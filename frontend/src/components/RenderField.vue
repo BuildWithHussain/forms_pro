@@ -217,7 +217,7 @@ let interval: number | null = null;
 
 onMounted(() => {
     const fixDatePickerZIndex = () => {
-        // Find all potential date picker popups
+        // Find all potential date picker popups - be very aggressive
         const selectors = [
             '[role="dialog"]',
             '[data-popper-placement]',
@@ -229,23 +229,70 @@ onMounted(() => {
             '[class*="datepicker"]',
             '[data-calendar]',
             '[data-date-picker]',
+            // Frappe UI specific
+            '[class*="date"]',
+            '[class*="Date"]',
         ];
         
         selectors.forEach(selector => {
-            document.querySelectorAll(selector).forEach((el) => {
-                const htmlEl = el as HTMLElement;
-                if (htmlEl.style.position === 'fixed' || htmlEl.style.position === 'absolute') {
-                    htmlEl.style.zIndex = '2147483647';
-                    htmlEl.style.position = 'fixed';
-                }
-            });
+            try {
+                document.querySelectorAll(selector).forEach((el) => {
+                    const htmlEl = el as HTMLElement;
+                    // Check if it's a popup (fixed or absolute positioned)
+                    const computedStyle = window.getComputedStyle(htmlEl);
+                    const position = computedStyle.position;
+                    
+                    if (position === 'fixed' || position === 'absolute') {
+                        // Force maximum z-index and fixed position
+                        htmlEl.style.setProperty('z-index', '2147483647', 'important');
+                        htmlEl.style.setProperty('position', 'fixed', 'important');
+                        
+                        // Also check parent elements that might be creating stacking context
+                        let parent = htmlEl.parentElement;
+                        while (parent && parent !== document.body) {
+                            const parentStyle = window.getComputedStyle(parent);
+                            // If parent has a stacking context, ensure it doesn't trap the popup
+                            if (parentStyle.zIndex && parseInt(parentStyle.zIndex) > 0) {
+                                // Don't modify parent, but ensure popup breaks out
+                                break;
+                            }
+                            parent = parent.parentElement;
+                        }
+                    }
+                });
+            } catch (e) {
+                // Ignore errors for invalid selectors
+            }
+        });
+        
+        // Also target any element that looks like a calendar by checking content/structure
+        document.querySelectorAll('div').forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computedStyle = window.getComputedStyle(htmlEl);
+            const position = computedStyle.position;
+            
+            // Check if it has calendar-like classes or attributes
+            const hasCalendarClass = Array.from(htmlEl.classList).some(cls => 
+                cls.toLowerCase().includes('calendar') || 
+                cls.toLowerCase().includes('date') ||
+                cls.toLowerCase().includes('picker')
+            );
+            
+            const hasCalendarAttr = htmlEl.hasAttribute('data-calendar') || 
+                                   htmlEl.hasAttribute('data-date-picker') ||
+                                   htmlEl.getAttribute('role') === 'dialog';
+            
+            if ((hasCalendarClass || hasCalendarAttr) && (position === 'fixed' || position === 'absolute')) {
+                htmlEl.style.setProperty('z-index', '2147483647', 'important');
+                htmlEl.style.setProperty('position', 'fixed', 'important');
+            }
         });
     };
     
     // Run immediately
     fixDatePickerZIndex();
     
-    // Watch for new popups being added
+    // Watch for new popups being added - more aggressive watching
     observer = new MutationObserver(() => {
         fixDatePickerZIndex();
     });
@@ -254,11 +301,26 @@ onMounted(() => {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['style', 'class'],
+        attributeFilter: ['style', 'class', 'role', 'data-popper-placement'],
     });
     
-    // Also run on interval as backup
-    interval = setInterval(fixDatePickerZIndex, 100);
+    // Also run on interval as backup - more frequent
+    interval = setInterval(fixDatePickerZIndex, 50);
+    
+    // Also listen for click events on date fields to fix immediately
+    document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        // Check if clicked element is a date input or related
+        if (target.tagName === 'INPUT' && (target.type === 'date' || target.type === 'text')) {
+            const field = target.closest('.render-field-wrapper');
+            if (field) {
+                // Small delay to let popup render
+                setTimeout(fixDatePickerZIndex, 10);
+                setTimeout(fixDatePickerZIndex, 50);
+                setTimeout(fixDatePickerZIndex, 100);
+            }
+        }
+    }, true);
 });
 
 onUnmounted(() => {

@@ -24,9 +24,14 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
 
     let _fields: Record<string, any> = {};
     formResource.value.data.fields.forEach((field: FormField) => {
-      _fields[field.fieldname] = "";
-      if (field.default) {
-        _fields[field.fieldname] = field.default;
+      // Table fields should be initialized as empty arrays
+      if (field.fieldtype === "Table") {
+        _fields[field.fieldname] = [];
+      } else {
+        _fields[field.fieldname] = "";
+        if (field.default) {
+          _fields[field.fieldname] = field.default;
+        }
       }
     });
 
@@ -103,8 +108,19 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   function validateValues() {
     errors.value = [];
     formResource.value.data.fields.forEach((field: FormField) => {
-      if (field.reqd && !fields.value[field.fieldname]) {
-        errors.value.push(`${field.label} is required`);
+      if (field.reqd) {
+        const value = fields.value[field.fieldname];
+        // For Table fields, check if array is empty
+        if (field.fieldtype === "Table") {
+          if (!value || !Array.isArray(value) || value.length === 0) {
+            errors.value.push(`${field.label} is required`);
+          }
+        } else {
+          // For other fields, check if value is empty
+          if (!value || (typeof value === "string" && value.trim() === "")) {
+            errors.value.push(`${field.label} is required`);
+          }
+        }
       }
     });
   }

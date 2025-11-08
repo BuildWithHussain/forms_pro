@@ -25,5 +25,6 @@ declare module 'vue' {
     Section: typeof import('./src/components/fields/Section.vue')['default']
     SettingsSection: typeof import('./src/components/builder/sidebar/SettingsSection.vue')['default']
     SuccessSection: typeof import('./src/components/submission/SuccessSection.vue')['default']
+    TableField: typeof import('./src/components/submission/TableField.vue')['default']
   }
 }

@@ -102,6 +102,60 @@ def get_doctype_list() -> list[str]:
     )
 
 
+@frappe.whitelist(allow_guest=True)
+def get_child_table_fields(child_doctype: str) -> list[dict]:
+    """
+    Get field definitions for a child table DocType.
+    Used to render table rows in forms.
+    
+    Args:
+        child_doctype: The name of the child DocType (e.g., "Employee Education")
+    
+    Returns:
+        List of field definitions (same format as get_doctype_fields)
+    """
+    if not child_doctype:
+        return []
+    
+    try:
+        child_doctype_doc = frappe.get_doc("DocType", child_doctype)
+        fields = child_doctype_doc.fields
+        
+        # Filter out layout fields (same as parent fields)
+        FIELDTYPES_TO_REMOVE = [
+            "Section Break",
+            "HTML",
+            "Button",
+            "Column Break",
+            "Tab Break",
+            "Barcode",
+            "Dynamic Link",
+            "Fold",
+        ]
+        
+        fields = [field for field in fields if field.fieldtype not in FIELDTYPES_TO_REMOVE]
+        
+        # Convert to dict format
+        return [
+            {
+                "fieldname": field.fieldname,
+                "fieldtype": field.fieldtype,
+                "label": field.label,
+                "options": field.options,
+                "reqd": field.reqd or 0,
+                "default": field.default,
+                "description": field.description,
+            }
+            for field in fields
+        ]
+    except frappe.DoesNotExistError:
+        frappe.log_error(f"Child DocType {child_doctype} does not exist")
+        return []
+    except Exception as e:
+        frappe.log_error(f"Error fetching child table fields for {child_doctype}: {str(e)}")
+        return []
+
+
 def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
     """
     Parse the parent DocType's JavaScript file to extract set_query filters for a specific field.

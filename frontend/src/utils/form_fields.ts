@@ -116,6 +116,48 @@ export const CheckboxField = {
   props: {},
 };
 
+export const FileUploaderField = {
+  component: FileUploader,
+  props: {
+    variant: "outline",
+  },
+};
+
+export const CurrencyField = {
+  component: FormControl,
+  props: { 
+    type: "number", 
+    variant: "outline",
+    step: "0.01",
+  },
+};
+
+export const IntField = {
+  component: FormControl,
+  props: { 
+    type: "number", 
+    variant: "outline",
+    step: "1",
+  },
+};
+
+export const FloatField = {
+  component: FormControl,
+  props: { 
+    type: "number", 
+    variant: "outline",
+    step: "any",
+  },
+};
+
+export const PhoneField = {
+  component: FormControl,
+  props: { 
+    type: "tel", 
+    variant: "outline",
+  },
+};
+
 export const formFields = [
   { name: "Data", ...DataField },
   { name: "Number", ...NumberField },
@@ -131,6 +173,11 @@ export const formFields = [
   { name: "Textarea", ...TextareaField },
   { name: "Text Editor", ...TextEditorField },
   { name: "Checkbox", ...CheckboxField },
+  { name: "File Uploader", ...FileUploaderField },
+  { name: "Currency", ...CurrencyField },
+  { name: "Int", ...IntField },
+  { name: "Float", ...FloatField },
+  { name: "Phone", ...PhoneField },
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {
@@ -147,9 +194,9 @@ export const mapDoctypeFieldForForm = (fieldtype: string): string => {
     JSON: "Textarea",
     
     // Number fields
-    Int: "Number",
-    Float: "Number",
-    Currency: "Number",
+    Int: "Int",
+    Float: "Float",
+    Currency: "Currency",
     Percent: "Number",
     
     // Date/Time fields
@@ -180,7 +227,7 @@ export const mapDoctypeFieldForForm = (fieldtype: string): string => {
     Rating: "Rating",
     Color: "Data", // Color picker not directly supported
     Geolocation: "Data", // Geolocation not directly supported
-    Phone: "Data", // Phone with validation
+    Phone: "Phone", // Phone with validation
     Email: "Email", // Email field type
     
     // Read-only/Display fields
@@ -197,9 +244,9 @@ export const mapDoctypeFieldForForm = (fieldtype: string): string => {
     Fold: "Fold", // Will be filtered
     Button: "Button", // Will be filtered
     
-    // Table fields (not supported in forms)
-    Table: "Data", // Tables not directly supported
-    "Table MultiSelect": "Data", // Not directly supported
+    // Table fields (child tables)
+    Table: "Table", // Child tables with full component support
+    "Table MultiSelect": "Table", // Treated as Table
   };
 
   // Return mapped type or default to "Data" if not found

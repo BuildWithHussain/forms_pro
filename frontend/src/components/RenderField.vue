@@ -4,6 +4,7 @@ import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { createResource } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { useSubmissionForm } from "@/stores/submissionForm";
+import TableField from "@/components/submission/TableField.vue";
 
 const props = defineProps({
     field: {
@@ -425,7 +426,19 @@ const getBinds = computed(() => {
         @click="handleFieldClick"
         @focusin="handleFieldFocus"
     >
+        <!-- Table Field (Child Tables) -->
+        <TableField
+            v-if="props.field.fieldtype === 'Table'"
+            :field="props.field"
+            :model-value="value || []"
+            @update:model-value="(val) => value = val"
+            :parent-doctype="parentDoctype"
+            :theme-color="props.themeColor"
+        />
+        
+        <!-- All other field types -->
         <component
+            v-else
             v-model="value"
             :is="getComponent.component"
             :field="props.field"

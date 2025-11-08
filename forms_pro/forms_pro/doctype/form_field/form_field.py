@@ -43,11 +43,18 @@ class FormField(Document):
     def to_frappe_field(self) -> dict:
         _fieldtype = self.fieldtype
 
+        # Map form field types back to Frappe field types
         if self.fieldtype == "Email":
             _fieldtype = "Data"
             self.options = "Email"
         elif self.fieldtype == "Number":
             _fieldtype = "Int"
+        elif self.fieldtype == "Int":
+            _fieldtype = "Int"
+        elif self.fieldtype == "Float":
+            _fieldtype = "Float"
+        elif self.fieldtype == "Currency":
+            _fieldtype = "Currency"
         elif self.fieldtype == "Date Time":
             _fieldtype = "Datetime"
         elif self.fieldtype == "Date Range":
@@ -56,8 +63,30 @@ class FormField(Document):
             _fieldtype = "Time"
         elif self.fieldtype == "Switch":
             _fieldtype = "Check"
+        elif self.fieldtype == "Checkbox":
+            _fieldtype = "Check"
         elif self.fieldtype == "Textarea":
             _fieldtype = "Text"
+        elif self.fieldtype == "Text Editor":
+            _fieldtype = "Text Editor"
+        elif self.fieldtype == "Phone":
+            _fieldtype = "Data"  # Phone maps to Data in Frappe
+        elif self.fieldtype == "File Uploader":
+            # Special handling: if fieldname is "image", use "Attach Image"
+            # Otherwise, use "Attach"
+            if self.fieldname.lower() == "image":
+                _fieldtype = "Attach Image"
+            else:
+                _fieldtype = "Attach"
+        elif self.fieldtype == "Table":
+            _fieldtype = "Table"
+        elif self.fieldtype == "Rating":
+            _fieldtype = "Rating"
+        # All other types (Data, Select, Password, Date) map directly
+
+        # Special validation: Frappe requires fields named "image" to be "Attach Image"
+        if self.fieldname.lower() == "image" and _fieldtype != "Attach Image":
+            _fieldtype = "Attach Image"
 
         return {
             "fieldname": self.fieldname,

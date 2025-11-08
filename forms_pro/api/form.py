@@ -109,16 +109,25 @@ def get_child_table_fields(child_doctype: str) -> list[dict]:
     Used to render table rows in forms.
     
     Args:
-        child_doctype: The name of the child DocType (e.g., "Employee Education")
+        child_doctype: The name of the child DocType (e.g., "Employee Education" or "Item Barcode")
     
     Returns:
         List of field definitions (same format as get_doctype_fields)
     """
     if not child_doctype:
+        frappe.log_error("get_child_table_fields called with empty child_doctype")
         return []
     
     try:
+        # Try to get the DocType - handle both "Item Barcode" and "item_barcode" formats
+        # Frappe DocType names are case-sensitive and use spaces
         child_doctype_doc = frappe.get_doc("DocType", child_doctype)
+        
+        # Verify it's actually a child table
+        if not child_doctype_doc.istable:
+            frappe.log_error(f"DocType {child_doctype} is not a child table (istable=False)")
+            return []
+        
         fields = child_doctype_doc.fields
         
         # Filter out layout fields (same as parent fields)
@@ -135,8 +144,12 @@ def get_child_table_fields(child_doctype: str) -> list[dict]:
         
         fields = [field for field in fields if field.fieldtype not in FIELDTYPES_TO_REMOVE]
         
+        if not fields:
+            frappe.log_error(f"No valid fields found for child DocType {child_doctype} after filtering")
+            return []
+        
         # Convert to dict format
-        return [
+        result = [
             {
                 "fieldname": field.fieldname,
                 "fieldtype": field.fieldtype,
@@ -148,11 +161,14 @@ def get_child_table_fields(child_doctype: str) -> list[dict]:
             }
             for field in fields
         ]
+        
+        frappe.log_error(f"Successfully fetched {len(result)} fields for child DocType {child_doctype}")
+        return result
     except frappe.DoesNotExistError:
-        frappe.log_error(f"Child DocType {child_doctype} does not exist")
+        frappe.log_error(f"Child DocType '{child_doctype}' does not exist")
         return []
     except Exception as e:
-        frappe.log_error(f"Error fetching child table fields for {child_doctype}: {str(e)}")
+        frappe.log_error(f"Error fetching child table fields for {child_doctype}: {str(e)}", exc_info=True)
         return []
 
 
@@ -529,10 +545,10 @@ def auto_populate_fields_from_doctype(form_id: str, replace_existing: bool = Fal
         "JSON": "Textarea",
         
         # Number fields
-        "Int": "Number",
-        "Float": "Number",
-        "Currency": "Number",
-        "Percent": "Number",
+        "Int": "Int",
+        "Float": "Float",
+        "Currency": "Currency",
+        "Percent": "Number",  # Percent stays as Number
         
         # Date/Time fields
         "Date": "Date",
@@ -545,7 +561,7 @@ def auto_populate_fields_from_doctype(form_id: str, replace_existing: bool = Fal
         "Autocomplete": "Data",  # Autocomplete maps to Data with autocomplete behavior
         
         # Boolean fields
-        "Check": "Checkbox",
+        "Check": "Switch",  # Map Check to Switch (Checkbox is also supported but Switch is more common)
         
         # Link fields (map to Select or Data based on options)
         "Link": "Select",  # Link fields become Select dropdowns
@@ -557,12 +573,16 @@ def auto_populate_fields_from_doctype(form_id: str, replace_existing: bool = Fal
         "Image": "File Uploader",
         "Signature": "File Uploader",
         
+        # Table fields (child tables)
+        "Table": "Table",
+        "Table MultiSelect": "Table",
+        
         # Special fields
         "Password": "Password",
         "Rating": "Rating",
         "Color": "Data",  # Color picker not directly supported
         "Geolocation": "Data",  # Geolocation not directly supported
-        "Phone": "Data",  # Phone with validation
+        "Phone": "Phone",  # Phone field type
         "Email": "Email",  # Email field type
         
         # Read-only/Display fields
@@ -619,11 +639,12 @@ def auto_populate_fields_from_doctype(form_id: str, replace_existing: bool = Fal
         if not mapped_fieldtype:
             continue
         
-        # Valid form field types that are supported
+        # Valid form field types that are supported (must match Form Field DocType options)
         valid_form_fieldtypes = [
             "Data", "Number", "Email", "Date", "Date Time", "Date Range",
             "Time Picker", "Password", "Select", "Switch", "Textarea",
-            "Text Editor", "Checkbox", "File Uploader", "Rating"
+            "Text Editor", "Checkbox", "File Uploader", "Currency", "Int",
+            "Float", "Phone", "Table", "Rating"
         ]
         
         if mapped_fieldtype not in valid_form_fieldtypes:

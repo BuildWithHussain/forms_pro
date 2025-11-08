@@ -49,6 +49,8 @@ const getClasses = computed(() => {
             return "w-full flex gap-4 my-2";
         case "Checkbox":
             return "w-full flex gap-2 ";
+        case "Table":
+            return "w-full flex flex-col gap-2";
         default:
             return "w-full flex flex-col gap-2";
     }
@@ -128,6 +130,15 @@ const getClasses = computed(() => {
                 :theme-color="props.themeColor"
             />
         </div>
+    </div>
+    <div v-else-if="fieldData.fieldtype == 'Table'" :class="getClasses">
+        <!-- Table fields handle their own label and description -->
+        <RenderField
+            v-model="modelValue"
+            :field="fieldData"
+            :class="{ 'pointer-events-none': inEditMode }"
+            :theme-color="props.themeColor"
+        />
     </div>
     <div v-else :class="getClasses">
         <div class="flex gap-2 items-start">

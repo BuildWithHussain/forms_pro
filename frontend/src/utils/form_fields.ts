@@ -13,6 +13,7 @@ import {
   TimePicker,
   Password,
 } from "frappe-ui";
+import TableField from "@/components/submission/TableField.vue";
 
 // Individual form field components as dictionaries
 export const DataField = {
@@ -158,6 +159,11 @@ export const PhoneField = {
   },
 };
 
+export const TableFieldComponent = {
+  component: TableField,
+  props: {},
+};
+
 export const formFields = [
   { name: "Data", ...DataField },
   { name: "Number", ...NumberField },
@@ -178,6 +184,7 @@ export const formFields = [
   { name: "Int", ...IntField },
   { name: "Float", ...FloatField },
   { name: "Phone", ...PhoneField },
+  { name: "Table", ...TableFieldComponent },
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {

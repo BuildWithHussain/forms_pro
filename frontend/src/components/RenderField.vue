@@ -390,6 +390,28 @@ const getBinds = computed(() => {
         ...getComponent.value?.props,
     };
     
+    // Remove label from binds - FieldRenderer handles labels to avoid duplication
+    // FormControl and other components should not render labels automatically
+    delete baseBinds.label;
+    
+    // Remove description from binds - FieldRenderer handles descriptions to avoid duplication
+    // FormControl and other components should not render descriptions automatically
+    delete baseBinds.description;
+    
+    // Clear placeholder to prevent label duplication
+    // FieldRenderer shows the label separately, so placeholder should be empty or generic
+    // Don't use label or fieldname as placeholder
+    if (baseBinds.placeholder) {
+        const placeholder = String(baseBinds.placeholder).toLowerCase();
+        const label = String(props.field.label || "").toLowerCase();
+        const fieldname = String(props.field.fieldname || "").toLowerCase();
+        
+        // If placeholder matches label or fieldname, clear it
+        if (placeholder === label || placeholder === fieldname) {
+            baseBinds.placeholder = "";
+        }
+    }
+    
     // For Select and Link fields, override options
     if (props.field.fieldtype === "Select" || props.field.fieldtype === "Link") {
         baseBinds.options = selectOptions.value;

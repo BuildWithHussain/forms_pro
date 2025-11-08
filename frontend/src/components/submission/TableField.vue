@@ -19,10 +19,12 @@ const emit = defineEmits<{
 // Fetch child table field definitions
 const childTableFields = createResource({
     url: "forms_pro.api.form.get_child_table_fields",
-    params: computed(() => ({
+    makeParams: () => ({
         child_doctype: props.field.options,
-    })),
+    }),
     auto: true,
+    // No transform needed - createResource from frappe-ui automatically unwraps { message: [...] }
+    // The API returns a list directly, and createResource unwraps it
 });
 
 // Table rows data
@@ -71,7 +73,36 @@ const getCellValue = (rowIndex: number, fieldname: string) => {
 };
 
 const isLoading = computed(() => childTableFields.loading);
-const fields = computed(() => childTableFields.data?.message || []);
+const fields = computed(() => {
+    // createResource from frappe-ui automatically unwraps { message: [...] } from API responses
+    // So childTableFields.data is already the array of fields
+    const data = childTableFields.data;
+    
+    // Debug logging
+    if (props.field.options && !data && !isLoading.value) {
+        console.warn('[TableField] No data received for child doctype:', props.field.options);
+        console.warn('[TableField] Resource error:', childTableFields.error);
+    }
+    
+    if (!data) return [];
+    
+    // Data should already be an array (unwrapped by createResource)
+    if (Array.isArray(data)) {
+        return data;
+    }
+    
+    // Fallback: if somehow it's still wrapped, try to unwrap it
+    if (data?.message && Array.isArray(data.message)) {
+        return data.message;
+    }
+    
+    // If data exists but isn't an array, log warning
+    if (data) {
+        console.warn('[TableField] Expected array but got:', typeof data, data);
+    }
+    
+    return [];
+});
 </script>
 
 <template>
@@ -143,8 +174,9 @@ const fields = computed(() => childTableFields.data?.message || []);
                                     :key="childField.fieldname"
                                     class="px-4 py-2"
                                 >
+                                    <!-- Render child field without label or description (label is in table header) -->
                                     <RenderField
-                                        :field="childField"
+                                        :field="{ ...childField, label: '', description: '' }"
                                         :model-value="getCellValue(rowIndex, childField.fieldname)"
                                         @update:model-value="(value) => updateCell(rowIndex, childField.fieldname, value)"
                                         :parent-doctype="parentDoctype"

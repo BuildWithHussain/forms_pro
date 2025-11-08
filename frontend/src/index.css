@@ -33,3 +33,27 @@
 		@apply text-base font-normal;
 	}
 }
+
+/* Global styles to ensure delete dialogs are always centered */
+/* This fixes the issue where dialogs appear on the side after navigation */
+.delete-dialog,
+.delete-dialog-centered {
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	z-index: 9999 !important;
+	margin: 0 !important;
+}
+
+.delete-dialog [role="dialog"],
+.delete-dialog-centered [role="dialog"],
+body > [role="dialog"].delete-dialog {
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	margin: 0 !important;
+	max-width: 90vw !important;
+	max-height: 90vh !important;
+}

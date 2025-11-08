@@ -5,6 +5,7 @@ import { FormControl } from "frappe-ui";
 const editFormStore = useEditForm();
 
 const getFieldTypeOptions = () => {
+    // Must match the options in Form Field DocType (form_field.json)
     return [
         "Data",
         "Number",
@@ -18,6 +19,14 @@ const getFieldTypeOptions = () => {
         "Switch",
         "Textarea",
         "Text Editor",
+        "Checkbox",
+        "File Uploader",
+        "Currency",
+        "Int",
+        "Float",
+        "Phone",
+        "Table",
+        "Rating",
     ];
 };
 

@@ -30,14 +30,14 @@ const openFormSubmissionPage = () => {
 <template>
     <TooltipProvider>
         <header
-            class="form-builder-header flex justify-between items-center py-2 px-4 border-b h-16 bg-background transition-all duration-300"
+            class="form-builder-header flex justify-between items-center py-2 px-2 sm:px-4 border-b h-16 bg-background transition-all duration-300"
             data-form-builder-component="form-builder-header"
         >
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" class="h-8 -ml-2 pl-2 pr-1 flex items-center justify-center gap-1">
+                    <Button variant="ghost" class="h-8 -ml-2 pl-2 pr-1 flex items-center justify-center gap-1 flex-shrink-0">
                         <Logo />
-                        <ChevronDown class="w-4 h-4" />
+                        <ChevronDown class="w-4 h-4 hidden sm:block" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -47,17 +47,17 @@ const openFormSubmissionPage = () => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1 mx-1 sm:mx-2">
                 <Badge
                     v-if="editFormStore.isUnsaved"
                     variant="secondary"
-                    class="bg-orange-100 text-orange-800"
+                    class="bg-orange-100 text-orange-800 flex-shrink-0 text-xs"
                 >
                     Unsaved
                 </Badge>
                 <Tooltip v-else>
                     <TooltipTrigger as-child>
-                        <div>
+                        <div class="flex-shrink-0">
                             <CloudCheck class="w-4 h-4 text-muted-foreground" />
                         </div>
                     </TooltipTrigger>
@@ -65,16 +65,16 @@ const openFormSubmissionPage = () => {
                         <p>Form is published</p>
                     </TooltipContent>
                 </Tooltip>
-                <h3 class="text-base font-medium text-foreground text-center">
+                <h3 class="text-sm sm:text-base font-medium text-foreground truncate min-w-0 max-w-[120px] sm:max-w-none">
                     {{ editFormStore.originalFormData?.title || "Untitled Form" }}
                 </h3>
-                <div class="flex items-center gap-1">
-                    <span v-if="editFormStore.originalFormData?.route" class="text-base text-muted-foreground">
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    <span v-if="editFormStore.originalFormData?.route" class="text-xs sm:text-base text-muted-foreground hidden sm:inline">
                         /{{ editFormStore.originalFormData?.route }}
                     </span>
                     <Tooltip>
                         <TooltipTrigger as-child>
-                            <Button variant="ghost" size="icon" class="h-8 w-8" @click="openFormSubmissionPage">
+                            <Button variant="ghost" size="icon" class="h-8 w-8 hidden sm:flex" @click="openFormSubmissionPage">
                                 <ExternalLink class="w-4 h-4" />
                             </Button>
                         </TooltipTrigger>
@@ -84,22 +84,25 @@ const openFormSubmissionPage = () => {
                     </Tooltip>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <div v-if="editFormStore.isUnsaved">
                     <Button
                         v-if="editFormStore.isPublished"
                         @click="editFormStore.saveAndPublish"
                         :disabled="editFormStore.formResource?.loading"
+                        size="sm"
+                        class="text-xs sm:text-sm"
                     >
-                        <Globe class="mr-2 h-4 w-4" />
-                        Save and publish
+                        <Globe class="h-4 w-4 sm:mr-2" />
+                        <span class="hidden sm:inline">Save and publish</span>
                     </Button>
                     <Button
                         v-else
                         @click="editFormStore.save"
                         :disabled="editFormStore.formResource?.loading"
+                        size="sm"
                     >
-                        Save
+                        <span class="text-xs sm:text-sm">Save</span>
                     </Button>
                 </div>
                 <Button
@@ -107,9 +110,12 @@ const openFormSubmissionPage = () => {
                     :variant="editFormStore.isPublished ? 'destructive' : 'default'"
                     :disabled="editFormStore.formResource?.loading"
                     @click="editFormStore.togglePublish"
+                    size="sm"
+                    class="text-xs sm:text-sm"
                 >
-                    <Globe v-if="!editFormStore.isPublished" class="mr-2 h-4 w-4" />
-                    {{ editFormStore.isPublished ? 'Unpublish' : 'Publish' }}
+                    <Globe v-if="!editFormStore.isPublished" class="h-4 w-4 sm:mr-2" />
+                    <span class="hidden sm:inline">{{ editFormStore.isPublished ? 'Unpublish' : 'Publish' }}</span>
+                    <span class="sm:hidden">{{ editFormStore.isPublished ? 'Unpub' : 'Pub' }}</span>
                 </Button>
             </div>
         </header>

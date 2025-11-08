@@ -6,6 +6,6 @@ const appLogo = "/assets/forms_pro/formpro.png";
     <img 
         :src="appLogo" 
         alt="Forms Pro" 
-        class="h-8 w-auto object-contain"
+        class="h-5 sm:h-6 w-auto object-contain"
     />
 </template>

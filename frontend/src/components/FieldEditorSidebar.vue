@@ -7,7 +7,7 @@ const editFormStore = useEditForm();
 </script>
 <template>
     <div
-        class="field-editor-sidebar h-full w-80 border-l border-sidebar-border bg-sidebar flex flex-col"
+        class="field-editor-sidebar h-full w-80 border-l border-sidebar-border bg-sidebar flex flex-col hidden lg:flex"
         data-form-builder-component="field-editor-sidebar"
     >
         <div v-if="!editFormStore.selectedField" class="flex-1 flex items-center justify-center p-4">

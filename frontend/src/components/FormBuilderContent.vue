@@ -2,15 +2,37 @@
 import draggableComponent from "vuedraggable";
 import { LoadingIndicator, TextEditor } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
-import { GripVertical } from "lucide-vue-next";
+import { GripVertical, X } from "lucide-vue-next";
 import { FormField } from "@/types/formfield";
-import { ref, computed } from "vue";
-import { onClickOutside } from "@vueuse/core";
+import { ref, computed, watch } from "vue";
+import { onClickOutside, useMediaQuery } from "@vueuse/core";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import FieldPropertiesForm from "@/components/builder/FieldPropertiesForm.vue";
 
 import FieldRenderer from "@/components/builder/FieldRenderer.vue";
-import Button from "frappe-ui/src/components/Button/Button.vue";
+import FrappeButton from "frappe-ui/src/components/Button/Button.vue";
 
 const editFormStore = useEditForm();
+
+// Detect if we're on mobile (below lg breakpoint - 1024px)
+const isMobile = useMediaQuery("(max-width: 1023px)");
+
+// Mobile modal state - only show on mobile when field is selected
+const showMobileFieldModal = computed(() => {
+    return isMobile.value && editFormStore.selectedField !== null;
+});
+
+// Close modal handler
+const closeMobileModal = () => {
+    editFormStore.selectField(null);
+};
 
 // Helper function to get image URL
 const getImageUrl = (filePath: string | null | undefined): string => {
@@ -207,17 +229,17 @@ onClickOutside(fieldContentRef, (event) => {
         ></div>
         
         <!-- Main content - matches SubmissionPage -->
-        <div class="relative min-h-screen p-8" style="z-index: 1;">
+        <div class="relative min-h-screen p-4 sm:p-6 lg:p-8" style="z-index: 1;">
             <div
-                class="space-y-4 rounded-lg p-6 max-w-screen-md mx-auto mt-16 transition-all duration-300 form-container"
+                class="space-y-4 rounded-lg p-4 sm:p-6 max-w-full sm:max-w-md lg:max-w-screen-md mx-auto mt-4 sm:mt-8 lg:mt-16 transition-all duration-300 form-container"
                 :style="{ ...containerStyles, fontFamily: fontFamily }"
                 style="z-index: 1; position: relative;"
             >
         <div class="flex flex-col gap-2">
-            <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start justify-between gap-2 sm:gap-4">
                 <input
                     type="text"
-                    class="outline-none bg-transparent border-none text-3xl font-semibold focus:ring-0 p-2 flex-1"
+                    class="outline-none bg-transparent border-none text-xl sm:text-2xl lg:text-3xl font-semibold focus:ring-0 p-2 flex-1"
                     placeholder="Untitled Form"
                     v-model="editFormStore.formData.title"
                 />
@@ -225,7 +247,7 @@ onClickOutside(fieldContentRef, (event) => {
                     v-if="logoUrl"
                     :src="logoUrl"
                     alt="Logo"
-                    class="max-w-[150px] max-h-[60px] object-contain"
+                    class="max-w-[80px] sm:max-w-[120px] lg:max-w-[150px] max-h-[40px] sm:max-h-[50px] lg:max-h-[60px] object-contain"
                     style="flex-shrink: 0;"
                 />
             </div>
@@ -268,7 +290,7 @@ onClickOutside(fieldContentRef, (event) => {
                             :inEditMode="true"
                             :theme-color="themeColor"
                         />
-                        <Button
+                        <FrappeButton
                             icon="x"
                             variant="outline"
                             class="absolute -top-2 -right-2"
@@ -281,6 +303,24 @@ onClickOutside(fieldContentRef, (event) => {
             </div>
         </div>
     </div>
+    
+    <!-- Mobile Field Properties Modal - Only visible on mobile -->
+    <Dialog :open="showMobileFieldModal" @update:open="(open) => !open && closeMobileModal()">
+        <DialogContent class="max-w-[90vw] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle>Edit Field Properties</DialogTitle>
+                <DialogDescription>
+                    Configure the properties for this field
+                </DialogDescription>
+            </DialogHeader>
+            <div class="py-4">
+                <FieldPropertiesForm 
+                    v-if="editFormStore.selectedField"
+                    v-model="editFormStore.selectedField" 
+                />
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
 
 <style scoped>

@@ -127,7 +127,11 @@ export const useEditForm = defineStore("editForm", () => {
           fields: formResource.value.doc.fields,
           description: formResource.value.doc.description,
           route: formResource.value.doc.route,
-          allow_incomplete: formResource.value.doc.allow_incomplete,
+          // Settings fields
+          login_required: formResource.value.doc.login_required || false,
+          allow_anonymous: formResource.value.doc.allow_anonymous || false,
+          allow_incomplete: formResource.value.doc.allow_incomplete || false,
+          max_attachment_size: formResource.value.doc.max_attachment_size || null,
           // Styling fields
           background_image: formResource.value.doc.background_image || null,
           background_color: formResource.value.doc.background_color || "#ffffff",

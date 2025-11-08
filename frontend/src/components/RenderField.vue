@@ -93,14 +93,28 @@ const parentDoctype = computed(() => {
 
 // Get form ID from either edit or submission store
 const formId = computed(() => {
+    // Try multiple sources for form ID
     return editFormStore.formData?.name || 
-           submissionFormStore.formResource?.data?.name || 
+           submissionFormStore.formResource?.data?.name ||
+           (submissionFormStore.formResource?.data && submissionFormStore.formResource.data.name) ||
            null;
 });
 
 // Fetch options for Link fields
 const fetchLinkOptions = async (searchTerm = null) => {
     if (!doctypeName.value || fetchFailed.value) return;
+    
+    // Wait for form to load if in submission mode
+    if (submissionFormStore.formResource?.loading) {
+        await new Promise((resolve) => {
+            const unwatch = watch(() => submissionFormStore.formResource?.loading, (loading) => {
+                if (!loading) {
+                    unwatch();
+                    resolve(null);
+                }
+            });
+        });
+    }
     
     isLoadingOptions.value = true;
     try {
@@ -117,22 +131,16 @@ const fetchLinkOptions = async (searchTerm = null) => {
                 if (parentDoctype.value && props.field.fieldname) {
                     params.parent_doctype = parentDoctype.value;
                     params.fieldname = props.field.fieldname;
-                    console.log("RenderField: Sending filter params", {
-                        parent_doctype: parentDoctype.value,
-                        fieldname: props.field.fieldname,
-                        doctype: doctypeName.value
-                    });
-                } else {
-                    console.log("RenderField: Missing filter params", {
-                        parentDoctype: parentDoctype.value,
-                        fieldname: props.field.fieldname,
-                        doctype: doctypeName.value
-                    });
                 }
                 
-                // Add form_id for guest permission checks
-                if (formId.value) {
-                    params.form_id = formId.value;
+                // Add form_id for guest permission checks - always pass if available
+                // Try multiple sources to ensure we have the form ID
+                const formIdToUse = formId.value || 
+                                   submissionFormStore.formResource?.data?.name ||
+                                   null;
+                
+                if (formIdToUse) {
+                    params.form_id = formIdToUse;
                 }
                 
                 return params;
@@ -151,23 +159,12 @@ const fetchLinkOptions = async (searchTerm = null) => {
             // 1. Filters are too restrictive (no matching records)
             // 2. API error
             // 3. Not a valid DocType
-            console.warn("RenderField: No options returned for", {
-                doctype: doctypeName.value,
-                parent_doctype: parentDoctype.value,
-                fieldname: props.field.fieldname,
-                response: optionsResource.data
-            });
             // Don't mark as failed immediately - might be legitimate empty result
             // (e.g., filters are too restrictive and no records match)
             // Keep linkOptions as empty array so we don't fall back to showing DocType name
             linkOptions.value = []; // Set to empty array, not null
         }
     } catch (error) {
-        console.error("Error fetching link options:", error, {
-            doctype: doctypeName.value,
-            parent_doctype: parentDoctype.value,
-            fieldname: props.field.fieldname
-        });
         // Mark as failed so we don't keep trying
         fetchFailed.value = true;
         linkOptions.value = []; // Set to empty array, not null

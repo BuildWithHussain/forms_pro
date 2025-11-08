@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 import os
 import re
 import json
@@ -162,11 +163,9 @@ def get_child_table_fields(child_doctype: str, form_id: str = None) -> list[dict
         List of field definitions (same format as get_doctype_fields)
     """
     if not child_doctype:
-        frappe.log_error("get_child_table_fields called with empty child_doctype")
         return []
     
-    # Check if guest access should be allowed
-    ignore_permissions = False
+    # Security check: If user is Guest, verify the form is published and allows anonymous submissions
     if frappe.session.user == "Guest" and form_id:
         form = frappe.db.get_value(
             "Form",
@@ -174,20 +173,16 @@ def get_child_table_fields(child_doctype: str, form_id: str = None) -> list[dict
             ["is_published", "allow_anonymous"],
             as_dict=True
         )
-        if form and form.is_published and form.allow_anonymous:
-            ignore_permissions = True
+        
+        if not form or not form.is_published or not form.allow_anonymous:
+            frappe.throw(_("You don't have permission to access this form"), frappe.PermissionError)
     
     try:
-        # Try to get the DocType - handle both "Item Barcode" and "item_barcode" formats
-        # Frappe DocType names are case-sensitive and use spaces
-        if ignore_permissions:
-            child_doctype_doc = frappe.get_doc("DocType", child_doctype, ignore_permissions=True)
-        else:
-            child_doctype_doc = frappe.get_doc("DocType", child_doctype)
+        # Use frappe.get_all() to get DocType metadata (bypasses permissions)
+        child_doctype_doc = frappe.get_doc("DocType", child_doctype)
         
         # Verify it's actually a child table
         if not child_doctype_doc.istable:
-            frappe.log_error(f"DocType {child_doctype} is not a child table (istable=False)")
             return []
         
         fields = child_doctype_doc.fields
@@ -207,7 +202,6 @@ def get_child_table_fields(child_doctype: str, form_id: str = None) -> list[dict
         fields = [field for field in fields if field.fieldtype not in FIELDTYPES_TO_REMOVE]
         
         if not fields:
-            frappe.log_error(f"No valid fields found for child DocType {child_doctype} after filtering")
             return []
         
         # Convert to dict format
@@ -224,13 +218,10 @@ def get_child_table_fields(child_doctype: str, form_id: str = None) -> list[dict
             for field in fields
         ]
         
-        frappe.log_error(f"Successfully fetched {len(result)} fields for child DocType {child_doctype}")
         return result
     except frappe.DoesNotExistError:
-        frappe.log_error(f"Child DocType '{child_doctype}' does not exist")
         return []
     except Exception as e:
-        frappe.log_error(f"Error fetching child table fields for {child_doctype}: {str(e)}", exc_info=True)
         return []
 
 
@@ -246,7 +237,6 @@ def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
         dict with filters to apply, or empty dict if no filters found
     """
     if not parent_doctype or not fieldname:
-        frappe.log_error(f"get_field_query_filters: Missing parameters - parent_doctype={parent_doctype}, fieldname={fieldname}")
         return {}
     
     try:
@@ -300,7 +290,6 @@ def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
                     break
         
         if not js_path or not os.path.exists(js_path):
-            frappe.log_error(f"get_field_query_filters: JS file not found for {parent_doctype} at {js_path}")
             return {}
         
         # Read the JavaScript file
@@ -308,7 +297,6 @@ def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
             js_content = f.read()
         
         if not js_content:
-            frappe.log_error(f"get_field_query_filters: JS file is empty for {parent_doctype}")
             return {}
         
         # Pattern to match: frm.set_query('fieldname', function() { return { filters: {...} }; })
@@ -341,11 +329,9 @@ def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
             match = re.search(pattern3, js_content, re.DOTALL | re.MULTILINE)
         
         if not match:
-            frappe.log_error(f"get_field_query_filters: No set_query found for {parent_doctype}.{fieldname}")
             return {}
         
         filters_str = match.group(1).strip()
-        frappe.log_error(f"get_field_query_filters: Found filters string for {parent_doctype}.{fieldname}: {filters_str}")
         
         # Parse the filters string into a Python dict
         # The filters string might look like: 'ga_is_partner': 1 or "ga_is_partner": 1
@@ -394,15 +380,9 @@ def get_field_query_filters(parent_doctype: str, fieldname: str) -> dict:
                     else:
                         filters[key] = value
         
-        frappe.log_error(f"get_field_query_filters: Parsed filters for {parent_doctype}.{fieldname}: {filters}")
         return filters
         
     except Exception as e:
-        # Log error but don't fail - just return empty filters
-        frappe.log_error(
-            f"Error parsing field query filters for {parent_doctype}.{fieldname}: {str(e)}",
-            "get_field_query_filters"
-        )
         return {}
 
 
@@ -418,6 +398,7 @@ def get_link_field_options(
     """
     Get options for a Link field (Select field with DocType options).
     Returns a list of records from the specified DocType.
+    Uses frappe.get_all() which automatically bypasses permission checks (like Frappe Web Forms).
     
     Args:
         doctype: The DocType name to fetch records from
@@ -425,7 +406,7 @@ def get_link_field_options(
         limit: Maximum number of records to return
         parent_doctype: Optional parent DocType name (to apply field-specific filters)
         fieldname: Optional field name in the parent DocType (to apply field-specific filters)
-        form_id: Optional form ID to verify public access permissions
+        form_id: Required form ID to verify public access permissions
     
     Returns:
         dict with 'options' list containing {label, value} pairs
@@ -437,81 +418,76 @@ def get_link_field_options(
     if not frappe.db.exists("DocType", doctype):
         return {"options": []}
     
-    # Check if guest access should be allowed
-    # If user is Guest, verify the form is published and allows anonymous submissions
-    ignore_permissions = False
+    # Security check: If user is Guest, verify the form is published and allows anonymous submissions
     if frappe.session.user == "Guest":
-        if form_id:
-            # Check specific form
-            form = frappe.db.get_value(
-                "Form",
-                form_id,
-                ["is_published", "allow_anonymous", "linked_doctype"],
-                as_dict=True
+        if not form_id:
+            # Try to find form by parent_doctype if form_id is not provided
+            if parent_doctype:
+                published_form = frappe.db.get_value(
+                    "Form",
+                    {
+                        "linked_doctype": parent_doctype,
+                        "is_published": 1,
+                        "allow_anonymous": 1
+                    },
+                    "name"
+                )
+                if published_form:
+                    form_id = published_form
+                else:
+                    frappe.throw(_("Form ID is required for guest access"), frappe.PermissionError)
+            else:
+                frappe.throw(_("Form ID is required for guest access"), frappe.PermissionError)
+        
+        form = frappe.db.get_value(
+            "Form",
+            form_id,
+            ["is_published", "allow_anonymous", "linked_doctype"],
+            as_dict=True
+        )
+        
+        if not form:
+            frappe.throw(_("Form not found"), frappe.PermissionError)
+        
+        if not form.is_published:
+            frappe.throw(_("Form is not published"), frappe.PermissionError)
+        
+        if not form.allow_anonymous:
+            frappe.throw(_("Anonymous submissions are not allowed for this form"), frappe.PermissionError)
+        
+        # Verify the field exists in the form (security check like Frappe Web Forms)
+        if fieldname:
+            form_doc = frappe.get_doc("Form", form_id)
+            # Check for both Link and Select fieldtypes (Link fields are stored as Select in forms)
+            field_exists = any(
+                f.fieldname == fieldname and f.options == doctype 
+                for f in form_doc.fields 
+                if f.fieldtype in ("Link", "Select")
             )
-            if form and form.is_published and form.allow_anonymous:
-                ignore_permissions = True
-                frappe.log_error(f"get_link_field_options: Guest access allowed for form {form_id}")
-        elif parent_doctype:
-            # Check if any published form with this linked_doctype allows anonymous
-            published_forms = frappe.db.get_all(
-                "Form",
-                filters={
-                    "linked_doctype": parent_doctype,
-                    "is_published": 1,
-                    "allow_anonymous": 1
-                },
-                limit=1
-            )
-            if published_forms:
-                ignore_permissions = True
-                frappe.log_error(f"get_link_field_options: Guest access allowed for parent_doctype {parent_doctype}")
+            if not field_exists:
+                frappe.throw(_("You don't have permission to access the {0} DocType.").format(doctype), frappe.PermissionError)
     
     # Get the DocType meta to find the title field
-    # Use get_meta with ignore_permissions if needed
-    if ignore_permissions:
-        # Temporarily set flag to bypass permission checks for meta
-        frappe.flags.ignore_permissions = True
-    try:
-        meta = frappe.get_meta(doctype)
-        title_field = meta.title_field or "name"
-    except frappe.PermissionError:
-        # If we can't get meta due to permissions, try to get title field from database
-        if ignore_permissions:
-            # Get title field from DocType directly
-            title_field = frappe.db.get_value("DocType", doctype, "title_field") or "name"
-        else:
-            raise
-    finally:
-        if ignore_permissions:
-            frappe.flags.ignore_permissions = False
+    meta = frappe.get_meta(doctype)
+    title_field = meta.title_field or "name"
     
     # Get field-specific filters from parent DocType if provided
     field_filters = {}
     if parent_doctype and fieldname:
-        frappe.log_error(f"get_link_field_options: Attempting to get filters for parent_doctype={parent_doctype}, fieldname={fieldname}")
         field_filters = get_field_query_filters(parent_doctype, fieldname)
-        frappe.log_error(f"get_link_field_options: Retrieved field_filters: {field_filters}")
-    else:
-        frappe.log_error(f"get_link_field_options: No parent_doctype or fieldname provided - parent_doctype={parent_doctype}, fieldname={fieldname}")
     
     # Build filters - merge field filters with search filters
-    # Frappe filters format: {key: value} for simple filters, or {and: [...], or: [...]} for complex
     filters = {}
     
     # Start with field-specific filters
     if field_filters:
-        # Convert dict filters to list format for Frappe
-        # Simple filters: {key: value} becomes [[key, "=", value]]
         filter_list = []
         for key, value in field_filters.items():
             filter_list.append([key, "=", value])
         
         if len(filter_list) == 1:
-            # Single filter - use simple format
             filters = {filter_list[0][0]: filter_list[0][2]}
         else:
-            # Multiple filters - combine with AND
             filters = {"and": filter_list}
     
     # Add search term filters if provided
@@ -523,58 +499,26 @@ def get_link_field_options(
             ]
         }
         
-        # Combine with existing filters
         if filters:
-            # We have both field filters and search filters
-            # Combine them with AND
             if "and" in filters:
-                # Already have AND filters, add search OR to the list
                 filters["and"].append(search_filter["or"])
             else:
-                # Single field filter in dict format, convert to AND format
-                # Convert dict filter to list format
                 field_filter_list = []
                 for key, value in filters.items():
                     field_filter_list.append([key, "=", value])
-                
-                # Combine with search filter
-                filters = {
-                    "and": field_filter_list + [search_filter["or"]]
-                }
+                filters = {"and": field_filter_list + [search_filter["or"]]}
         else:
-            # No field filters, just use search
             filters = search_filter
     
-    # Get records
+    # Use frappe.get_all() which automatically bypasses permission checks (like Frappe Web Forms)
     try:
-        # Log the filters being applied for debugging
-        frappe.log_error(f"get_link_field_options: Fetching {doctype} with filters: {filters}, ignore_permissions: {ignore_permissions}")
-        
-        # Use frappe.get_all() when ignoring permissions (bypasses permission checks, same as frappe.db.get_all)
-        # Use frappe.get_list() when respecting permissions (normal operation)
-        if ignore_permissions:
-            # Set flag to bypass permission checks for the entire operation
-            frappe.flags.ignore_permissions = True
-            try:
-                records = frappe.get_all(
-                    doctype,
-                    fields=["name", title_field],
-                    filters=filters,
-                    limit=limit,
-                    order_by=title_field or "name",
-                )
-            finally:
-                frappe.flags.ignore_permissions = False
-        else:
-            records = frappe.get_list(
-                doctype,
-                fields=["name", title_field],
-                filters=filters,
-                limit=limit,
-                order_by=title_field or "name",
-            )
-        
-        frappe.log_error(f"get_link_field_options: Found {len(records)} records for {doctype}")
+        records = frappe.get_all(
+            doctype,
+            fields=["name", title_field],
+            filters=filters,
+            limit=limit,
+            order_by=title_field or "name",
+        )
         
         # Format as options for Select component
         options = []
@@ -587,7 +531,6 @@ def get_link_field_options(
         
         return {"options": options}
     except Exception as e:
-        frappe.log_error(f"Error fetching options for {doctype} with filters {filters}: {str(e)}")
         return {"options": []}
 
 
@@ -619,7 +562,6 @@ def delete_form(form_id: str) -> dict:
             "message": "Form deleted successfully"
         }
     except Exception as e:
-        frappe.log_error(f"Error deleting form {form_id}: {str(e)}")
         frappe.throw(f"Failed to delete form: {str(e)}")
 
 

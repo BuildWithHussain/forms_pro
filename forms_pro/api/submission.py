@@ -116,7 +116,6 @@ def submit_form_response(form_id: str, form_data: list[dict]):
                 # Update submission with file URL
                 submission.set(fieldname, _file.file_url)
             except Exception as e:
-                frappe.log_error(f"Error uploading file: {str(e)}")
                 frappe.throw(f"Error uploading file: {str(e)}", frappe.ValidationError)
         
         # Save submission with file URLs

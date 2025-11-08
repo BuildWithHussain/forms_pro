@@ -15,6 +15,20 @@ import {
 } from "frappe-ui";
 import TableField from "@/components/submission/TableField.vue";
 import SignatureField from "@/components/submission/SignatureField.vue";
+import PercentField from "@/components/submission/PercentField.vue";
+import ReadOnlyField from "@/components/submission/ReadOnlyField.vue";
+import ColorField from "@/components/submission/ColorField.vue";
+import AutocompleteField from "@/components/submission/AutocompleteField.vue";
+import CodeField from "@/components/submission/CodeField.vue";
+import DurationField from "@/components/submission/DurationField.vue";
+import JSONField from "@/components/submission/JSONField.vue";
+import ImageField from "@/components/submission/ImageField.vue";
+import GeolocationField from "@/components/submission/GeolocationField.vue";
+import DynamicLinkField from "@/components/submission/DynamicLinkField.vue";
+import TableMultiSelectField from "@/components/submission/TableMultiSelectField.vue";
+import BarcodeField from "@/components/submission/BarcodeField.vue";
+import HTMLEditorField from "@/components/submission/HTMLEditorField.vue";
+import MarkdownEditorField from "@/components/submission/MarkdownEditorField.vue";
 
 // Individual form field components as dictionaries
 export const DataField = {
@@ -170,6 +184,76 @@ export const SignatureFieldComponent = {
   props: {},
 };
 
+export const PercentFieldComponent = {
+  component: PercentField,
+  props: {},
+};
+
+export const ReadOnlyFieldComponent = {
+  component: ReadOnlyField,
+  props: {},
+};
+
+export const ColorFieldComponent = {
+  component: ColorField,
+  props: {},
+};
+
+export const AutocompleteFieldComponent = {
+  component: AutocompleteField,
+  props: {},
+};
+
+export const CodeFieldComponent = {
+  component: CodeField,
+  props: {},
+};
+
+export const DurationFieldComponent = {
+  component: DurationField,
+  props: {},
+};
+
+export const JSONFieldComponent = {
+  component: JSONField,
+  props: {},
+};
+
+export const ImageFieldComponent = {
+  component: ImageField,
+  props: {},
+};
+
+export const GeolocationFieldComponent = {
+  component: GeolocationField,
+  props: {},
+};
+
+export const DynamicLinkFieldComponent = {
+  component: DynamicLinkField,
+  props: {},
+};
+
+export const TableMultiSelectFieldComponent = {
+  component: TableMultiSelectField,
+  props: {},
+};
+
+export const BarcodeFieldComponent = {
+  component: BarcodeField,
+  props: {},
+};
+
+export const HTMLEditorFieldComponent = {
+  component: HTMLEditorField,
+  props: {},
+};
+
+export const MarkdownEditorFieldComponent = {
+  component: MarkdownEditorField,
+  props: {},
+};
+
 export const formFields = [
   { name: "Data", ...DataField },
   { name: "Number", ...NumberField },
@@ -192,6 +276,20 @@ export const formFields = [
   { name: "Phone", ...PhoneField },
   { name: "Table", ...TableFieldComponent },
   { name: "Signature", ...SignatureFieldComponent },
+  { name: "Percent", ...PercentFieldComponent },
+  { name: "Read Only", ...ReadOnlyFieldComponent },
+  { name: "Color", ...ColorFieldComponent },
+  { name: "Autocomplete", ...AutocompleteFieldComponent },
+  { name: "Code", ...CodeFieldComponent },
+  { name: "Duration", ...DurationFieldComponent },
+  { name: "JSON", ...JSONFieldComponent },
+  { name: "Image", ...ImageFieldComponent },
+  { name: "Geolocation", ...GeolocationFieldComponent },
+  { name: "Dynamic Link", ...DynamicLinkFieldComponent },
+  { name: "Table MultiSelect", ...TableMultiSelectFieldComponent },
+  { name: "Barcode", ...BarcodeFieldComponent },
+  { name: "HTML Editor", ...HTMLEditorFieldComponent },
+  { name: "Markdown Editor", ...MarkdownEditorFieldComponent },
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {
@@ -202,54 +300,54 @@ export const mapDoctypeFieldForForm = (fieldtype: string): string => {
     Text: "Textarea",
     "Long Text": "Textarea",
     "Text Editor": "Text Editor",
-    "HTML Editor": "Text Editor",
-    "Markdown Editor": "Text Editor",
-    Code: "Textarea",
-    JSON: "Textarea",
+    "HTML Editor": "HTML Editor",
+    "Markdown Editor": "Markdown Editor",
+    Code: "Code",
+    JSON: "JSON",
     
     // Number fields
     Int: "Int",
     Float: "Float",
     Currency: "Currency",
-    Percent: "Number",
+    Percent: "Percent",
     
     // Date/Time fields
     Date: "Date",
     Datetime: "Date Time",
     Time: "Time Picker",
-    Duration: "Data", // Duration not directly supported
+    Duration: "Duration",
     
     // Selection fields
     Select: "Select",
-    Autocomplete: "Data",
+    Autocomplete: "Autocomplete",
     
     // Boolean fields
     Check: "Checkbox",
     
     // Link fields
     Link: "Select", // Link fields become Select dropdowns
-    "Dynamic Link": "Data", // Dynamic Link not directly supported
+    "Dynamic Link": "Dynamic Link",
     
     // File/Attachment fields
     Attach: "File Uploader",
     "Attach Image": "File Uploader",
-    Image: "File Uploader",
+    Image: "Image",
     Signature: "Signature",
     
     // Special fields
     Password: "Password",
     Rating: "Rating",
-    Color: "Data", // Color picker not directly supported
-    Geolocation: "Data", // Geolocation not directly supported
+    Color: "Color",
+    Geolocation: "Geolocation",
     Phone: "Phone", // Phone with validation
     Email: "Email", // Email field type
     
     // Read-only/Display fields
-    "Read Only": "Data", // Read-only fields as Data
+    "Read Only": "Read Only",
     Heading: "Data", // Heading as Data
     HTML: "Textarea", // HTML content as Textarea
     Icon: "Data", // Icon field as Data
-    Barcode: "Data", // Barcode as Data
+    Barcode: "Barcode",
     
     // Layout fields (filtered out but included for completeness)
     "Section Break": "Section Break", // Will be filtered
@@ -260,7 +358,7 @@ export const mapDoctypeFieldForForm = (fieldtype: string): string => {
     
     // Table fields (child tables)
     Table: "Table", // Child tables with full component support
-    "Table MultiSelect": "Table", // Treated as Table
+    "Table MultiSelect": "Table MultiSelect",
   };
 
   // Return mapped type or default to "Data" if not found

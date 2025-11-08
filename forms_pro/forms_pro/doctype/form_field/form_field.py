@@ -39,6 +39,20 @@ class FormField(Document):
             "Table",
             "Rating",
             "Signature",
+            "Autocomplete",
+            "Barcode",
+            "Code",
+            "Color",
+            "Duration",
+            "Geolocation",
+            "HTML Editor",
+            "Markdown Editor",
+            "Percent",
+            "Table MultiSelect",
+            "Image",
+            "Read Only",
+            "Dynamic Link",
+            "JSON",
         ]
         label: DF.Data
         options: DF.SmallText | None
@@ -94,6 +108,35 @@ class FormField(Document):
         elif self.fieldtype == "Signature":
             # Signature fields are stored as Attach Image in Frappe
             _fieldtype = "Attach Image"
+        elif self.fieldtype == "Autocomplete":
+            _fieldtype = "Autocomplete"
+        elif self.fieldtype == "Barcode":
+            _fieldtype = "Barcode"
+        elif self.fieldtype == "Code":
+            _fieldtype = "Code"
+        elif self.fieldtype == "Color":
+            _fieldtype = "Color"
+        elif self.fieldtype == "Duration":
+            _fieldtype = "Duration"
+        elif self.fieldtype == "Geolocation":
+            _fieldtype = "Geolocation"
+        elif self.fieldtype == "HTML Editor":
+            _fieldtype = "HTML Editor"
+        elif self.fieldtype == "Markdown Editor":
+            _fieldtype = "Markdown Editor"
+        elif self.fieldtype == "Percent":
+            _fieldtype = "Percent"
+        elif self.fieldtype == "Table MultiSelect":
+            _fieldtype = "Table MultiSelect"
+        elif self.fieldtype == "Image":
+            # Image fields are stored as Attach Image in Frappe
+            _fieldtype = "Attach Image"
+        elif self.fieldtype == "Read Only":
+            _fieldtype = "Read Only"
+        elif self.fieldtype == "Dynamic Link":
+            _fieldtype = "Dynamic Link"
+        elif self.fieldtype == "JSON":
+            _fieldtype = "JSON"
         elif self.fieldtype == "Select":
             # Check if options is a valid DocType name - if so, convert to Link
             # This handles the case where Link fields are stored as Select in forms

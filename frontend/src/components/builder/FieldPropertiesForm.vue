@@ -39,32 +39,46 @@ function markFormDirty() {
     }
 }
 
-const getFieldTypeOptions = () => {
-    // Must match the options in Form Field DocType (form_field.json)
-    return [
-        "Data",
-        "Number",
-        "Email",
-        "Date",
-        "Date Time",
-        "Date Range",
-        "Time Picker",
-        "Password",
-        "Select",
-        "Switch",
-        "Textarea",
-        "Text Editor",
-        "Checkbox",
-        "File Uploader",
-        "Currency",
-        "Int",
-        "Float",
-        "Phone",
-        "Table",
-        "Rating",
-        "Signature",
-    ];
-};
+    const getFieldTypeOptions = () => {
+        // Must match the options in Form Field DocType (form_field.json)
+        return [
+            "Data",
+            "Number",
+            "Email",
+            "Date",
+            "Date Time",
+            "Date Range",
+            "Time Picker",
+            "Password",
+            "Select",
+            "Switch",
+            "Textarea",
+            "Text Editor",
+            "Checkbox",
+            "File Uploader",
+            "Currency",
+            "Int",
+            "Float",
+            "Phone",
+            "Table",
+            "Rating",
+            "Signature",
+            "Autocomplete",
+            "Barcode",
+            "Code",
+            "Color",
+            "Duration",
+            "Geolocation",
+            "HTML Editor",
+            "Markdown Editor",
+            "Percent",
+            "Table MultiSelect",
+            "Image",
+            "Read Only",
+            "Dynamic Link",
+            "JSON",
+        ];
+    };
 
 const getFieldProperties = () => {
     return [

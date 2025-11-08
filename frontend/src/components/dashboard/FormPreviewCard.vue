@@ -100,16 +100,18 @@ const previewStyles = computed(() => {
 });
 
 const containerStyles = computed(() => {
-    const styles = {
-        backgroundColor: props.form.background_color || "#ffffff",
-    };
+    const styles: Record<string, string> = {};
     
     if (props.form.glass_morphism_enabled) {
-        styles.backgroundColor = "rgba(255, 255, 255, 0.1)";
-        styles.backdropFilter = "blur(10px)";
-        styles.border = "1px solid rgba(255, 255, 255, 0.2)";
+        styles.backgroundColor = "rgba(255, 255, 255, 0.15)";
+        styles.backdropFilter = "blur(12px) saturate(180%)";
+        styles.border = "1px solid rgba(255, 255, 255, 0.3)";
+        styles.boxShadow = "0 8px 32px 0 rgba(31, 38, 135, 0.15)";
     } else {
-        styles.border = "1px solid rgba(0, 0, 0, 0.1)";
+        const bgColor = props.form.background_color || "#ffffff";
+        styles.backgroundColor = bgColor;
+        styles.border = "1px solid rgba(0, 0, 0, 0.08)";
+        styles.boxShadow = "0 1px 3px 0 rgba(0, 0, 0, 0.1)";
     }
     
     return styles;
@@ -168,11 +170,11 @@ const handleCardClick = (event) => {
     <div class="relative group">
         <Card
             @click="handleCardClick"
-            class="flex flex-col gap-3 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
+            class="flex flex-col overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer h-full"
         >
             <!-- Form Preview -->
             <div 
-                class="relative h-48 overflow-hidden"
+                class="relative h-64 overflow-hidden rounded-t-lg"
                 :style="previewStyles"
             >
                 <!-- Overlay for background image -->
@@ -180,113 +182,136 @@ const handleCardClick = (event) => {
                     v-if="props.form.background_image"
                     class="absolute inset-0"
                     :style="{
-                        backgroundColor: `rgba(0, 0, 0, ${(props.form.overlay_opacity || 0.5) * 0.3})`,
+                        backgroundColor: `rgba(0, 0, 0, ${(props.form.overlay_opacity || 0.5) * 0.2})`,
                     }"
                 ></div>
                 
-                <!-- Preview Content -->
+                <!-- Preview Content Container -->
                 <div 
-                    class="relative h-full p-4 flex flex-col gap-2.5"
-                    :style="{ ...containerStyles, fontFamily: fontFamily }"
+                    class="relative h-full p-5 flex flex-col"
+                    :style="{ fontFamily: fontFamily }"
                 >
-                    <!-- Title and Logo -->
-                    <div class="flex items-start justify-between gap-2 mb-1">
-                        <h3 
-                            class="text-sm font-bold truncate flex-1 leading-tight"
-                            :style="{ color: themeColor }"
-                        >
-                            {{ props.form.title || "Untitled Form" }}
-                        </h3>
-                        <img 
-                            v-if="props.form.logo"
-                            :src="getImageUrl(props.form.logo)"
-                            alt="Logo"
-                            class="w-10 h-5 object-contain flex-shrink-0"
-                            style="max-width: 60px;"
-                        />
-                    </div>
-                    
-                    <!-- Field Previews with Labels -->
-                    <div class="flex flex-col gap-2 flex-1 overflow-hidden">
-                        <div 
-                            v-for="(field, idx) in previewFields"
-                            :key="idx"
-                            class="flex flex-col gap-1"
-                        >
-                            <!-- Field Label -->
-                            <div 
-                                class="text-[9px] font-medium leading-tight truncate"
-                                :style="{
-                                    color: props.form.glass_morphism_enabled 
-                                        ? 'rgba(0, 0, 0, 0.8)' 
-                                        : 'rgba(0, 0, 0, 0.6)',
-                                }"
+                    <!-- Form Container with Glassmorphism -->
+                    <div 
+                        class="flex-1 rounded-lg p-4 flex flex-col gap-3 backdrop-blur-sm"
+                        :style="containerStyles"
+                    >
+                        <!-- Title and Logo -->
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <h3 
+                                class="text-base font-bold truncate flex-1 leading-tight"
+                                :style="{ color: themeColor }"
                             >
-                                {{ field.label || field.fieldname }}
-                            </div>
-                            <!-- Field Input Preview -->
-                            <div 
-                                class="h-4 rounded border"
-                                :style="{
-                                    backgroundColor: props.form.glass_morphism_enabled 
-                                        ? 'rgba(255, 255, 255, 0.4)' 
-                                        : 'rgba(255, 255, 255, 0.9)',
-                                    borderColor: props.form.glass_morphism_enabled 
-                                        ? 'rgba(255, 255, 255, 0.3)' 
-                                        : 'rgba(0, 0, 0, 0.1)',
-                                    width: field.fieldtype === 'Textarea' || field.fieldtype === 'Text Editor' ? '100%' : '85%',
-                                }"
-                            >
-                                <!-- Dropdown indicator for Select/Link fields -->
-                                <div 
-                                    v-if="field.fieldtype === 'Select' || field.fieldtype === 'Link'"
-                                    class="h-full flex items-center justify-end pr-1"
-                                >
-                                    <div 
-                                        class="w-0 h-0 border-l-[3px] border-r-[3px] border-t-[4px] border-transparent"
-                                        :style="{
-                                            borderTopColor: props.form.glass_morphism_enabled 
-                                                ? 'rgba(0, 0, 0, 0.5)' 
-                                                : 'rgba(0, 0, 0, 0.3)',
-                                        }"
-                                    ></div>
-                                </div>
-                            </div>
+                                {{ props.form.title || "Untitled Form" }}
+                            </h3>
+                            <img 
+                                v-if="props.form.logo"
+                                :src="getImageUrl(props.form.logo)"
+                                alt="Logo"
+                                class="h-6 w-auto object-contain flex-shrink-0"
+                                style="max-width: 80px;"
+                            />
                         </div>
                         
-                        <!-- Empty state if no fields -->
-                        <div 
-                            v-if="!hasFields"
-                            class="flex flex-col gap-1"
+                        <!-- Description placeholder -->
+                        <p 
+                            class="text-xs mb-2"
+                            :style="{
+                                color: props.form.glass_morphism_enabled 
+                                    ? 'rgba(0, 0, 0, 0.7)' 
+                                    : 'rgba(0, 0, 0, 0.5)',
+                            }"
                         >
+                            Write a description for your form.
+                        </p>
+                        
+                        <!-- Field Previews with Labels -->
+                        <div class="flex flex-col gap-2.5 flex-1 overflow-hidden">
                             <div 
-                                class="text-[9px] font-medium leading-tight"
-                                :style="{
-                                    color: props.form.glass_morphism_enabled 
-                                        ? 'rgba(0, 0, 0, 0.5)' 
-                                        : 'rgba(0, 0, 0, 0.4)',
-                                }"
+                                v-for="(field, idx) in previewFields"
+                                :key="idx"
+                                class="flex flex-col gap-1.5"
                             >
-                                Field Name
+                                <!-- Field Label -->
+                                <label 
+                                    class="text-xs font-medium leading-tight"
+                                    :style="{
+                                        color: props.form.glass_morphism_enabled 
+                                            ? 'rgba(0, 0, 0, 0.85)' 
+                                            : 'rgba(0, 0, 0, 0.7)',
+                                    }"
+                                >
+                                    {{ field.label || field.fieldname }}
+                                </label>
+                                <!-- Field Input Preview -->
+                                <div 
+                                    class="h-7 rounded-md border relative"
+                                    :style="{
+                                        backgroundColor: props.form.glass_morphism_enabled 
+                                            ? 'rgba(255, 255, 255, 0.5)' 
+                                            : 'rgba(255, 255, 255, 0.95)',
+                                        borderColor: props.form.glass_morphism_enabled 
+                                            ? 'rgba(255, 255, 255, 0.4)' 
+                                            : 'rgba(0, 0, 0, 0.15)',
+                                        width: field.fieldtype === 'Textarea' || field.fieldtype === 'Text Editor' ? '100%' : '90%',
+                                    }"
+                                >
+                                    <!-- Dropdown indicator for Select/Link fields -->
+                                    <div 
+                                        v-if="field.fieldtype === 'Select' || field.fieldtype === 'Link'"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2"
+                                    >
+                                        <svg 
+                                            class="w-3 h-3"
+                                            :style="{
+                                                color: props.form.glass_morphism_enabled 
+                                                    ? 'rgba(0, 0, 0, 0.6)' 
+                                                    : 'rgba(0, 0, 0, 0.4)',
+                                            }"
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
+                            
+                            <!-- Empty state if no fields -->
                             <div 
-                                class="h-4 rounded border w-3/4"
-                                :style="{
-                                    backgroundColor: props.form.glass_morphism_enabled 
-                                        ? 'rgba(255, 255, 255, 0.3)' 
-                                        : 'rgba(255, 255, 255, 0.8)',
-                                    borderColor: props.form.glass_morphism_enabled 
-                                        ? 'rgba(255, 255, 255, 0.2)' 
-                                        : 'rgba(0, 0, 0, 0.08)',
-                                }"
-                            ></div>
+                                v-if="!hasFields"
+                                class="flex flex-col gap-1.5"
+                            >
+                                <label 
+                                    class="text-xs font-medium leading-tight"
+                                    :style="{
+                                        color: props.form.glass_morphism_enabled 
+                                            ? 'rgba(0, 0, 0, 0.6)' 
+                                            : 'rgba(0, 0, 0, 0.5)',
+                                    }"
+                                >
+                                    Field Name
+                                </label>
+                                <div 
+                                    class="h-7 rounded-md border w-3/4"
+                                    :style="{
+                                        backgroundColor: props.form.glass_morphism_enabled 
+                                            ? 'rgba(255, 255, 255, 0.4)' 
+                                            : 'rgba(255, 255, 255, 0.9)',
+                                        borderColor: props.form.glass_morphism_enabled 
+                                            ? 'rgba(255, 255, 255, 0.3)' 
+                                            : 'rgba(0, 0, 0, 0.1)',
+                                    }"
+                                ></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Form Info -->
-            <div class="flex flex-col gap-3 px-5 pb-5">
+            <div class="flex flex-col gap-3 px-5 py-4 border-t bg-card">
                 <div class="flex justify-between items-start gap-2">
                     <h3 class="text-base font-semibold truncate flex-1">{{ props.form.title }}</h3>
                     <Button

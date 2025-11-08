@@ -3,14 +3,14 @@
         <template #breadcrumb>Dashboard</template>
         
         <!-- Header Section -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex flex-col gap-1">
-                <h1 class="text-4xl font-bold">Dashboard</h1>
+        <div class="flex items-center justify-between mb-8 pb-6 border-b">
+            <div class="flex flex-col gap-2">
+                <h1 class="text-4xl font-bold tracking-tight">Dashboard</h1>
                 <p class="text-base text-muted-foreground">Manage and create forms</p>
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <Button>
+                    <Button size="lg">
                         <Plus class="mr-2 h-4 w-4" />
                         Create
                     </Button>

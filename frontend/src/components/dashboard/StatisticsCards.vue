@@ -2,60 +2,60 @@
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <!-- Total Forms Card -->
         <Card>
-            <CardContent class="flex items-center gap-4 p-6">
-                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <FileText class="w-6 h-6 text-blue-600" />
+            <CardContent class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-sm font-medium text-muted-foreground">Total Forms</p>
+                    <FileText class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="space-y-1">
                     <p class="text-2xl font-bold">
                         {{ statistics.data?.total ?? 0 }}
                     </p>
-                    <p class="text-sm text-muted-foreground mt-1">Total Forms</p>
                 </div>
             </CardContent>
         </Card>
 
         <!-- Published Forms Card -->
         <Card>
-            <CardContent class="flex items-center gap-4 p-6">
-                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
-                    <CheckCircle2 class="w-6 h-6 text-green-600" />
+            <CardContent class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-sm font-medium text-muted-foreground">Published</p>
+                    <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="space-y-1">
                     <p class="text-2xl font-bold">
                         {{ statistics.data?.published ?? 0 }}
                     </p>
-                    <p class="text-sm text-muted-foreground mt-1">Published</p>
                 </div>
             </CardContent>
         </Card>
 
         <!-- Draft Forms Card -->
         <Card>
-            <CardContent class="flex items-center gap-4 p-6">
-                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center">
-                    <Edit class="w-6 h-6 text-gray-600" />
+            <CardContent class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-sm font-medium text-muted-foreground">Draft</p>
+                    <Edit class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="space-y-1">
                     <p class="text-2xl font-bold">
                         {{ statistics.data?.draft ?? 0 }}
                     </p>
-                    <p class="text-sm text-muted-foreground mt-1">Draft</p>
                 </div>
             </CardContent>
         </Card>
 
         <!-- Recent Forms Card -->
         <Card>
-            <CardContent class="flex items-center gap-4 p-6">
-                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <Clock class="w-6 h-6 text-blue-600" />
+            <CardContent class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-sm font-medium text-muted-foreground">Recent (7 days)</p>
+                    <Clock class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="space-y-1">
                     <p class="text-2xl font-bold">
                         {{ statistics.data?.recent ?? 0 }}
                     </p>
-                    <p class="text-sm text-muted-foreground mt-1">Recent (7 days)</p>
                 </div>
             </CardContent>
         </Card>

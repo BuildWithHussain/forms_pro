@@ -3,10 +3,10 @@
         <template #breadcrumb>Dashboard</template>
         
         <!-- Header Section -->
-        <div class="flex items-center justify-between mb-8 pb-6 border-b">
-            <div class="flex flex-col gap-2">
-                <h1 class="text-4xl font-bold tracking-tight">Dashboard</h1>
-                <p class="text-base text-muted-foreground">Manage and create forms</p>
+        <div class="flex items-center justify-between mb-8 py-6 border-b">
+            <div class="flex items-center gap-4">
+                <h1 class="text-4xl font-bold tracking-tight leading-tight">Dashboard</h1>
+                <p class="text-base text-muted-foreground leading-normal">Manage and create forms</p>
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>

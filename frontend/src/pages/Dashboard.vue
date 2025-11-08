@@ -1,15 +1,78 @@
 <template>
-    <BaseLayout>
-        <Dialog
-            v-model="showSelectDoctypeDialog"
-            :options="{
-                title: 'Select DocType',
-            }"
-        >
-            <template #body-content>
-                <div class="flex flex-col gap-4">
+    <DashboardLayout>
+        <template #breadcrumb>Dashboard</template>
+        
+        <!-- Header Section -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col gap-1">
+                <h1 class="text-4xl font-bold">Dashboard</h1>
+                <p class="text-base text-muted-foreground">Manage and create forms</p>
+            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button>
+                        <Plus class="mr-2 h-4 w-4" />
+                        Create
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem @click="handleCreateDraftForm">
+                        <FilePlus class="mr-2 h-4 w-4" />
+                        <span>Create New</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="showSelectDoctypeDialog = true">
+                        <Database class="mr-2 h-4 w-4" />
+                        <span>Create from Existing DocType</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="mb-8">
+            <StatisticsCards />
+        </div>
+        
+        <!-- Recents Section -->
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold">Recents</h3>
+            </div>
+            <p class="text-sm text-muted-foreground" v-if="userForms.loading">Loading...</p>
+            <Card
+                v-else-if="userForms.data?.length === 0"
+                class="p-12 text-center"
+            >
+                <CardContent class="flex flex-col items-center gap-4">
+                    <FileText class="h-12 w-12 text-muted-foreground" />
+                    <div>
+                        <p class="text-sm font-medium">No forms created yet</p>
+                        <p class="mt-1 text-xs text-muted-foreground">Get started by creating your first form</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" v-else>
+                <FormPreviewCard 
+                    v-for="form in userForms.data" 
+                    :key="form.name"
+                    :form="form" 
+                    @deleted="userForms.reload()"
+                />
+            </div>
+        </div>
+
+        <!-- DocType Selection Dialog -->
+        <Dialog v-model:open="showSelectDoctypeDialog">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Select DocType</DialogTitle>
+                    <DialogDescription>
+                        Choose a DocType to create a form from
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="flex flex-col gap-4 py-4">
                     <div class="flex flex-col gap-2">
-                        <label class="text-sm font-medium">DocType</label>
+                        <Label for="doctype">DocType</Label>
                         <Combobox
                             v-model="selectedDoctype"
                             :options="doctypes.data || []"
@@ -18,88 +81,73 @@
                             :loading="doctypes.loading"
                         />
                     </div>
-                    <Checkbox
-                        v-model="autoPopulateOnCreate"
-                        label="Auto-populate fields from DocType"
-                        description="Automatically add all fields from the selected DocType to the form."
-                    />
-                </div>
-            </template>
-            <template #actions="{ close }">
-                <Button
-                    class="w-full"
-                    variant="solid"
-                    :disabled="!selectedDoctype"
-                    @click="
-                        () => {
-                            handleCreateDraftFormWithDoctype(selectedDoctype.value);
-                        }
-                    "
-                    >Create</Button
-                >
-            </template>
-        </Dialog>
-        <div class="p-4 flex flex-col gap-4 w-full">
-            <div class="flex flex-col gap-2">
-                <h2 class="text-3xl font-bold">Dashboard</h2>
-                <p class="text-base">Manage and create forms</p>
-            </div>
-            <Dropdown
-                class="w-fit"
-                :button="{
-                    label: 'Create',
-                    iconLeft: 'plus',
-                    variant: 'solid',
-                }"
-                :options="[
-                    {
-                        label: 'Create New',
-                        onClick: handleCreateDraftForm,
-                    },
-                    {
-                        label: 'Create from Existing DocType',
-                        onClick: () => {
-                            showSelectDoctypeDialog = true;
-                        },
-                    },
-                ]"
-            />
-            <div class="flex flex-col gap-2">
-                <h3 class="font-medium">Recents</h3>
-                <p class="text-sm text-gray-500" v-if="userForms.loading">Loading...</p>
-                <p class="text-sm text-gray-500" v-else-if="userForms.data?.length === 0">
-                    No forms created yet
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" v-else>
-                    <div v-for="form in userForms.data" :key="form.name">
-                        <FormPreviewCard 
-                            :form="form" 
-                            @deleted="userForms.reload()"
+                    <div class="flex items-center space-x-2">
+                        <Checkbox
+                            id="auto-populate"
+                            v-model:checked="autoPopulateOnCreate"
                         />
+                        <Label
+                            for="auto-populate"
+                            class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Auto-populate fields from DocType
+                        </Label>
                     </div>
+                    <p class="text-xs text-muted-foreground">
+                        Automatically add all fields from the selected DocType to the form.
+                    </p>
                 </div>
-            </div>
-        </div>
-    </BaseLayout>
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        @click="showSelectDoctypeDialog = false"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        :disabled="!selectedDoctype"
+                        @click="handleCreateDraftFormWithDoctype"
+                    >
+                        Create
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </DashboardLayout>
 </template>
 
-<script setup>
-import BaseLayout from "@/layouts/BaseLayout.vue";
+<script setup lang="ts">
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
 import {
-    Dropdown,
     Dialog,
-    FormControl,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Plus, FilePlus, Database, FileText } from "lucide-vue-next";
+import {
     createListResource,
-    Card,
     createResource,
     Combobox,
-    Checkbox,
 } from "frappe-ui";
 import { session } from "@/data/session";
 import { createNewFormWithDoctype, createNewForm } from "@/utils/form_generator";
 import FormPreviewCard from "@/components/dashboard/FormPreviewCard.vue";
+import StatisticsCards from "@/components/dashboard/StatisticsCards.vue";
 import { useEditForm } from "@/stores/editForm";
 
 const router = useRouter();

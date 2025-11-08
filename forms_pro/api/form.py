@@ -102,6 +102,32 @@ def get_doctype_list() -> list[str]:
     )
 
 
+@frappe.whitelist()
+def get_form_statistics() -> dict:
+    """Get form statistics for the current user"""
+    user = frappe.session.user
+    filters = {"owner": user}
+    
+    total = frappe.db.count("Form", filters)
+    published = frappe.db.count("Form", {**filters, "is_published": 1})
+    draft = total - published
+    
+    # Recent forms (last 7 days)
+    from frappe.utils import add_days, nowdate
+    week_ago = add_days(nowdate(), -7)
+    recent = frappe.db.count("Form", {
+        **filters,
+        "creation": [">=", week_ago]
+    })
+    
+    return {
+        "total": total,
+        "published": published,
+        "draft": draft,
+        "recent": recent
+    }
+
+
 @frappe.whitelist(allow_guest=True)
 def get_child_table_fields(child_doctype: str) -> list[dict]:
     """

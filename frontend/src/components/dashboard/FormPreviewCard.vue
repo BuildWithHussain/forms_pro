@@ -1,16 +1,43 @@
-<script setup>
-import { Badge, Button, Dialog, call } from "frappe-ui";
-import { computed, ref, watch, nextTick, onMounted } from "vue";
+<script setup lang="ts">
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { call } from "frappe-ui";
+import { computed, ref } from "vue";
 import { Trash2 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { useRouter } from "vue-router";
 
-const props = defineProps({
+interface Props {
     form: {
-        type: Object,
-        required: true,
-    },
-});
+        name: string;
+        title: string;
+        creation: string;
+        is_published: boolean;
+        background_image?: string;
+        background_color?: string;
+        glass_morphism_enabled?: boolean;
+        overlay_opacity?: number;
+        theme_color?: string;
+        font_family?: string;
+        logo?: string;
+        fields?: Array<{
+            fieldname: string;
+            label: string;
+            fieldtype: string;
+        }>;
+    };
+}
+
+const props = defineProps<Props>();
 
 const emit = defineEmits(["deleted"]);
 const router = useRouter();
@@ -18,58 +45,21 @@ const router = useRouter();
 const showDeleteDialog = ref(false);
 const isDeleting = ref(false);
 
-// Function to center dialog
-const centerDialog = () => {
-    nextTick(() => {
-        // Find all dialogs with delete-dialog class
-        const dialogs = document.querySelectorAll('.delete-dialog, .delete-dialog-centered, [role="dialog"]');
-        dialogs.forEach((dialog) => {
-            const htmlEl = dialog;
-            if (!(htmlEl instanceof HTMLElement)) return;
-            
-            const computedStyle = window.getComputedStyle(htmlEl);
-            
-            // Only fix if it's not already centered
-            if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
-                htmlEl.style.setProperty('position', 'fixed', 'important');
-                htmlEl.style.setProperty('top', '50%', 'important');
-                htmlEl.style.setProperty('left', '50%', 'important');
-                htmlEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                htmlEl.style.setProperty('margin', '0', 'important');
-                htmlEl.style.setProperty('z-index', '9999', 'important');
-            }
-        });
-    });
-};
-
-// Watch for dialog opening
-watch(showDeleteDialog, (isOpen) => {
-    if (isOpen) {
-        // Center immediately and on next tick
-        centerDialog();
-        setTimeout(centerDialog, 10);
-        setTimeout(centerDialog, 50);
-        setTimeout(centerDialog, 100);
-        
-        // Also use MutationObserver to catch when dialog is added to DOM
-        const observer = new MutationObserver(() => {
-            centerDialog();
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-        });
-        
-        // Clean up observer after a short delay
-        setTimeout(() => {
-            observer.disconnect();
-        }, 500);
-    }
-});
-
 const formattedDate = computed(() => {
-    return new Date(props.form.creation).toLocaleDateString();
+    const date = new Date(props.form.creation);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+        return "Today";
+    } else if (diffDays === 1) {
+        return "Yesterday";
+    } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    } else {
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
 });
 
 // Helper to get image URL
@@ -175,10 +165,10 @@ const handleCardClick = (event) => {
 };
 </script>
 <template>
-    <div class="relative">
-        <div
+    <div class="relative group">
+        <Card
             @click="handleCardClick"
-            class="flex flex-col gap-3 border rounded-lg overflow-hidden hover:border-gray-400 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white"
+            class="flex flex-col gap-3 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
         >
             <!-- Form Preview -->
             <div 
@@ -296,119 +286,54 @@ const handleCardClick = (event) => {
             </div>
             
             <!-- Form Info -->
-            <div class="flex flex-col gap-2 px-4 pb-4">
-                <div class="flex justify-between items-start">
-                    <h3 class="text-base font-medium truncate flex-1">{{ props.form.title }}</h3>
+            <div class="flex flex-col gap-3 px-5 pb-5">
+                <div class="flex justify-between items-start gap-2">
+                    <h3 class="text-base font-semibold truncate flex-1">{{ props.form.title }}</h3>
                     <Button
-                        class="delete-button ml-2 flex-shrink-0"
+                        class="delete-button flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         @click.stop="showDeleteDialog = true"
-                        :icon="Trash2"
-                        iconOnly
-                    />
+                    >
+                        <Trash2 class="h-4 w-4" />
+                    </Button>
                 </div>
-                <div class="flex gap-2 items-center">
-                    <Badge
-                        class="w-fit"
-                        :label="props.form.is_published ? 'Published' : 'Draft'"
-                        :theme="props.form.is_published ? 'green' : 'gray'"
-                    />
-                    <p class="text-xs text-gray-500">{{ formattedDate }}</p>
+                <div class="flex gap-3 items-center">
+                    <Badge :variant="props.form.is_published ? 'default' : 'secondary'">
+                        {{ props.form.is_published ? 'Published' : 'Draft' }}
+                    </Badge>
+                    <p class="text-xs text-muted-foreground font-medium">{{ formattedDate }}</p>
                 </div>
             </div>
-        </div>
+        </Card>
         
-        <Dialog
-            v-model="showDeleteDialog"
-            :options="{
-                title: 'Delete Form',
-            }"
-            class="delete-dialog delete-dialog-centered"
-        >
-            <template #body-content>
-                <p class="text-sm text-gray-600">
-                    Are you sure you want to delete "{{ props.form.title }}"? This action cannot be undone.
-                </p>
-            </template>
-            <template #actions="{ close }">
-                <div class="flex gap-2 w-full">
+        <Dialog v-model:open="showDeleteDialog">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete Form</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete "{{ props.form.title }}"? This action cannot be undone.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
                     <Button
                         variant="outline"
-                        class="flex-1"
-                        @click="close"
+                        @click="showDeleteDialog = false"
                         :disabled="isDeleting"
                     >
                         Cancel
                     </Button>
                     <Button
-                        variant="solid"
-                        class="flex-1"
+                        variant="destructive"
                         @click="handleDelete"
-                        :loading="isDeleting"
+                        :disabled="isDeleting"
                     >
-                        Delete
+                        <span v-if="isDeleting">Deleting...</span>
+                        <span v-else>Delete</span>
                     </Button>
-                </div>
-            </template>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
     </div>
 </template>
 
-<style scoped>
-/* Scoped styles for component */
-</style>
-
-<style>
-/* Global styles to ensure dialog is always centered - must be unscoped */
-/* Target frappe-ui Dialog component when it has delete-dialog class */
-.delete-dialog,
-.delete-dialog-centered,
-body > [class*="Dialog"].delete-dialog,
-body > [class*="dialog"].delete-dialog,
-[data-reka-popper-content-wrapper].delete-dialog,
-[role="dialog"].delete-dialog {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 9999 !important;
-    margin: 0 !important;
-}
-
-/* Target dialog content wrapper - more specific selectors */
-.delete-dialog [role="dialog"],
-.delete-dialog .DialogContent,
-.delete-dialog > div:first-child,
-.delete-dialog-centered [role="dialog"],
-.delete-dialog-centered .DialogContent,
-.delete-dialog-centered > div:first-child,
-body > [role="dialog"].delete-dialog {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
-    max-width: 90vw !important;
-    max-height: 90vh !important;
-}
-
-/* Target any element with delete-dialog class that might be the dialog container */
-[class*="delete-dialog"] {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 9999 !important;
-}
-
-/* Ensure dialog backdrop/overlay is full screen */
-.delete-dialog ~ [class*="overlay"],
-.delete-dialog ~ [class*="backdrop"],
-.delete-dialog-centered ~ [class*="overlay"],
-.delete-dialog-centered ~ [class*="backdrop"] {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 9998 !important;
-}
-</style>

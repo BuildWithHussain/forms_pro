@@ -1,11 +1,12 @@
 import { createResource } from "frappe-ui";
 
-export const createNewFormWithDoctype = async (linked_doctype: string) => {
+export const createNewFormWithDoctype = async (linked_doctype: string, category: string | null = null) => {
   const form = createResource({
     url: "forms_pro.utils.form_generator.create_form_with_doctype",
     makeParams() {
       return {
         doctype: linked_doctype,
+        category: category || null,
       };
     },
   });
@@ -14,9 +15,14 @@ export const createNewFormWithDoctype = async (linked_doctype: string) => {
   return form.data;
 };
 
-export const createNewForm = async () => {
+export const createNewForm = async (category: string | null = null) => {
   const form = createResource({
     url: "forms_pro.utils.form_generator.create_form",
+    makeParams() {
+      return {
+        category: category || null,
+      };
+    },
   });
 
   await form.fetch();

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { session } from "@/data/session";
 import { useRouter } from "vue-router";
-import { LayoutDashboard, LogOut } from "lucide-vue-next";
+import { LayoutDashboard, LogOut, FolderTree } from "lucide-vue-next";
 const router = useRouter();
 
 // App logo from hooks.py
@@ -28,6 +28,11 @@ const menuItems = [
     title: "Dashboard",
     icon: LayoutDashboard,
     to: "/",
+  },
+  {
+    title: "Categories",
+    icon: FolderTree,
+    to: "/categories",
   },
 ];
 </script>

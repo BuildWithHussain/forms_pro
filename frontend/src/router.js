@@ -9,6 +9,11 @@ const routes = [
         component: () => import("@/pages/Dashboard.vue"),
     },
     {
+        path: "/categories",
+        name: "Categories",
+        component: () => import("@/pages/Categories.vue"),
+    },
+    {
         path: "/edit-form/:id",
         name: "Edit Form",
         component: () => import("@/pages/EditForm.vue"),
@@ -39,9 +44,9 @@ router.beforeEach(async (to, from, next) => {
         isLoggedIn = false;
     }
 
-    // Handle authentication - only protect dashboard and edit form routes
+    // Handle authentication - only protect dashboard, categories, and edit form routes
     // Submission pages should be accessible to guests
-    const protectedRoutes = ["Dashboard", "Edit Form"];
+    const protectedRoutes = ["Dashboard", "Categories", "Edit Form"];
     const isProtectedRoute = protectedRoutes.includes(to.name || "");
     
     if (to.name === "Login" && isLoggedIn) {

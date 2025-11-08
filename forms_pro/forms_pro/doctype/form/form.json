@@ -11,6 +11,7 @@
   "column_break_pqae",
   "title",
   "linked_doctype",
+  "category",
   "settings_section",
   "login_required",
   "column_break_xocw",
@@ -52,6 +53,12 @@
    "label": "Linked Doctype",
    "options": "DocType",
    "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "label": "Category",
+   "options": "Form Category"
   },
   {
    "fieldname": "section_break_vdhw",

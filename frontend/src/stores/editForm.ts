@@ -82,6 +82,7 @@ export const useEditForm = defineStore("editForm", () => {
             allow_anonymous: doc.allow_anonymous || false,
             allow_incomplete: doc.allow_incomplete || false,
             max_attachment_size: doc.max_attachment_size || null,
+            category: doc.category || null,
             // Styling fields with defaults
             background_image: doc.background_image || null,
             background_color: doc.background_color || "#ffffff",
@@ -132,6 +133,7 @@ export const useEditForm = defineStore("editForm", () => {
           allow_anonymous: formResource.value.doc.allow_anonymous || false,
           allow_incomplete: formResource.value.doc.allow_incomplete || false,
           max_attachment_size: formResource.value.doc.max_attachment_size || null,
+          category: formResource.value.doc.category || null,
           // Styling fields
           background_image: formResource.value.doc.background_image || null,
           background_color: formResource.value.doc.background_color || "#ffffff",

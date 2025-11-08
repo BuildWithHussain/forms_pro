@@ -31,6 +31,20 @@ const doctypes = createResource({
     },
 });
 
+// Load categories list
+const categories = createResource({
+    url: "forms_pro.api.category.get_categories",
+    auto: true,
+    transform: (data) => {
+        // Transform to format expected by Combobox: [{ label, value }]
+        if (!Array.isArray(data)) return [];
+        return data.map((cat) => ({
+            label: cat.title,
+            value: cat.name,
+        }));
+    },
+});
+
 const canAutoPopulate = computed(() => {
     return (
         editFormStore.formData?.linked_doctype &&
@@ -398,6 +412,20 @@ const updateDoctype = async () => {
                 </p>
                 <p v-if="doctypes.loading" class="text-xs text-gray-500">
                     Loading DocTypes...
+                </p>
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium">Category</label>
+                <Combobox
+                    v-model="editFormStore.formData.category"
+                    :options="categories.data || []"
+                    label="Category"
+                    :disabled="categories.loading"
+                    :loading="categories.loading"
+                    placeholder="Select a category (optional)"
+                />
+                <p v-if="categories.loading" class="text-xs text-gray-500">
+                    Loading categories...
                 </p>
             </div>
             <FormControl

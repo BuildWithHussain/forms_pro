@@ -96,6 +96,17 @@
                     <p class="text-xs text-muted-foreground">
                         Automatically add all fields from the selected DocType to the form.
                     </p>
+                    <div class="flex flex-col gap-2">
+                        <Label for="category">Category (Optional)</Label>
+                        <Combobox
+                            v-model="selectedCategory"
+                            :options="categories.data || []"
+                            label="Category"
+                            id="category"
+                            :loading="categories.loading"
+                            placeholder="Select a category"
+                        />
+                    </div>
                 </div>
                 <DialogFooter>
                     <Button
@@ -156,12 +167,13 @@ const showSelectDoctypeDialog = ref(false);
 const autoPopulateOnCreate = ref(true);
 
 const handleCreateDraftFormWithDoctype = async () => {
-    const data = await createNewFormWithDoctype(selectedDoctype.value);
+    const data = await createNewFormWithDoctype(selectedDoctype.value, selectedCategory.value);
     
     // Reset dialog state
     showSelectDoctypeDialog.value = false;
     const shouldAutoPopulate = autoPopulateOnCreate.value;
     selectedDoctype.value = null;
+    selectedCategory.value = null;
     
     // Navigate to edit form
     router.push({
@@ -174,7 +186,8 @@ const handleCreateDraftFormWithDoctype = async () => {
 };
 
 const handleCreateDraftForm = async () => {
-    const data = await createNewForm();
+    const data = await createNewForm(selectedCategory.value);
+    selectedCategory.value = null;
     router.push({
         name: "Edit Form",
         params: {
@@ -214,6 +227,20 @@ const doctypes = createResource({
     auto: true,
 });
 const selectedDoctype = ref(null);
+
+// Load categories for form creation
+const categories = createResource({
+    url: "forms_pro.api.category.get_categories",
+    auto: true,
+    transform: (data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map((cat) => ({
+            label: cat.title,
+            value: cat.name,
+        }));
+    },
+});
+const selectedCategory = ref(null);
 
 // Fix z-index for Combobox dropdown when Dialog is open
 let comboboxFixObserver: MutationObserver | null = null;

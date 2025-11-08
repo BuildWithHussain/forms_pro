@@ -58,6 +58,20 @@ body > [role="dialog"].delete-dialog {
 	max-height: 90vh !important;
 }
 
+/* Ensure Combobox dropdowns appear above Dialog modals */
+/* Dialog uses z-50 (z-index: 50), so Combobox dropdowns need higher z-index */
+/* Since Combobox dropdowns are rendered in portals, we need to target them globally */
+[data-reka-popper-content-wrapper] {
+	z-index: 100 !important;
+}
+
+/* Also target the PopoverContent inside reka popper */
+[data-reka-popper-content-wrapper] [role="dialog"],
+[data-reka-popper-content-wrapper] .PopoverContent,
+[data-reka-popper-content-wrapper] [class*="PopoverContent"] {
+	z-index: 100 !important;
+}
+
 
 
 @layer base {

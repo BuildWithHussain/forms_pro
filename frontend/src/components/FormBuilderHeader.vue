@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { Badge, Popover, Tooltip } from "frappe-ui";
-import { ChevronDown, CloudCheck, ExternalLink } from "lucide-vue-next";
-import { Button } from "frappe-ui";
+import { Badge } from "@/components/ui/badge";
+import { 
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, CloudCheck, ExternalLink, Globe, ArrowLeft } from "lucide-vue-next";
 import { useEditForm } from "@/stores/editForm";
 import { useRouter } from "vue-router";
 import Logo from "@/assets/Logo.vue";
@@ -21,80 +28,90 @@ const openFormSubmissionPage = () => {
 };
 </script>
 <template>
-    <header
-        class="form-builder-header flex justify-between items-center py-2 px-4 border-b h-[3rem] transition-all duration-300"
-        data-form-builder-component="form-builder-header"
-    >
-        <Popover>
-            <template #target="{ togglePopover }">
-                <button class="flex items-center gap-1" @click="togglePopover">
-                    <Logo />
-                    <ChevronDown class="w-5 h-5" />
-                </button>
-            </template>
-            <template #body-main>
-                <div class="flex flex-col gap-2 bg-white rounded-lg p-2">
-                    <Button
-                        label="Go to dashboard"
-                        icon-left="arrow-left"
-                        variant="ghost"
-                        route="/"
-                    />
-                </div>
-            </template>
-        </Popover>
-        <div class="flex items-center gap-2">
-            <Badge
-                v-if="editFormStore.isUnsaved"
-                variant="subtle"
-                label="Unsaved"
-                theme="orange"
-                size="sm"
-            />
-            <Tooltip v-else text="Form is published" placement="bottom">
-                <CloudCheck class="w-4 h-4 text-gray-500" />
-            </Tooltip>
-            <h3 class="text-base font-medium text-gray-600 text-center">
-                {{ editFormStore.originalFormData?.title || "Untitled Form" }}
-            </h3>
-            <div class="flex items-center gap-1">
-                <span v-if="editFormStore.originalFormData?.route" class="text-base text-gray-600">
-                    /{{ editFormStore.originalFormData?.route }}
-                </span>
-                <Tooltip text="Open in new tab" placement="bottom">
-                    <Button variant="ghost" @click="openFormSubmissionPage">
-                        <ExternalLink class="w-4 h-4 text-gray-500" />
+    <TooltipProvider>
+        <header
+            class="form-builder-header flex justify-between items-center py-2 px-4 border-b h-16 bg-background transition-all duration-300"
+            data-form-builder-component="form-builder-header"
+        >
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button variant="ghost" class="h-8 -ml-2 pl-2 pr-1 flex items-center justify-center gap-1">
+                        <Logo />
+                        <ChevronDown class="w-4 h-4" />
                     </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                    <DropdownMenuItem @click="router.push('/')">
+                        <ArrowLeft class="mr-2 h-4 w-4" />
+                        <span>Go to dashboard</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <div class="flex items-center gap-2">
+                <Badge
+                    v-if="editFormStore.isUnsaved"
+                    variant="secondary"
+                    class="bg-orange-100 text-orange-800"
+                >
+                    Unsaved
+                </Badge>
+                <Tooltip v-else>
+                    <TooltipTrigger as-child>
+                        <div>
+                            <CloudCheck class="w-4 h-4 text-muted-foreground" />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Form is published</p>
+                    </TooltipContent>
                 </Tooltip>
+                <h3 class="text-base font-medium text-foreground text-center">
+                    {{ editFormStore.originalFormData?.title || "Untitled Form" }}
+                </h3>
+                <div class="flex items-center gap-1">
+                    <span v-if="editFormStore.originalFormData?.route" class="text-base text-muted-foreground">
+                        /{{ editFormStore.originalFormData?.route }}
+                    </span>
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <Button variant="ghost" size="icon" class="h-8 w-8" @click="openFormSubmissionPage">
+                                <ExternalLink class="w-4 h-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Open in new tab</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
             </div>
-        </div>
-        <div class="flex items-center gap-2">
-            <div v-if="editFormStore.isUnsaved">
-                <Button
-                    v-if="editFormStore.isPublished"
-                    label="Save and publish"
-                    icon-left="globe"
-                    variant="solid"
-                    @click="editFormStore.saveAndPublish"
-                    :loading="editFormStore.formResource?.loading"
-                />
+            <div class="flex items-center gap-2">
+                <div v-if="editFormStore.isUnsaved">
+                    <Button
+                        v-if="editFormStore.isPublished"
+                        @click="editFormStore.saveAndPublish"
+                        :disabled="editFormStore.formResource?.loading"
+                    >
+                        <Globe class="mr-2 h-4 w-4" />
+                        Save and publish
+                    </Button>
+                    <Button
+                        v-else
+                        @click="editFormStore.save"
+                        :disabled="editFormStore.formResource?.loading"
+                    >
+                        Save
+                    </Button>
+                </div>
                 <Button
                     v-else
-                    label="Save"
-                    variant="solid"
-                    @click="editFormStore.save"
-                    :loading="editFormStore.formResource?.loading"
-                />
+                    :variant="editFormStore.isPublished ? 'destructive' : 'default'"
+                    :disabled="editFormStore.formResource?.loading"
+                    @click="editFormStore.togglePublish"
+                >
+                    <Globe v-if="!editFormStore.isPublished" class="mr-2 h-4 w-4" />
+                    {{ editFormStore.isPublished ? 'Unpublish' : 'Publish' }}
+                </Button>
             </div>
-            <Button
-                v-else
-                :label="editFormStore.isPublished ? 'Unpublish' : 'Publish'"
-                :icon-left="editFormStore.isPublished ? '' : 'globe'"
-                :variant="editFormStore.isPublished ? 'subtle' : 'solid'"
-                :theme="editFormStore.isPublished ? 'red' : 'gray'"
-                :loading="editFormStore.formResource?.loading"
-                @click="editFormStore.togglePublish"
-            />
-        </div>
-    </header>
+        </header>
+    </TooltipProvider>
 </template>

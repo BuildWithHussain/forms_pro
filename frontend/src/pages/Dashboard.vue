@@ -119,7 +119,7 @@
 <script setup lang="ts">
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref, onUnmounted, watch } from "vue";
 import {
     Dialog,
     DialogContent,
@@ -214,4 +214,63 @@ const doctypes = createResource({
     auto: true,
 });
 const selectedDoctype = ref(null);
+
+// Fix z-index for Combobox dropdown when Dialog is open
+let comboboxFixObserver: MutationObserver | null = null;
+let comboboxFixInterval: number | null = null;
+
+const fixComboboxZIndex = () => {
+    // Only fix when dialog is open
+    if (!showSelectDoctypeDialog.value) return;
+    
+    // Find all Combobox dropdowns (reka popper)
+    document.querySelectorAll('[data-reka-popper-content-wrapper]').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.setProperty('z-index', '100', 'important');
+        
+        // Also fix the PopoverContent inside
+        const popoverContent = htmlEl.querySelector('[role="dialog"], .PopoverContent, [class*="PopoverContent"]');
+        if (popoverContent) {
+            const popoverEl = popoverContent as HTMLElement;
+            popoverEl.style.setProperty('z-index', '100', 'important');
+        }
+    });
+};
+
+// Watch for dialog open/close to start/stop fixing
+watch(showSelectDoctypeDialog, (isOpen) => {
+    if (isOpen) {
+        // Start fixing when dialog opens
+        fixComboboxZIndex();
+        comboboxFixInterval = setInterval(fixComboboxZIndex, 50);
+        
+        // Watch for new dropdowns
+        comboboxFixObserver = new MutationObserver(fixComboboxZIndex);
+        comboboxFixObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class', 'data-reka-popper-content-wrapper'],
+        });
+    } else {
+        // Stop fixing when dialog closes
+        if (comboboxFixObserver) {
+            comboboxFixObserver.disconnect();
+            comboboxFixObserver = null;
+        }
+        if (comboboxFixInterval) {
+            clearInterval(comboboxFixInterval);
+            comboboxFixInterval = null;
+        }
+    }
+});
+
+onUnmounted(() => {
+    if (comboboxFixObserver) {
+        comboboxFixObserver.disconnect();
+    }
+    if (comboboxFixInterval) {
+        clearInterval(comboboxFixInterval);
+    }
+});
 </script>

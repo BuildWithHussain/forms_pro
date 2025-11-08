@@ -115,6 +115,7 @@ declare module 'vue' {
     StatisticsCards: typeof import('./src/components/dashboard/StatisticsCards.vue')['default']
     SuccessSection: typeof import('./src/components/submission/SuccessSection.vue')['default']
     TableField: typeof import('./src/components/submission/TableField.vue')['default']
+    Textarea: typeof import('./src/components/ui/textarea/Textarea.vue')['default']
     Tooltip: typeof import('./src/components/ui/tooltip/Tooltip.vue')['default']
     TooltipContent: typeof import('./src/components/ui/tooltip/TooltipContent.vue')['default']
     TooltipProvider: typeof import('./src/components/ui/tooltip/TooltipProvider.vue')['default']

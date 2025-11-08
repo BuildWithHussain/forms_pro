@@ -1,7 +1,7 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
-# import frappe
+import frappe
 from frappe.model.document import Document
 
 
@@ -82,7 +82,23 @@ class FormField(Document):
             _fieldtype = "Table"
         elif self.fieldtype == "Rating":
             _fieldtype = "Rating"
-        # All other types (Data, Select, Password, Date) map directly
+        elif self.fieldtype == "Select":
+            # Check if options is a valid DocType name - if so, convert to Link
+            # This handles the case where Link fields are stored as Select in forms
+            if self.options:
+                options_str = self.options.strip()
+                # Check if it looks like a DocType name (single word, no newlines, no commas)
+                if ("\n" not in options_str and 
+                    "," not in options_str and 
+                    len(options_str.split()) <= 3):  # DocType names are usually 1-3 words
+                    # Check if it's a valid DocType
+                    try:
+                        # Use frappe.db.exists to check if DocType exists
+                        if frappe.db.exists("DocType", options_str):
+                            _fieldtype = "Link"
+                    except Exception:
+                        pass  # If check fails, keep as Select
+        # All other types (Data, Password, Date) map directly
 
         # Special validation: Frappe requires fields named "image" to be "Attach Image"
         if self.fieldname.lower() == "image" and _fieldtype != "Attach Image":

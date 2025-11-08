@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.core.api.file import get_max_file_size
 from forms_pro.api.form import can_guest_upload_files
 
@@ -26,6 +27,38 @@ def submit_form_response(form_id: str, form_data: list[dict]):
     # Set ignore_mandatory flag if allow_incomplete is enabled
     if form.allow_incomplete:
         submission.flags.ignore_mandatory = True
+    
+    # Track which form created this submission (for filtering in submissions list)
+    # Check if the field exists, if not, we'll add it dynamically
+    form_tracking_field = "forms_pro_form_id"
+    if meta.has_field(form_tracking_field):
+        submission.set(form_tracking_field, form_id)
+    else:
+        # Field doesn't exist, add it to the DocType dynamically
+        try:
+            doctype_doc = frappe.get_doc("DocType", linked_doctype)
+            # Check if field already exists (race condition check)
+            if not any(f.fieldname == form_tracking_field for f in doctype_doc.fields):
+                doctype_doc.append("fields", {
+                    "fieldname": form_tracking_field,
+                    "label": "Forms Pro Form ID",
+                    "fieldtype": "Link",
+                    "options": "Form",
+                    "hidden": 1,
+                    "read_only": 1,
+                    "no_copy": 1,
+                })
+                doctype_doc.save(ignore_permissions=True)
+                frappe.clear_cache(doctype=linked_doctype)
+                # Reload meta to get the new field
+                meta = frappe.get_meta(linked_doctype)
+            # Now set the field value
+            if meta.has_field(form_tracking_field):
+                submission.set(form_tracking_field, form_id)
+        except Exception:
+            # If adding the field fails, continue without tracking
+            # This allows submissions to work even if we can't track them
+            pass
     
     # Process form data
     for data in form_data:
@@ -122,3 +155,120 @@ def submit_form_response(form_id: str, form_data: list[dict]):
         submission.save(ignore_permissions=True)
     
     return submission.name
+
+
+@frappe.whitelist()
+def get_all_submissions() -> list[dict]:
+    """Get all forms with their submissions and list view fields"""
+    user = frappe.session.user
+    
+    # Get all forms owned by the user
+    forms = frappe.get_all(
+        "Form",
+        filters={"owner": user},
+        fields=["name", "title", "linked_doctype", "route"],
+        order_by="title ASC"
+    )
+    
+    result = []
+    
+    for form in forms:
+        linked_doctype = form.linked_doctype
+        if not linked_doctype:
+            continue
+        
+        # Get DocType metadata to find list view fields
+        try:
+            meta = frappe.get_meta(linked_doctype)
+            list_view_fields = [
+                {
+                    "fieldname": field.fieldname,
+                    "label": field.label,
+                    "fieldtype": field.fieldtype,
+                }
+                for field in meta.fields
+                if field.in_list_view
+            ]
+            
+            # Always include 'name' field if not already present
+            if not any(f["fieldname"] == "name" for f in list_view_fields):
+                list_view_fields.insert(0, {
+                    "fieldname": "name",
+                    "label": "ID",
+                    "fieldtype": "Data",
+                })
+            
+            # Get submissions for this specific form
+            # Filter by forms_pro_form_id field if it exists
+            form_tracking_field = "forms_pro_form_id"
+            filters = {}
+            
+            # Check if the DocType has the tracking field
+            if meta.has_field(form_tracking_field):
+                # Filter by form ID to only get submissions from this form
+                filters[form_tracking_field] = form.name
+            else:
+                # If tracking field doesn't exist, we can't filter properly
+                # In this case, we'll get all documents, but this is a fallback
+                # Ideally, the field should exist for proper filtering
+                pass
+            
+            submissions = frappe.get_all(
+                linked_doctype,
+                fields=[f["fieldname"] for f in list_view_fields] + ["creation", "modified", "owner"],
+                filters=filters,
+                order_by="creation DESC",
+                limit=1000  # Limit to prevent performance issues
+            )
+            
+            result.append({
+                "form": form,
+                "submissions": submissions,
+                "list_view_fields": list_view_fields,
+            })
+        except Exception:
+            # Skip if doctype doesn't exist or has errors
+            continue
+    
+    return result
+
+
+@frappe.whitelist()
+def get_submission_details(form_id: str, submission_id: str, doctype: str) -> dict:
+    """Get full submission document details"""
+    # Verify the form exists and user has access
+    form = frappe.get_doc("Form", form_id)
+    if form.owner != frappe.session.user:
+        frappe.throw(_("You don't have permission to view this submission"), frappe.PermissionError)
+    
+    # Verify the doctype matches the form's linked doctype
+    if form.linked_doctype != doctype:
+        frappe.throw(_("Invalid submission"), frappe.ValidationError)
+    
+    # Get the submission document
+    try:
+        submission = frappe.get_doc(doctype, submission_id)
+        # Convert to dict with all fields
+        return submission.as_dict()
+    except frappe.DoesNotExistError:
+        frappe.throw(_("Submission not found"), frappe.DoesNotExistError)
+
+
+@frappe.whitelist()
+def delete_submission(form_id: str, submission_id: str, doctype: str) -> dict:
+    """Delete a submission document"""
+    # Verify the form exists and user has access
+    form = frappe.get_doc("Form", form_id)
+    if form.owner != frappe.session.user:
+        frappe.throw(_("You don't have permission to delete this submission"), frappe.PermissionError)
+    
+    # Verify the doctype matches the form's linked doctype
+    if form.linked_doctype != doctype:
+        frappe.throw(_("Invalid submission"), frappe.ValidationError)
+    
+    # Delete the submission document
+    try:
+        frappe.delete_doc(doctype, submission_id, force=True)
+        return {"message": _("Submission deleted successfully")}
+    except frappe.DoesNotExistError:
+        frappe.throw(_("Submission not found"), frappe.DoesNotExistError)

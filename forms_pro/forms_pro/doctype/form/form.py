@@ -59,6 +59,12 @@ class Form(Document):
 
     def set_doctype_fields(self) -> None:
         doctype_doc = self.linked_doctype_doc
+        
+        # Only modify custom DocTypes - standard DocTypes cannot be modified in production
+        # If the DocType is not custom, skip field modifications
+        if not doctype_doc.custom:
+            return
+        
         existing_fields = {f.fieldname: f for f in doctype_doc.fields}
 
         # Track fieldname changes and new fields

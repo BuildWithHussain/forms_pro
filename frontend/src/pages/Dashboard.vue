@@ -31,7 +31,7 @@
                 >
             </template>
         </Dialog>
-        <div class="p-4 flex flex-col gap-4 w-full">
+        <div class="p-4 flex flex-col gap-4 w-full overflow-y-auto">
             <div class="flex flex-col gap-2">
                 <h2 class="text-3xl font-bold">Dashboard</h2>
                 <p class="text-base">Manage and create forms</p>

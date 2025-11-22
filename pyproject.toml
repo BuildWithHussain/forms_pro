@@ -1,7 +1,8 @@
 [project]
 name = "forms_pro"
 authors = [
-    { name = "harsh@buildwithhussain.com", email = "developers@buildwithhussain.com"}
+    { name = "Harsh Tandon", email = "harsh@buildwithhussain.com" },
+    { name = "BWH Studios", email = "developers@buildwithhussain.com" },
 ]
 description = "Web Forms on steroids!"
 requires-python = ">=3.10"
@@ -9,7 +10,11 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
+    "Faker~=38.2.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/buildwithhussain/forms_pro"
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]
@@ -24,15 +29,7 @@ line-length = 110
 target-version = "py310"
 
 [tool.ruff.lint]
-select = [
-    "F",
-    "E",
-    "W",
-    "I",
-    "UP",
-    "B",
-    "RUF",
-]
+select = ["F", "E", "W", "I", "UP", "B", "RUF"]
 ignore = [
     "E501", # line too long
 ]

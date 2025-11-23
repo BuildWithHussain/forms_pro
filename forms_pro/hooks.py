@@ -136,13 +136,11 @@ fixtures = [
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "User": {
+        "on_update": "forms_pro.overrides.roles.handle_forms_pro_role_change",
+    }
+}
 
 # Scheduled Tasks
 # ---------------

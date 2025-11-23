@@ -19,8 +19,6 @@ declare module 'vue' {
     FormHeader: typeof import('./src/components/submission/FormHeader.vue')['default']
     FormPreviewCard: typeof import('./src/components/dashboard/FormPreviewCard.vue')['default']
     FormRenderer: typeof import('./src/components/submission/FormRenderer.vue')['default']
-    Icon: typeof import('./src/components/Icon.vue')['default']
-    Logo: typeof import('./src/components/Logo.vue')['default']
     RenderField: typeof import('./src/components/RenderField.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

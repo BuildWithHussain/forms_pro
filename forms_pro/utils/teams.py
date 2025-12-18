@@ -15,6 +15,7 @@ def get_user_teams(user: str = frappe.session.user):
         .on(FP_TEAM.name == FP_TEAM_MEMBER.parent)
         .where(FP_TEAM_MEMBER.user == user)
         .select(FP_TEAM.team_name, FP_TEAM.name)
+        .orderby(FP_TEAM.creation)
     )
     teams = query.run(as_dict=True)
 

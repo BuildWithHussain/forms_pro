@@ -2,7 +2,7 @@ import frappe
 from frappe.core.doctype.user.user import User
 
 from forms_pro.roles import FORMS_PRO_ROLE
-from forms_pro.utils.teams import get_user_teams
+from forms_pro.utils.teams import get_user_teams, set_current_team
 
 
 def handle_forms_pro_role_change(doc, method) -> None:
@@ -27,7 +27,7 @@ def handle_forms_pro_role_change(doc, method) -> None:
             create_default_team_for_user(user)
 
 
-def create_default_team_for_user(user: User):
+def create_default_team_for_user(user: User) -> None:
     from forms_pro.forms_pro.doctype.fp_team.fp_team import FPTeam
 
     team: FPTeam = frappe.new_doc("FP Team")
@@ -40,3 +40,4 @@ def create_default_team_for_user(user: User):
         },
     )
     team.save(ignore_permissions=True)
+    set_current_team(team.name, user.name)

@@ -36,34 +36,46 @@
                 <h2 class="text-3xl font-bold">Dashboard</h2>
                 <p class="text-base">Manage and create forms</p>
             </div>
-            <Dropdown
-                class="w-fit"
-                :button="{
-                    label: 'Create',
-                    iconLeft: 'plus',
-                    variant: 'solid',
-                }"
-                :options="[
-                    {
-                        label: 'Create New',
-                        onClick: handleCreateDraftForm,
-                    },
-                    {
-                        label: 'Create from Existing DocType',
-                        onClick: () => {
-                            showSelectDoctypeDialog = true;
+            <template v-if="user.has_desk_access">
+                <Dropdown
+                    class="w-fit"
+                    :button="{
+                        label: 'Create',
+                        iconLeft: 'plus',
+                        variant: 'solid',
+                    }"
+                    :options="[
+                        {
+                            label: 'Create New',
+                            onClick: handleCreateDraftForm,
                         },
-                    },
-                ]"
-            />
+                        {
+                            label: 'Create from Existing DocType',
+                            onClick: () => {
+                                showSelectDoctypeDialog = true;
+                            },
+                        },
+                    ]"
+                />
+            </template>
+            <template v-else>
+                <Button
+                    class="w-fit"
+                    variant="solid"
+                    iconLeft="plus"
+                    @click="handleCreateDraftForm"
+                >
+                    Create New
+                </Button>
+            </template>
             <div class="flex flex-col gap-2">
-                <h3 class="font-medium">Recents</h3>
-                <p class="text-sm text-gray-500" v-if="userForms.loading">Loading...</p>
-                <p class="text-sm text-gray-500" v-else-if="userForms.data?.length === 0">
+                <h3 class="font-medium">Recent</h3>
+                <p class="text-sm" v-if="teamForms.loading">Loading...</p>
+                <p class="text-sm" v-else-if="!teamForms.data || teamForms.data.length === 0">
                     No forms created yet
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" v-else>
-                    <div v-for="form in userForms.data" :key="form.name">
+                    <div v-for="form in teamForms.data" :key="form.name">
                         <FormPreviewCard :form="form" />
                     </div>
                 </div>
@@ -75,7 +87,8 @@
 <script setup>
 import BaseLayout from "@/layouts/BaseLayout.vue";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useUser } from "@/stores/user";
 import {
     Dropdown,
     Dialog,
@@ -91,8 +104,10 @@ import FormPreviewCard from "@/components/dashboard/FormPreviewCard.vue";
 const router = useRouter();
 const showSelectDoctypeDialog = ref(false);
 
+const user = useUser();
+
 const handleCreateDraftFormWithDoctype = async () => {
-    const data = await createNewFormWithDoctype(selectedDoctype.value);
+    const data = await createNewFormWithDoctype(selectedDoctype.value, user.currentTeam?.name);
     router.push({
         name: "Edit Form",
         params: {
@@ -102,7 +117,7 @@ const handleCreateDraftFormWithDoctype = async () => {
 };
 
 const handleCreateDraftForm = async () => {
-    const data = await createNewForm();
+    const data = await createNewForm(user.currentTeam?.name);
     router.push({
         name: "Edit Form",
         params: {
@@ -111,20 +126,18 @@ const handleCreateDraftForm = async () => {
     });
 };
 
-const userForms = createListResource({
-    doctype: "Form",
-    filters: {
-        owner: session.user,
+const teamForms = createResource({
+    url: "forms_pro.api.team.get_team_forms",
+    makeParams() {
+        return {
+            team_id: user.currentTeam?.name,
+        };
     },
-    fields: ["name", "title", "creation", "modified", "is_published", "route"],
-    orderBy: "modified desc",
-    auto: true,
-    pageLength: 9999,
+    loading: true,
+    cache: "teamForms",
 });
 
-const doctypes = createResource({
-    url: "forms_pro.api.form.get_doctype_list",
-    auto: true,
+onMounted(() => {
+    teamForms.fetch();
 });
-const selectedDoctype = ref(null);
 </script>

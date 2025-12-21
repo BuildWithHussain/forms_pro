@@ -20,4 +20,24 @@ class FPTeam(Document):
         users: DF.TableMultiSelect[FPTeamMember]
     # end: auto-generated types
 
-    pass
+    @property
+    def team_members(self) -> list[str]:
+        """
+        Get the list of team members
+
+        Returns:
+            list[str] - List of team member email addresses
+        """
+        return [member.user for member in self.users] if self.users else []
+
+    def is_team_member(self, user: str) -> bool:
+        """
+        Check if a user is a member of the team
+
+        Args:
+            user: The user email address
+
+        Returns:
+            bool - True if the user is a member of the team, False otherwise
+        """
+        return user in self.team_members

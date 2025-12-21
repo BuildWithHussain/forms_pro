@@ -4,12 +4,12 @@ FORMS_PRO_ROLE = "Forms Pro User"
 
 
 @frappe.whitelist()
-def create_form_with_doctype(doctype: str):
+def create_form_with_doctype(team_id: str, doctype: str):
     roles = frappe.get_roles(frappe.session.user)
     if FORMS_PRO_ROLE not in roles:
         frappe.throw("You are not authorized to create a form")
 
-    form_generator = FormGenerator(linked_doctype=doctype)
+    form_generator = FormGenerator(team_id=team_id, linked_doctype=doctype)
     form_generator.generate()
 
     return {
@@ -19,12 +19,12 @@ def create_form_with_doctype(doctype: str):
 
 
 @frappe.whitelist()
-def create_form():
+def create_form(team_id: str):
     roles = frappe.get_roles(frappe.session.user)
     if FORMS_PRO_ROLE not in roles:
         frappe.throw("You are not authorized to create a form")
 
-    form_generator = FormGenerator()
+    form_generator = FormGenerator(team_id=team_id)
     form_generator.generate()
 
     return {
@@ -34,8 +34,13 @@ def create_form():
 
 
 class FormGenerator:
-    def __init__(self, linked_doctype: str | None = None) -> None:
+    def __init__(
+        self,
+        team_id: str,
+        linked_doctype: str | None = None,
+    ) -> None:
         self.doctype = None
+        self.team_id = team_id
         if linked_doctype:
             self.doctype = frappe.get_doc("DocType", linked_doctype)
 
@@ -80,6 +85,7 @@ class FormGenerator:
         form_document = frappe.new_doc("Form")
         form_document.linked_doctype = self.doctype.name
         form_document.title = "Untitled Form"
+        form_document.linked_team_id = self.team_id
         form_document.insert(ignore_permissions=True)
         self.form_document = form_document
 

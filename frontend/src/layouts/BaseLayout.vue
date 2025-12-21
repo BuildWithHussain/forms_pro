@@ -23,19 +23,23 @@
 import { session } from "@/data/session";
 import { ref, computed } from "vue";
 import { Sidebar } from "frappe-ui";
-import { LayoutDashboard } from "lucide-vue-next";
+import { LayoutDashboard, ArrowLeftRight, LogOut } from "lucide-vue-next";
 import toggleTheme from "@/utils/theme";
+import { useUser } from "@/stores/user";
+const userStore = useUser();
 
 const menuItems = computed(() => {
     return [
         // {
-        // 	label: "Toggle Theme",
-        // 	icon: "moon",
-        // 	onClick: toggleTheme,
+        //     label: "Switch Teams",
+        //     icon: ArrowLeftRight,
+        //     onClick: () => {
+        //         console.log("Switch Teams");
+        //     },
         // },
         {
             label: "Log out",
-            icon: "log-out",
+            icon: LogOut,
             onClick: session.logout.submit,
         },
     ];

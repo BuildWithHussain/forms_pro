@@ -57,7 +57,7 @@ export const useUser = defineStore("user", () => {
       },
     });
     await switchTheme.fetch().then(() => {
-      userResource.value?.reload();
+      userResource.reload();
     });
   }
 

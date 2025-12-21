@@ -87,7 +87,7 @@
 <script setup>
 import BaseLayout from "@/layouts/BaseLayout.vue";
 import { useRouter } from "vue-router";
-import { ref, onMounted, watch } from "vue";
+import { ref, watch } from "vue";
 import { useUser } from "@/stores/user";
 import {
     Dropdown,
@@ -137,7 +137,13 @@ const teamForms = createResource({
     cache: "teamForms",
 });
 
-onMounted(() => {
-    teamForms.fetch();
-});
+watch(
+    () => user.currentTeam,
+    (currentTeam) => {
+        if (currentTeam) {
+            teamForms.fetch();
+        }
+    },
+    { immediate: true }
+);
 </script>

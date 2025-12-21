@@ -4,6 +4,8 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from forms_pro.utils.teams import get_user_teams
+
 # On IntegrationTestCase, the doctype test records and all
 # link-field test record dependencies are recursively loaded
 # Use these module variables to add/remove to/from that list
@@ -18,9 +20,18 @@ class IntegrationTestForm(IntegrationTestCase):
         self.test_doctype_name = "Test Form DocType"
         self.create_test_doctype()
 
+        self.test_user = "test_forms_pro_user@example.com"
+        self.test_team = get_user_teams(self.test_user)[0]["name"]
+
         # Create a test Form
         self.test_form = frappe.get_doc(
-            {"doctype": "Form", "title": "Test Form", "linked_doctype": self.test_doctype_name, "fields": []}
+            {
+                "doctype": "Form",
+                "title": "Test Form",
+                "linked_doctype": self.test_doctype_name,
+                "fields": [],
+                "linked_team_id": self.test_team,
+            }
         )
         self.test_form.insert()
 

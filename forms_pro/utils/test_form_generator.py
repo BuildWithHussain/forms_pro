@@ -5,9 +5,19 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from forms_pro.utils.form_generator import FormGenerator
+from forms_pro.utils.teams import get_user_teams
 
 
 class IntegrationTestFormGenerator(IntegrationTestCase):
+    def setUp(self):
+        super().setUp()
+        self.test_user = "test_forms_pro_user@example.com"
+        self.test_team = get_user_teams(self.test_user)[0]["name"]
+
+    def tearDown(self):
+        frappe.set_user("Administrator")
+        super().tearDown()
+
     def test_form_generator_initialization_with_doctype(self):
         """Test FormGenerator initialization with existing DocType"""
         # Create a test DocType
@@ -18,7 +28,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         test_doctype.insert(ignore_permissions=True)
 
         # Initialize FormGenerator with existing DocType
-        form_generator = FormGenerator(linked_doctype=test_doctype.name)
+        form_generator = FormGenerator(linked_doctype=test_doctype.name, team_id=self.test_team)
 
         # Assertions
         self.assertIsNotNone(form_generator.doctype)
@@ -27,14 +37,14 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
     def test_form_generator_initialization_without_doctype(self):
         """Test FormGenerator initialization without DocType"""
-        form_generator = FormGenerator()
+        form_generator = FormGenerator(team_id=self.test_team)
 
         # Assertions
         self.assertIsNone(form_generator.doctype)
 
     def test_generate_doctype_name_format(self):
         """Test that generate_doctype_name returns correct format"""
-        form_generator = FormGenerator()
+        form_generator = FormGenerator(team_id=self.test_team)
         doctype_name = form_generator._generate_doctype_name()
 
         # Assertions
@@ -45,7 +55,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
     def test_generate_doctype_name_uniqueness(self):
         """Test that generate_doctype_name generates unique names"""
-        form_generator = FormGenerator()
+        form_generator = FormGenerator(team_id=self.test_team)
         names = set()
 
         # Generate multiple names and check uniqueness
@@ -56,7 +66,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
     def test_generate_creates_doctype_when_none_provided(self):
         """Test that generate() creates a new DocType when none is provided"""
-        form_generator = FormGenerator()
+        form_generator = FormGenerator(team_id=self.test_team)
 
         # Call generate method
         form_generator.generate()
@@ -82,7 +92,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         test_doctype.custom = True
         test_doctype.insert(ignore_permissions=True)
 
-        form_generator = FormGenerator(linked_doctype=test_doctype.name)
+        form_generator = FormGenerator(linked_doctype=test_doctype.name, team_id=self.test_team)
 
         # Call generate method
         form_generator.generate()
@@ -93,7 +103,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
     def test_generate_creates_form_document(self):
         """Test that generate() creates a Form document"""
-        form_generator = FormGenerator()
+        form_generator = FormGenerator(team_id=self.test_team)
 
         # Call generate method
         form_generator.generate()
@@ -107,7 +117,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
     def test_generate_complete_flow(self):
         """Test the complete flow of FormGenerator.generate()"""
-        form_generator = FormGenerator()
+        form_generator = FormGenerator(team_id=self.test_team)
 
         # Call generate method
         form_generator.generate()
@@ -135,7 +145,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         test_doctype.custom = True
         test_doctype.insert(ignore_permissions=True)
 
-        form_generator = FormGenerator(linked_doctype=test_doctype.name)
+        form_generator = FormGenerator(linked_doctype=test_doctype.name, team_id=self.test_team)
 
         # Call generate method
         form_generator.generate()

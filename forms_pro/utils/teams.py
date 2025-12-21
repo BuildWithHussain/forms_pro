@@ -76,7 +76,7 @@ def get_user_teams(user: str = frappe.session.user):
     )
     teams = query.run(as_dict=True)
 
-    if user_default_team is None:
+    if user_default_team is None and len(teams) > 0:
         teams[0]["is_current"] = True
         set_user_default("current_team", teams[0]["name"])
 

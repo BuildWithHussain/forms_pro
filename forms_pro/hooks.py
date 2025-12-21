@@ -166,7 +166,7 @@ doc_events = {
 # Testing
 # -------
 
-# before_tests = "forms_pro.install.before_tests"
+before_tests = "forms_pro.install.before_tests"
 
 # Overriding Methods
 # ------------------------------

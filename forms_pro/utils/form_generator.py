@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.share import add_docshare
 
 FORMS_PRO_ROLE = "Forms Pro User"
@@ -8,10 +9,19 @@ FORMS_PRO_ROLE = "Forms Pro User"
 def create_form_with_doctype(team_id: str, doctype: str):
     roles = frappe.get_roles(frappe.session.user)
     if FORMS_PRO_ROLE not in roles:
-        frappe.throw("You are not authorized to create a form")
+        frappe.throw(
+            _("You are not authorized to create a form"),
+            frappe.PermissionError,
+        )
 
-    form_generator = FormGenerator(team_id=team_id, linked_doctype=doctype)
-    form_generator.generate()
+    try:
+        form_generator = FormGenerator(team_id=team_id, linked_doctype=doctype)
+        form_generator.generate()
+    except Exception as e:
+        frappe.log_error(f"Error creating form with doctype: {doctype} - {e}")
+        frappe.throw(
+            _("Error creating form with doctype: {0} - {1}").format(doctype, e),
+        )
 
     return {
         "doctype": form_generator.doctype.name,
@@ -24,15 +34,19 @@ def create_form(team_id: str):
     roles = frappe.get_roles(frappe.session.user)
     print(roles)
     if FORMS_PRO_ROLE not in roles:
-        frappe.throw("You are not authorized to create a form")
+        frappe.throw(
+            _("You are not authorized to create a form"),
+            frappe.PermissionError,
+        )
 
     try:
         form_generator = FormGenerator(team_id=team_id)
         form_generator.generate()
     except Exception as e:
         frappe.log_error(f"Error creating form: {e}")
-        frappe.throw(f"Error creating form: {e}")
-        print(frappe.get_traceback())
+        frappe.throw(
+            _("Error creating form: {0}").format(e),
+        )
 
     return {
         "doctype": form_generator.doctype.name,
@@ -110,24 +124,6 @@ class FormGenerator:
         )
 
         self.doctype = placeholder_doctype
-        # self.set_placeholder_doctype_fields()
-
-    # def set_placeholder_doctype_fields(self) -> None:
-    #     fields = [
-    #         {
-    #             "label": "Is Form Pro DocType",
-    #             "fieldname": "is_forms_pro_doctype",
-    #             "fieldtype": "Check",
-    #             "reqd": 1,
-    #             "read_only": 1,
-    #             "default": 1,
-    #         }
-    #     ]
-
-    #     for field in fields:
-    #         self.doctype.append("fields", field)
-
-    #     self.doctype.save(ignore_permissions=True)
 
     def _initialize_form_document(self) -> None:
         form_document = frappe.new_doc("Form")

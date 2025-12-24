@@ -74,7 +74,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         # Assertions
         self.assertIsNotNone(form_generator.doctype)
         self.assertTrue(form_generator.doctype.name.startswith("formspro_"))
-        self.assertEqual(form_generator.doctype.module, "Forms Pro")
+        self.assertEqual(form_generator.doctype.module, "User Forms")
         self.assertTrue(form_generator.doctype.custom)
         self.assertTrue(form_generator.doctype.track_changes)
         self.assertTrue(form_generator.doctype.track_views)
@@ -133,7 +133,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
         # Verify DocType properties
         self.assertTrue(form_generator.doctype.name.startswith("formspro_"))
-        self.assertEqual(form_generator.doctype.module, "Forms Pro")
+        self.assertEqual(form_generator.doctype.module, "User Forms")
         self.assertTrue(form_generator.doctype.custom)
 
     def test_generate_with_existing_doctype_complete_flow(self):
@@ -157,3 +157,57 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
         # Verify Form document exists in database
         self.assertTrue(frappe.db.exists("Form", form_generator.form_document.name))
+
+    def test_generate_creates_doctype_docshare(self):
+        """Test that generate() creates DocShare for the DocType with correct permissions"""
+        frappe.set_user(self.test_user)
+        form_generator = FormGenerator(team_id=self.test_team)
+
+        # Call generate method
+        form_generator.generate()
+
+        # Query DocShare for the DocType
+        docshare = frappe.db.get_value(
+            "DocShare",
+            {
+                "share_doctype": "DocType",
+                "share_name": form_generator.doctype.name,
+                "user": self.test_user,
+            },
+            ["read", "write", "share", "submit"],
+            as_dict=True,
+        )
+
+        # Assertions
+        self.assertIsNotNone(docshare, "DocShare should exist for DocType")
+        self.assertEqual(docshare.read, 1, "DocShare should have read permission")
+        self.assertEqual(docshare.write, 1, "DocShare should have write permission")
+        self.assertEqual(docshare.share, 1, "DocShare should have share permission")
+        self.assertEqual(docshare.submit, 0, "DocShare should not have submit permission")
+
+    def test_generate_creates_form_docshare(self):
+        """Test that generate() creates DocShare for the Form document with correct permissions"""
+        frappe.set_user(self.test_user)
+        form_generator = FormGenerator(team_id=self.test_team)
+
+        # Call generate method
+        form_generator.generate()
+
+        # Query DocShare for the Form document
+        docshare = frappe.db.get_value(
+            "DocShare",
+            {
+                "share_doctype": "Form",
+                "share_name": form_generator.form_document.name,
+                "user": self.test_user,
+            },
+            ["read", "write", "share", "submit"],
+            as_dict=True,
+        )
+
+        # Assertions
+        self.assertIsNotNone(docshare, "DocShare should exist for Form document")
+        self.assertEqual(docshare.read, 1, "DocShare should have read permission")
+        self.assertEqual(docshare.write, 1, "DocShare should have write permission")
+        self.assertEqual(docshare.share, 1, "DocShare should have share permission")
+        self.assertEqual(docshare.submit, 0, "DocShare should not have submit permission")

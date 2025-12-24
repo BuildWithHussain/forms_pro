@@ -32,7 +32,6 @@ def create_form_with_doctype(team_id: str, doctype: str):
 @frappe.whitelist()
 def create_form(team_id: str):
     roles = frappe.get_roles(frappe.session.user)
-    print(roles)
     if FORMS_PRO_ROLE not in roles:
         frappe.throw(
             _("You are not authorized to create a form"),

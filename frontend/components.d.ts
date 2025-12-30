@@ -8,7 +8,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccessSection: typeof import('./src/components/form/manage/AccessSection.vue')['default']
     AddFieldsSection: typeof import('./src/components/builder/sidebar/AddFieldsSection.vue')['default']
+    Avatar: typeof import('./src/components/ui/Avatar.vue')['default']
+    DescriptionSection: typeof import('./src/components/form/manage/DescriptionSection.vue')['default']
     DoctypeFieldsSection: typeof import('./src/components/builder/sidebar/DoctypeFieldsSection.vue')['default']
     FieldEditorSidebar: typeof import('./src/components/FieldEditorSidebar.vue')['default']
     FieldPropertiesForm: typeof import('./src/components/builder/FieldPropertiesForm.vue')['default']
@@ -24,6 +27,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Section: typeof import('./src/components/fields/Section.vue')['default']
     SettingsSection: typeof import('./src/components/builder/sidebar/SettingsSection.vue')['default']
+    ShareAccessModal: typeof import('./src/components/form/manage/ShareAccessModal.vue')['default']
     SuccessSection: typeof import('./src/components/submission/SuccessSection.vue')['default']
   }
 }

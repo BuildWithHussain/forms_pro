@@ -1,7 +1,7 @@
 [project]
 name = "forms_pro"
 authors = [
-    { name = "Harsh Tandon", email = "harsh@buildwithhussain.com" },
+    { name = "Harsh Tandiya", email = "harsh@buildwithhussain.com" },
     { name = "BWH Studios", email = "developers@buildwithhussain.com" },
 ]
 description = "Web Forms on steroids!"
@@ -11,6 +11,8 @@ dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
     "Faker~=38.2.0",
+    "dnspython==2.8.0",
+    "email-validator==2.3.0",
 ]
 
 [project.urls]

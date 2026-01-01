@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.share import remove
 from pydantic import BaseModel, Field
 
@@ -51,7 +52,7 @@ def get_form_shared_with(form_id: str) -> list[frappe.Any]:
         "read",
         form_id,
     ):
-        frappe.throw("You do not have read access to this form")
+        frappe.throw(_("You do not have read access to this form"))
 
     form: Form = frappe.get_doc("Form", form_id)
     shared_with = form.shared_with()
@@ -80,7 +81,7 @@ def remove_form_access(form_id: str, user_email: str) -> None:
     """
 
     if not frappe.has_permission("Form", "write", form_id):
-        frappe.throw("You do not have write access to this form")
+        frappe.throw(_("You do not have write access to this form"))
 
     return remove(doctype="Form", name=form_id, user=user_email, flags={"ignore_permissions": True})
 
@@ -88,7 +89,7 @@ def remove_form_access(form_id: str, user_email: str) -> None:
 @frappe.whitelist()
 def get_doctype_list() -> list[str]:
     if not frappe.has_permission("DocType", "read"):
-        frappe.throw("You do not have read access to this doctype")
+        frappe.throw(_("You do not have read access to this doctype"))
 
     return frappe.db.get_list(
         "DocType",

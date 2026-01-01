@@ -16,7 +16,7 @@ const formattedDate = computed(() => {
 </script>
 <template>
     <div
-        @click="$router.push({ name: 'Edit Form', params: { id: props.form.name } })"
+        @click="$router.push({ name: 'Manage Form', params: { id: props.form.name } })"
         class="flex flex-col gap-2 border rounded p-4 hover:border-gray-400 transition-all duration-300 cursor-pointer"
     >
         <div class="flex flex-col gap-3 text-ink-gray-6">

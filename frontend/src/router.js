@@ -9,6 +9,19 @@ const routes = [
         component: () => import("@/pages/Dashboard.vue"),
     },
     {
+        path: "/manage/:id",
+        name: "Manage Form",
+        component: () => import("@/pages/manage/ManageForm.vue"),
+        redirect: { name: "Manage Form Overview" },
+        children: [
+            {
+                path: "overview",
+                name: "Manage Form Overview",
+                component: () => import("@/pages/manage/overview/Overview.vue"),
+            },
+        ],
+    },
+    {
         path: "/edit-form/:id",
         name: "Edit Form",
         component: () => import("@/pages/EditForm.vue"),

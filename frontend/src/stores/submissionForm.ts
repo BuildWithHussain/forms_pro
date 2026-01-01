@@ -10,7 +10,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   const currentFormId = ref<string | null>(null);
   const isLoading = computed(() => formResource.value?.loading);
   const allowIncompleteForms = computed(
-    () => formResource.value?.data?.allow_incomplete ,
+    () => formResource.value?.data?.allow_incomplete
   );
 
   const errors = ref<string[]>([]);

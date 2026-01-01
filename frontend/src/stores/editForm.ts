@@ -21,7 +21,7 @@ export const useEditForm = defineStore("editForm", () => {
   const isUnsaved = computed(() => formResource.value?.isDirty || false);
   const isLoading = computed(() => formResource.value?.loading || false);
   const isPublished = computed(
-    () => formResource.value?.doc?.is_published || false,
+    () => formResource.value?.doc?.is_published || false
   );
 
   const doctypeFields = ref<any>([]);
@@ -32,13 +32,14 @@ export const useEditForm = defineStore("editForm", () => {
     return formResource.value?.doc?.fields || [];
   });
   const originalFormData = computed(
-    () => formResource.value?.originalDoc || null,
+    () => formResource.value?.originalDoc || null
   );
 
   async function getDoctypeFields() {
     if (formResource.value?.doc?.linked_doctype) {
       const _fields = createResource({
         url: "forms_pro.api.form.get_doctype_fields",
+        method: "GET",
         makeParams() {
           return {
             doctype: formResource.value?.doc?.linked_doctype,
@@ -114,7 +115,7 @@ export const useEditForm = defineStore("editForm", () => {
               description: error.message,
             });
           },
-        },
+        }
       );
     }
     toast.error("No form resource available");
@@ -145,7 +146,7 @@ export const useEditForm = defineStore("editForm", () => {
           onError: () => {
             toast.error("Failed to publish form");
           },
-        },
+        }
       );
     }
   }
@@ -189,7 +190,7 @@ export const useEditForm = defineStore("editForm", () => {
   function removeField(field: FormField) {
     if (formResource.value?.doc?.fields) {
       formResource.value.doc.fields = formResource.value.doc.fields.filter(
-        (f: FormField) => f !== field,
+        (f: FormField) => f !== field
       );
     }
   }
@@ -201,7 +202,7 @@ export const useEditForm = defineStore("editForm", () => {
   function updateField(originalField: FormField, updatedField: FormField) {
     if (formResource.value?.doc?.fields) {
       const fieldIndex = formResource.value.doc.fields.findIndex(
-        (f: FormField) => f === originalField,
+        (f: FormField) => f === originalField
       );
       if (fieldIndex !== -1) {
         formResource.value.doc.fields[fieldIndex] = updatedField;

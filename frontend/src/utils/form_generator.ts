@@ -2,7 +2,7 @@ import { createResource } from "frappe-ui";
 
 export const createNewFormWithDoctype = async (
   linked_doctype: string,
-  team_id: string,
+  team_id: string
 ) => {
   const form = createResource({
     url: "forms_pro.utils.form_generator.create_form_with_doctype",
@@ -34,7 +34,7 @@ export const createNewForm = async (team_id: string) => {
 
 export const validateFormRoute = async (
   curr_form_id: string,
-  route: string,
+  route: string
 ) => {
   const route_exists = createResource({
     url: "frappe.client.get_count",

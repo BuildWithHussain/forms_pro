@@ -28,7 +28,7 @@ export function useQueryParam<T extends string>(
      * Whether to use router.replace (true) or router.push (false) (default: true)
      */
     replace?: boolean;
-  },
+  }
 ): Ref<T> {
   const route = useRoute();
   const router = useRouter();
@@ -93,7 +93,7 @@ export function useQueryParam<T extends string>(
       if (value.value !== newParam) {
         value.value = newParam as T;
       }
-    },
+    }
   );
 
   // Set initial URL param if not present

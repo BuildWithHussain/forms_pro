@@ -30,8 +30,22 @@ class GetUserResponseSchema(BaseModel):
         return [role.role for role in v]
 
 
+class GetUserBasicResponse(BaseModel):
+    full_name: str
+    user_image: str | None = None
+
+
 @frappe.whitelist()
-def get_user() -> GetUserResponseSchema:
+def get_user(user: str) -> GetUserBasicResponse | None:
+    """Get basic user data for a given user"""
+    data = frappe.db.get_value("User", user, ["full_name", "user_image"], as_dict=True)
+    if not data:
+        return None
+    return GetUserBasicResponse.model_validate(data).model_dump()
+
+
+@frappe.whitelist()
+def get_current_user() -> GetUserResponseSchema:
     """
     Get Current User Data
     """

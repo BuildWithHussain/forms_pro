@@ -4,7 +4,7 @@ import { createResource } from "frappe-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
-type UserTeam = {
+export type UserTeam = {
   name: string;
   team_name: string;
   is_current: boolean;
@@ -16,7 +16,7 @@ export const useUser = defineStore("user", () => {
   const currentTeam = ref<UserTeam | null>(null);
 
   const userResource = createResource({
-    url: "forms_pro.api.user.get_user",
+    url: "forms_pro.api.user.get_current_user",
   });
 
   const userTeamsResource = createResource({

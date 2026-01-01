@@ -6,3 +6,4 @@ dist-ssr
 coverage
 ../<app-name>
 sites
+src/types/frappe-ui.d.ts

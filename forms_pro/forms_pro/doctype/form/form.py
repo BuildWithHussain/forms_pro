@@ -1,8 +1,11 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
+from typing import Any
+
 import frappe
 from frappe.model.document import Document
+from frappe.share import get_users
 
 
 class Form(Document):
@@ -33,6 +36,14 @@ class Form(Document):
     @property
     def linked_doctype_doc(self) -> Document:
         return frappe.get_doc("DocType", self.linked_doctype)
+
+    @frappe.whitelist()
+    def shared_with(self) -> list[dict[str, Any]]:
+        """
+        Get list of users with which this form is shared
+        """
+        users_shared_with = get_users(self.doctype, self.name)
+        return users_shared_with
 
     def generate_initial_route(self) -> str:
         return "s/forms_pro_" + frappe.utils.random_string(8)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggableComponent from "vuedraggable";
-import { LoadingIndicator, TextEditor } from "frappe-ui";
+import { LoadingIndicator, TextEditor, Button } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { GripVertical } from "lucide-vue-next";
 import { FormField } from "@/types/formfield";
@@ -8,7 +8,6 @@ import { ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
 import FieldRenderer from "@/components/builder/FieldRenderer.vue";
-import Button from "frappe-ui/src/components/Button/Button.vue";
 
 const editFormStore = useEditForm();
 

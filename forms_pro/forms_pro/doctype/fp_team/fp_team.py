@@ -3,6 +3,16 @@
 
 # import frappe
 from frappe.model.document import Document
+from frappe.utils import cached_property
+from pydantic import BaseModel, EmailStr
+
+from forms_pro.api.user import get_user
+
+
+class GetTeamMembersResponse(BaseModel):
+    full_name: str
+    user_image: str | None
+    email: EmailStr
 
 
 class FPTeam(Document):
@@ -20,15 +30,25 @@ class FPTeam(Document):
         users: DF.TableMultiSelect[FPTeamMember]
     # end: auto-generated types
 
-    @property
-    def team_members(self) -> list[str]:
+    @cached_property
+    def team_members(self) -> list[GetTeamMembersResponse]:
         """
         Get the list of team members
 
         Returns:
             list[str] - List of team member email addresses
         """
-        return [member.user for member in self.users] if self.users else []
+        if not len(self.users):
+            return []
+
+        members = []
+
+        for member in self.users:
+            _user = get_user(member.user)
+            _user["email"] = member.user
+            members.append(GetTeamMembersResponse.model_validate(_user).model_dump())
+
+        return members
 
     def is_team_member(self, user: str) -> bool:
         """

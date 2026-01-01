@@ -30,7 +30,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        types_or: [javascript, vue, scss]
+        types_or: [javascript, vue, scss, ts]
         # Ignore any files that might contain jinja / bundles
         exclude: |
           (?x)^(
@@ -45,7 +45,7 @@ repos:
     rev: v8.44.0
     hooks:
       - id: eslint
-        types_or: [javascript]
+        types_or: [javascript, ts]
         args: ["--quiet"]
         # Ignore any files that might contain jinja / bundles
         exclude: |

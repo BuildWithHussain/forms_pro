@@ -13,24 +13,34 @@ import {
   TimePicker,
   Password,
 } from "frappe-ui";
+import { Component } from "vue";
+
+export type FormFieldType = {
+  component: Component;
+  props: Record<string, any>;
+};
+
+export type FormFields = FormFieldType & {
+  name: string;
+};
 
 // Individual form field components as dictionaries
-export const DataField = {
+export const DataField: FormFieldType = {
   component: FormControl,
   props: { type: "text", variant: "outline" },
 };
 
-export const NumberField = {
+export const NumberField: FormFieldType = {
   component: FormControl,
   props: { type: "number", variant: "outline" },
 };
 
-export const EmailField = {
+export const EmailField: FormFieldType = {
   component: FormControl,
   props: { type: "email", variant: "outline" },
 };
 
-export const DateField = {
+export const DateField: FormFieldType = {
   component: DatePicker,
   props: {
     variant: "outline",
@@ -39,7 +49,7 @@ export const DateField = {
   },
 };
 
-export const DateTimeField = {
+export const DateTimeField: FormFieldType = {
   component: DateTimePicker,
   props: {
     format: "DD MMM YYYY, hh:mm A",
@@ -48,7 +58,7 @@ export const DateTimeField = {
   },
 };
 
-export const DateRangeField = {
+export const DateRangeField: FormFieldType = {
   component: DateRangePicker,
   props: {
     clearable: true,
@@ -57,7 +67,7 @@ export const DateRangeField = {
   },
 };
 
-export const TimeField = {
+export const TimeField: FormFieldType = {
   component: TimePicker,
   props: {
     variant: "outline",
@@ -66,38 +76,38 @@ export const TimeField = {
   },
 };
 
-export const PasswordField = {
+export const PasswordField: FormFieldType = {
   component: Password,
   props: {
     variant: "outline",
   },
 };
 
-export const RatingField = {
+export const RatingField: FormFieldType = {
   component: Rating,
   props: {},
 };
 
-export const SelectField = {
+export const SelectField: FormFieldType = {
   component: Select,
   props: {
     variant: "outline",
   },
 };
 
-export const SwitchField = {
+export const SwitchField: FormFieldType = {
   component: Switch,
   props: {},
 };
 
-export const TextareaField = {
+export const TextareaField: FormFieldType = {
   component: Textarea,
   props: {
     variant: "outline",
   },
 };
 
-export const TextEditorField = {
+export const TextEditorField: FormFieldType = {
   component: TextEditor,
   props: {
     editorClass:
@@ -112,12 +122,12 @@ export const TextEditorField = {
   },
 };
 
-export const CheckboxField = {
+export const CheckboxField: FormFieldType = {
   component: Checkbox,
   props: {},
 };
 
-export const formFields = [
+export const formFields: FormFields[] = [
   { name: "Data", ...DataField },
   { name: "Number", ...NumberField },
   { name: "Email", ...EmailField },

@@ -1,7 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { Asterisk } from "lucide-vue-next";
-import { watch } from "vue";
 import RenderField from "../RenderField.vue";
 
 const props = defineProps({
@@ -29,13 +28,6 @@ const fieldData = computed({
         emit("update:field", value);
     },
 });
-
-function handleFieldLength(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-    }
-    event.target.style.width = (event.target.value.length + 1) * 8 + "px";
-}
 
 const getClasses = computed(() => {
     switch (fieldData.value.fieldtype) {
@@ -117,7 +109,7 @@ const getClasses = computed(() => {
             <RenderField
                 :model-value="modelValue"
                 :field="fieldData"
-                @change="(value) => (modelValue = value)"
+                @change="(value: any) => (modelValue = value)"
                 :class="{ 'pointer-events-none': inEditMode }"
             />
         </div>

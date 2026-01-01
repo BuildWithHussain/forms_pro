@@ -1,6 +1,7 @@
-<script setup>
-import { formFields } from "@/utils/form_fields";
+<script setup lang="ts">
+import { FormFields, formFields, FormFieldType } from "@/utils/form_fields";
 import { computed } from "vue";
+
 const props = defineProps({
     field: {
         type: Object,
@@ -10,15 +11,9 @@ const props = defineProps({
 
 const value = defineModel();
 const getComponent = computed(() => {
-    return formFields.find((field) => field.name === props.field.fieldtype);
-});
-
-const getBinds = computed(() => {
-    return {
-        ...props.field,
-        ...props.field.options,
-        ...props.field.default,
-    };
+    return formFields.find(
+        (field: FormFields) => field.name === props.field.fieldtype
+    ) as FormFieldType;
 });
 </script>
 <template>

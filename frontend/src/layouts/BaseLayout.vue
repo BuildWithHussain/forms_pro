@@ -2,9 +2,9 @@
     <div class="flex h-screen w-full">
         <Sidebar
             :header="{
-                title: 'Forms Pro',
-                subtitle: session.full_name,
-                menuItems: menuItems,
+                title: sidebarHeader.title,
+                subtitle: sidebarHeader.subtitle,
+                menuItems: sidebarHeader.menuItems,
             }"
             :sections="sidebarSections"
         >
@@ -24,47 +24,60 @@ import { session } from "@/data/session";
 import { ref, computed } from "vue";
 import { Sidebar } from "frappe-ui";
 import { LayoutDashboard, ArrowLeftRight, LogOut } from "lucide-vue-next";
-import toggleTheme from "@/utils/theme";
 import { useUser } from "@/stores/user";
+
 const userStore = useUser();
 
-const menuItems = computed(() => {
-    return [
-        // {
-        //     label: "Switch Teams",
-        //     icon: ArrowLeftRight,
-        //     onClick: () => {
-        //         console.log("Switch Teams");
-        //     },
-        // },
-        {
-            label: "Log out",
-            icon: LogOut,
-            onClick: session.logout.submit,
-        },
-    ];
+const props = defineProps({
+    sidebarHeader: {
+        type: Object,
+        default: null,
+    },
+    sidebarSections: {
+        type: Array,
+        default: [],
+    },
 });
 
-const sidebarSections = ref([
+const defaultSidebarMenuItems = computed(() => [
     {
-        label: "",
-        items: [
-            {
-                label: "Dashboard",
-                to: "/",
-                isActive: true,
-                icon: LayoutDashboard,
-            },
-        ],
+        label: "Log out",
+        icon: LogOut,
+        onClick: session.logout.submit,
     },
-    // {
-    // 	label: "",
-    // 	items: [
-    // 		{
-    // 			label: "Submissions",
-    // 			to: "/submissions",
-    // 		},
-    // 	],
-    // },
 ]);
+
+const sidebarHeader = computed(() => {
+    if (props.sidebarHeader) {
+        return props.sidebarHeader;
+    }
+
+    return {
+        title: "Forms Pro",
+        subtitle: session.full_name,
+        menuItems: defaultSidebarMenuItems.value,
+    };
+});
+
+const sidebarSections = computed(() => {
+    if (props.sidebarSections && props.sidebarSections.length > 0) {
+        return props.sidebarSections;
+    }
+
+    const _sections = [
+        {
+            label: "",
+            items: [
+                {
+                    label: "Dashboard",
+                    to: "/",
+                    isActive: true,
+                    icon: LayoutDashboard,
+                },
+            ],
+        },
+    ];
+
+    return _sections;
+});
 </script>

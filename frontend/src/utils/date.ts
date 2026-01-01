@@ -18,7 +18,7 @@ dayjs.extend(customParseFormat);
  */
 export function formatDate(
   date: string | Date | dayjs.Dayjs | null | undefined,
-  format: string = "MMM D, YYYY",
+  format: string = "MMM D, YYYY"
 ): string {
   if (!date) return "";
   return dayjs(date).format(format);
@@ -32,7 +32,7 @@ export function formatDate(
  */
 export function formatDateTime(
   date: string | Date | dayjs.Dayjs | null | undefined,
-  format: string = "MMM D, YYYY h:mm A",
+  format: string = "MMM D, YYYY h:mm A"
 ): string {
   if (!date) return "";
   return dayjs(date).format(format);
@@ -45,7 +45,7 @@ export function formatDateTime(
  * @returns Pretty formatted date string
  */
 export function formatPrettyDate(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): string {
   if (!date) return "";
 
@@ -80,7 +80,7 @@ export function formatPrettyDate(
  */
 export function formatTime(
   date: string | Date | dayjs.Dayjs | null | undefined,
-  format: string = "h:mm A",
+  format: string = "h:mm A"
 ): string {
   if (!date) return "";
   return dayjs(date).format(format);
@@ -92,7 +92,7 @@ export function formatTime(
  * @returns Relative time string
  */
 export function getRelativeTime(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): string {
   if (!date) return "";
   return dayjs(date).fromNow();
@@ -104,7 +104,7 @@ export function getRelativeTime(
  * @returns True if the date is today
  */
 export function isDateToday(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): boolean {
   if (!date) return false;
   return dayjs(date).isToday();
@@ -116,7 +116,7 @@ export function isDateToday(
  * @returns True if the date is in the past
  */
 export function isDatePast(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): boolean {
   if (!date) return false;
   return dayjs(date).isBefore(dayjs());
@@ -128,7 +128,7 @@ export function isDatePast(
  * @returns True if the date is in the future
  */
 export function isDateFuture(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): boolean {
   if (!date) return false;
   return dayjs(date).isAfter(dayjs());
@@ -144,7 +144,7 @@ export function isDateFuture(
 export function getDateDiff(
   date1: string | Date | dayjs.Dayjs | null | undefined,
   date2: string | Date | dayjs.Dayjs | null | undefined = dayjs(),
-  unit: dayjs.ManipulateType = "day",
+  unit: dayjs.ManipulateType = "day"
 ): number {
   if (!date1) return 0;
   return dayjs(date1).diff(dayjs(date2), unit);
@@ -156,7 +156,7 @@ export function getDateDiff(
  * @returns Short formatted date string
  */
 export function formatShortDate(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): string {
   if (!date) return "";
   return dayjs(date).format("M/D/YYYY");
@@ -168,7 +168,7 @@ export function formatShortDate(
  * @returns ISO formatted date string
  */
 export function formatISODate(
-  date: string | Date | dayjs.Dayjs | null | undefined,
+  date: string | Date | dayjs.Dayjs | null | undefined
 ): string {
   if (!date) return "";
   return dayjs(date).format("YYYY-MM-DD");

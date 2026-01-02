@@ -27,7 +27,11 @@ submissionFormStore.initialize(route.params.route as string);
         <div class="z-10 absolute bottom-0 right-0 p-8">
             <div class="flex flex-col items-end text-ink-gray-8">
                 <span class="text-xs">Built on</span>
-                <a href="https://github.com/buildwithhussain/forms_pro" target="_blank">
+                <a
+                    href="https://github.com/buildwithhussain/forms_pro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
                     <Logo class="font-normal" />
                 </a>
             </div>

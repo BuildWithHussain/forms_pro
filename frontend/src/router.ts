@@ -37,7 +37,9 @@ const routes: RouteRecordRaw[] = [
 
       if (loginRequired && !session.isLoggedIn) {
         window.location.href = `/login?redirect-to=/forms${to.fullPath}`;
+        return false;
       }
+      return true;
     },
   },
 ];

@@ -23,7 +23,7 @@ def is_login_required(route: str) -> bool:
     Check if login is enabled for a form.
 
     args:
-        form_id: str - The ID of the form to check.
+        route: str - The route of the form to check.
 
     returns:
         bool - True if login is required, False otherwise.

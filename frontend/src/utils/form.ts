@@ -1,9 +1,9 @@
-import { call, useCall } from "frappe-ui";
+import { useCall } from "frappe-ui";
 
 /**
  * Check if login is required for a form submission page.
  *
- * @param formId - The ID of the form to check.
+ * @param route - The route of the form to check.
  *
  * @returns bool - True if login is required, False otherwise.
  */

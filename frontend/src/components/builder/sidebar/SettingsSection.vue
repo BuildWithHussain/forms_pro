@@ -1,8 +1,8 @@
 <script setup>
-import { Checkbox, FormControl } from "frappe-ui";
+import { Checkbox, FormControl, Tooltip } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { validateFormRoute } from "@/utils/form_generator";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { CircleCheck } from "lucide-vue-next";
 
 const editFormStore = useEditForm();
@@ -17,6 +17,18 @@ const validateRoute = async () => {
     );
     showValidateMsg.value = true;
 };
+
+watch(
+    () => editFormStore.formData.allow_incomplete,
+    (newVal) => {
+        if (newVal) {
+            editFormStore.formData.login_required = true;
+        }
+        if (!newVal) {
+            editFormStore.formData.login_required = editFormStore.originalFormData.login_required;
+        }
+    }
+);
 </script>
 <template>
     <div class="space-y-4">
@@ -56,12 +68,34 @@ const validateRoute = async () => {
                         <CircleCheck class="w-4 h-4" /> Route is available</span
                     >
                 </div>
-                <Checkbox
-                    size="sm"
-                    label="Allow Incomplete Forms"
-                    variant="outline"
-                    v-model="editFormStore.formData.allow_incomplete"
-                />
+                <Tooltip
+                    text="Login is required when allow incomplete forms is enabled"
+                    :disabled="!editFormStore.formData.allow_incomplete"
+                >
+                    <div class="flex flex-col gap-2">
+                        <Checkbox
+                            v-model="editFormStore.formData.login_required"
+                            :disabled="editFormStore.formData.allow_incomplete"
+                            label="Login Required"
+                            variant="outline"
+                            size="sm"
+                        />
+                        <span class="text-sm text-ink-gray-6">
+                            If enabled, the form will require the user to login to access it.
+                        </span>
+                    </div>
+                </Tooltip>
+                <div class="flex flex-col gap-2">
+                    <Checkbox
+                        v-model="editFormStore.formData.allow_incomplete"
+                        size="sm"
+                        label="Allow Incomplete Forms"
+                        variant="outline"
+                    />
+                    <span class="text-sm text-ink-gray-6">
+                        If enabled, the form will allow users to create draft submissions.
+                    </span>
+                </div>
             </div>
         </div>
     </div>

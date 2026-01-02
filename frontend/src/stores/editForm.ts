@@ -98,25 +98,16 @@ export const useEditForm = defineStore("editForm", () => {
         }
       });
 
-      return formResource.value.setValue.submit(
-        {
-          title: formResource.value.doc.title,
-          fields: formResource.value.doc.fields,
-          description: formResource.value.doc.description,
-          route: formResource.value.doc.route,
-          allow_incomplete: formResource.value.doc.allow_incomplete,
+      return formResource.value.setValue.submit(formResource.value.doc, {
+        onSuccess: () => {
+          toast.success("Form Updated Successfully");
         },
-        {
-          onSuccess: () => {
-            toast.success("Form Updated Successfully");
-          },
-          onError: (error: any) => {
-            toast.error("Failed to Update Form", {
-              description: error.message,
-            });
-          },
-        }
-      );
+        onError: (error: any) => {
+          toast.error("Failed to Update Form", {
+            description: error.message,
+          });
+        },
+      });
     }
     toast.error("No form resource available");
     return Promise.reject(new Error("No form resource available"));

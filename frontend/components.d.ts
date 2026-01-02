@@ -22,6 +22,7 @@ declare module 'vue' {
     FormHeader: typeof import('./src/components/submission/FormHeader.vue')['default']
     FormPreviewCard: typeof import('./src/components/dashboard/FormPreviewCard.vue')['default']
     FormRenderer: typeof import('./src/components/submission/FormRenderer.vue')['default']
+    PageHeader: typeof import('./src/components/submission/PageHeader.vue')['default']
     RemoveAccessModal: typeof import('./src/components/form/manage/RemoveAccessModal.vue')['default']
     RenderField: typeof import('./src/components/RenderField.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

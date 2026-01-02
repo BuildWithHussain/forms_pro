@@ -18,6 +18,25 @@ class FormSharedWithResponse(BaseModel):
 
 
 @frappe.whitelist(allow_guest=True)
+def is_login_required(route: str) -> bool:
+    """
+    Check if login is enabled for a form.
+
+    args:
+        form_id: str - The ID of the form to check.
+
+    returns:
+        bool - True if login is required, False otherwise.
+    """
+    login_enabled = frappe.db.get_value(
+        doctype="Form",
+        filters={"route": route},
+        fieldname="login_required",
+    )
+    return bool(login_enabled)
+
+
+@frappe.whitelist(allow_guest=True)
 def get_form_by_route(route: str) -> dict:
     form_id = frappe.db.get_value("Form", {"route": route}, pluck="name")
     return get_form(form_id)

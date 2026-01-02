@@ -1,8 +1,9 @@
 import { userResource } from "@/data/user";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import { session } from "./data/session";
+import { isLoginRequired } from "@/utils/form";
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: "/",
     name: "Dashboard",
@@ -27,9 +28,17 @@ const routes = [
     component: () => import("@/pages/EditForm.vue"),
   },
   {
-    path: "/p/:route",
+    path: "/p/:route(.*)",
     name: "Form Submission Page",
     component: () => import("@/pages/SubmissionPage.vue"),
+    meta: { allowGuest: true },
+    beforeEnter: async (to, from) => {
+      const loginRequired = await isLoginRequired(to.params.route as string);
+
+      if (loginRequired && !session.isLoggedIn) {
+        window.location.href = `/login?redirect-to=/forms${to.fullPath}`;
+      }
+    },
   },
 ];
 
@@ -48,7 +57,11 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.name === "Login" && isLoggedIn) {
     next({ name: "Home" });
-  } else if (to.name !== "Login" && !isLoggedIn) {
+  } else if (
+    to.name !== "Login" &&
+    !isLoggedIn &&
+    to.meta.allowGuest !== true
+  ) {
     window.location.href = `/login?redirect-to=/forms${to.fullPath}`;
   } else {
     next();

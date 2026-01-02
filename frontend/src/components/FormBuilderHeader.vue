@@ -10,12 +10,21 @@ const router = useRouter();
 const editFormStore = useEditForm();
 
 const openFormSubmissionPage = () => {
-    const routeData = router.resolve({
-        name: "Form Submission Page",
-        params: {
-            route: editFormStore.originalFormData?.route,
-        },
-    });
+    const route = editFormStore.originalFormData?.route;
+    if (!route) return;
+
+    // Why router.resolve() with named route + params doesn't work:
+    // Vue Router URL-encodes parameter values when using the params object,
+    // even with catch-all routes. So a route like "s/something" becomes "s%2Fsomething".
+    //
+    // Solution: Get the route definition and construct the path manually,
+    // then use router.resolve() with the path string (which doesn't get encoded).
+    // This way, if the path changes in router.ts, this code still works.
+    const routeRecord = router.getRoutes().find((r) => r.name === "Form Submission Page");
+    if (!routeRecord) return;
+
+    const path = routeRecord.path.replace(":route(.*)", route);
+    const routeData = router.resolve(path);
 
     window.open(routeData.href, "_blank");
 };

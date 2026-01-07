@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 import frappe
+from frappe import _
 from frappe.share import add_docshare
 from pydantic import BaseModel, Field, field_validator
 
@@ -50,6 +51,12 @@ def submit_form_response(
     try:
         form: Form = frappe.get_doc("Form", form_id)
         linked_doctype = form.linked_doctype
+
+        if not form.is_published:
+            frappe.throw(
+                _("This form is un-published, so responses are no longer being collected."),
+                frappe.PermissionError,
+            )
 
         submission = frappe.new_doc(linked_doctype)
         for data in form_data:

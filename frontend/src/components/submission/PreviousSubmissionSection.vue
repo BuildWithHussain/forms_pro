@@ -2,6 +2,7 @@
 import { useSubmissionForm } from "@/stores/submissionForm";
 import { Button } from "frappe-ui";
 import { formatDateTime } from "@/utils/date";
+import { Badge } from "frappe-ui";
 
 const submissionFormStore = useSubmissionForm();
 </script>
@@ -20,16 +21,25 @@ const submissionFormStore = useSubmissionForm();
             <div class="text-lg font-medium space-y-2 flex flex-col">
                 <h4>Submission #{{ index + 1 }}</h4>
 
-                <div
-                    v-if="submission.modified !== submission.creation"
-                    class="flex items-center text-ink-gray-5 text-sm gap-2"
-                >
-                    <span> Modified {{ formatDateTime(submission.modified) }} </span>
-                    <span>•</span>
-                    <span> Created {{ formatDateTime(submission.creation) }} </span>
-                </div>
-                <div v-else class="text-ink-gray-5 text-sm">
-                    <span> Created {{ formatDateTime(submission.creation) }} </span>
+                <div class="flex gap-2 items-center">
+                    <Badge
+                        v-if="submission.fp_submission_status"
+                        :label="submission.fp_submission_status"
+                        :variant="
+                            submission.fp_submission_status === 'Submitted' ? 'subtle' : 'outline'
+                        "
+                    />
+                    <div
+                        v-if="submission.modified !== submission.creation"
+                        class="flex items-center text-ink-gray-5 text-sm gap-2"
+                    >
+                        <span> Modified {{ formatDateTime(submission.modified) }} </span>
+                        <span>•</span>
+                        <span> Created {{ formatDateTime(submission.creation) }} </span>
+                    </div>
+                    <div v-else class="text-ink-gray-5 text-sm">
+                        <span> Created {{ formatDateTime(submission.creation) }} </span>
+                    </div>
                 </div>
             </div>
             <Button label="View" variant="outline" size="sm" class="text-sm" />

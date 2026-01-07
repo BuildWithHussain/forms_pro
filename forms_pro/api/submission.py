@@ -13,6 +13,11 @@ class UserSubmissionResponse(BaseModel):
     name: str = Field(description="Name of the submission")
     creation: datetime = Field(description="Creation date of the submission")
     modified: datetime = Field(description="Last modified date of the submission")
+    fp_submission_status: str = Field(
+        description="Status of the submission",
+        alias="submission_status",
+        default=SubmissionStatus.SUBMITTED.value,
+    )
 
     @field_validator("creation", "modified", mode="before")
     @classmethod
@@ -91,7 +96,7 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
     submissions = frappe.get_all(
         doctype=linked_doctype,
         filters={"owner": frappe.session.user},
-        fields=["name", "creation", "modified"],
+        fields=["name", "creation", "modified", "fp_submission_status"],
         order_by="creation",
     )
 

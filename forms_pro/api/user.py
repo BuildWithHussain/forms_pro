@@ -1,5 +1,6 @@
 import frappe
 from frappe.core.doctype.has_role.has_role import HasRole
+from frappe.core.doctype.user.user import User
 from pydantic import BaseModel, Field, field_validator
 
 from forms_pro.utils.teams import get_user_teams as get_user_teams_utils
@@ -51,10 +52,10 @@ def get_current_user() -> GetUserResponseSchema:
     """
 
     user_id = frappe.session.user
-    user_doc = frappe.get_doc("User", user_id)
+    user_doc: User = frappe.get_doc("User", user_id)
     data = user_doc.as_dict()
     data["roles"] = user_doc.get("roles")
-    data["has_desk_access"] = user_doc.has_desk_access()
+    data["has_desk_access"] = bool(user_doc.has_desk_access())
 
     return GetUserResponseSchema.model_validate(data).model_dump()
 

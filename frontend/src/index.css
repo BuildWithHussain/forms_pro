@@ -36,3 +36,7 @@
         @apply text-base font-normal;
     }
 }
+
+.form-container-simple {
+    @apply space-y-4 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] bg-surface-white border rounded-lg p-6 max-w-screen-md mx-auto;
+}

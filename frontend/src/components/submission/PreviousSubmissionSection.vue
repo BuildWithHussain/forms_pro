@@ -20,7 +20,7 @@ const isOpen = computed(() => Boolean(selectedValue.value));
 <template>
     <AccordionRoot
         v-model="selectedValue"
-        class="max-w-screen-md mx-auto mt-16 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] border bg-surface-white rounded-lg p-6 space-y-4"
+        class="form-container-simple"
         :collapsible="true"
     >
         <AccordionItem value="previous-submissions">

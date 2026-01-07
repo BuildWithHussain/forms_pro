@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge, Popover, Tooltip } from "frappe-ui";
-import { ChevronDown, CloudCheck, ExternalLink } from "lucide-vue-next";
+import { ChevronDown, CloudCheck, ExternalLink, CloudOff } from "lucide-vue-next";
 import { Button } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { useRouter } from "vue-router";
@@ -67,8 +67,19 @@ const openFormSubmissionPage = () => {
                 theme="orange"
                 size="sm"
             />
-            <Tooltip v-else text="Form is published" placement="bottom">
+            <Tooltip
+                v-else-if="editFormStore.isPublished"
+                text="Form is published"
+                placement="bottom"
+            >
                 <CloudCheck class="w-4 h-4 text-gray-500" />
+            </Tooltip>
+            <Tooltip
+                v-else-if="!editFormStore.isPublished"
+                text="Form is not published"
+                placement="bottom"
+            >
+                <CloudOff class="w-4 h-4 text-gray-500" />
             </Tooltip>
             <h3 class="text-base font-medium text-gray-600 text-center">
                 {{ editFormStore.originalFormData?.title || "Untitled Form" }}

@@ -32,6 +32,14 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
 
     return formResource.value.data.name;
   });
+  const formIsPublished = computed((): boolean | null => {
+    if (!formResource.value.data) {
+      return null;
+    }
+
+    return formResource.value.data.is_published;
+  });
+
   const errors = ref<string[]>([]);
   const inSuccessState = ref<boolean>(false);
   const inFormFillingState = ref<boolean>(true);
@@ -179,6 +187,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     inFormFillingState,
     userSubmissionsResource,
     userSubmissions,
+    formIsPublished,
     initialize,
     submitForm,
     saveAsDraft,

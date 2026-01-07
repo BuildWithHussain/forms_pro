@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any
 
 import frappe
+from frappe.model.document import Document
+from frappe.share import add_docshare
 from pydantic import BaseModel, Field, field_validator
 
 from forms_pro.forms_pro.doctype.form.form import Form
@@ -43,6 +45,19 @@ def submit_form_response(form_id: str, form_data: list[dict]) -> str:
         submission.set(data["fieldname"], data["value"])
     submission.insert(ignore_permissions=True)
 
+    # Share the submission with the owner
+    add_docshare(
+        doctype=linked_doctype,
+        name=submission.name,
+        user=frappe.session.user,
+        read=1,
+        write=1,
+        submit=1,
+        flags={
+            "ignore_share_permission": True,
+        },
+    )
+
     return submission.name
 
 
@@ -58,8 +73,6 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
         A list of submissions for the user
     """
 
-    print(form_id)
-
     if frappe.session.user == "Guest":
         return []
 
@@ -72,7 +85,5 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
         fields=["name", "creation", "modified"],
         order_by="creation desc",
     )
-
-    print(submissions)
 
     return [UserSubmissionResponse.model_validate(submission).model_dump() for submission in submissions]

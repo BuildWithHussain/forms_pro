@@ -18,18 +18,10 @@ const selectedValue = ref<string | string[] | undefined>("previous-submissions")
 const isOpen = computed(() => Boolean(selectedValue.value));
 </script>
 <template>
-    <AccordionRoot
-        v-model="selectedValue"
-        class="form-container-simple"
-        :collapsible="true"
-    >
+    <AccordionRoot v-model="selectedValue" class="form-container-simple" :collapsible="true">
         <AccordionItem value="previous-submissions">
             <AccordionHeader>
-                <AccordionTrigger
-                    as="div"
-                    class="flex justify-between w-full"
-                    :class="{ 'mb-4': isOpen }"
-                >
+                <AccordionTrigger as="div" class="flex justify-between w-full cursor-pointer">
                     <div class="space-y-2">
                         <h2 class="text-2xl font-bold">Previous Submissions</h2>
                         <p class="text-base text-ink-gray-6">
@@ -39,7 +31,7 @@ const isOpen = computed(() => Boolean(selectedValue.value));
                     <Button :icon="isOpen ? 'chevron-up' : 'chevron-down'" variant="outline" />
                 </AccordionTrigger>
             </AccordionHeader>
-            <AccordionContent as="div" class="space-y-4">
+            <AccordionContent as="div" class="space-y-4 mt-4">
                 <div
                     v-for="(submission, index) in submissionFormStore.userSubmissions"
                     :key="submission.name"

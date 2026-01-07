@@ -50,10 +50,10 @@ const isOpen = computed(() => Boolean(selectedValue.value));
 
                         <div class="flex gap-2 items-center">
                             <Badge
-                                v-if="submission.fp_submission_status"
-                                :label="submission.fp_submission_status"
+                                v-if="submission.submission_status"
+                                :label="submission.submission_status"
                                 :variant="
-                                    submission.fp_submission_status === 'Submitted'
+                                    submission.submission_status === 'Submitted'
                                         ? 'subtle'
                                         : 'outline'
                                 "

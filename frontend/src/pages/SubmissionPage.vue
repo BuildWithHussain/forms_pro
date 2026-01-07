@@ -25,8 +25,10 @@ submissionFormStore.initialize(route.params.route as string);
             <SuccessSection v-if="submissionFormStore.inSuccessState" />
         </div>
 
-        <div class="z-10 absolute bottom-0 right-0 p-8">
-            <div class="flex flex-col items-end text-ink-gray-8">
+        <div class="z-10 sticky bottom-0 right-0 p-4">
+            <div
+                class="flex flex-col items-end text-ink-gray-4 hover:text-ink-gray-8 transition-colors duration-300"
+            >
                 <span class="text-xs">Built on</span>
                 <a
                     href="https://github.com/buildwithhussain/forms_pro"

@@ -12,6 +12,11 @@ export type UserSubmission = {
   modified: string;
 };
 
+export enum SubmissionStatus {
+  DRAFT = "Draft",
+  SUBMITTED = "Submitted",
+}
+
 export const useSubmissionForm = defineStore("submissionForm", () => {
   const formResource = ref<any>(null);
   const currentFormRoute = ref<string | null>(null);
@@ -98,20 +103,11 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   }
 
   function saveAsDraft() {
-    errors.value = [];
-
-    if (!formResource.value?.data?.name) {
-      toast.error("Form not loaded");
-      return;
-    }
-
-    const draftKey = `draft_submission_data_${formResource.value.data.name}`;
-    const draftData = useStorage(draftKey, {}, localStorage);
-    draftData.value = fields.value;
-    toast.success("Draft saved successfully");
+    toast.info("Saving draft...");
+    submitForm(true);
   }
 
-  async function submitForm() {
+  async function submitForm(isDraft: boolean = false) {
     validateValues();
     if (errors.value.length > 0) {
       return;
@@ -126,12 +122,21 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
             fieldname: fieldname,
             value: value,
           })),
+          submission_status: isDraft
+            ? SubmissionStatus.DRAFT
+            : SubmissionStatus.SUBMITTED,
         };
       },
       onSuccess() {
         clearDraft();
-        inFormFillingState.value = false;
-        inSuccessState.value = true;
+        if (isDraft) {
+          toast.info("Draft saved successfully");
+          inFormFillingState.value = true;
+          userSubmissionsResource.fetch();
+        } else {
+          inFormFillingState.value = false;
+          inSuccessState.value = true;
+        }
       },
       onError(error: any) {
         toast.error("Failed to submit form");

@@ -13,9 +13,9 @@ class UserSubmissionResponse(BaseModel):
     name: str = Field(description="Name of the submission")
     creation: datetime = Field(description="Creation date of the submission")
     modified: datetime = Field(description="Last modified date of the submission")
-    fp_submission_status: str = Field(
+    submission_status: str = Field(
         description="Status of the submission",
-        alias="submission_status",
+        alias="fp_submission_status",
         default=SubmissionStatus.SUBMITTED.value,
     )
 

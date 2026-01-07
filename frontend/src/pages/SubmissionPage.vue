@@ -5,17 +5,18 @@ import FormHeader from "@/components/submission/FormHeader.vue";
 import FormRenderer from "@/components/submission/FormRenderer.vue";
 import Logo from "@/assets/Logo.vue";
 import PageHeader from "@/components/submission/PageHeader.vue";
+import PreviousSubmissionSection from "@/components/submission/PreviousSubmissionSection.vue";
 
 const route = useRoute();
 const submissionFormStore = useSubmissionForm();
 submissionFormStore.initialize(route.params.route as string);
 </script>
 <template>
-    <div class="p-8">
+    <div class="p-8 bg-surface-gray-1 min-h-svh">
         <PageHeader />
-
+        <PreviousSubmissionSection />
         <div
-            class="space-y-4 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] bg-secondary border rounded-lg p-6 max-w-screen-md mx-auto mt-16"
+            class="space-y-4 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] bg-surface-white border rounded-lg p-6 max-w-screen-md mx-auto mt-16"
         >
             <div class="space-y-4" v-if="submissionFormStore.inFormSubmission">
                 <FormHeader />

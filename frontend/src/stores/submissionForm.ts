@@ -4,20 +4,48 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { FormField } from "@/types/formfield";
 import { useStorage } from "@vueuse/core";
+import { session } from "@/data/session";
+
+export type UserSubmission = {
+  name: string;
+  creation: string;
+  modified: string;
+};
 
 export const useSubmissionForm = defineStore("submissionForm", () => {
   const formResource = ref<any>(null);
-  const currentFormId = ref<string | null>(null);
+  const currentFormRoute = ref<string | null>(null);
   const isLoading = computed(() => formResource.value?.loading);
   const allowIncompleteForms = computed(
-    () => formResource.value?.data?.allow_incomplete
+    () => formResource.value?.data?.allow_incomplete,
   );
 
+  const currentFormId = computed(() => {
+    if (!formResource) {
+      return null;
+    }
+
+    return formResource.value.data.name;
+  });
   const errors = ref<string[]>([]);
   const successSubmission = ref<number>(0);
   const inFormSubmission = ref<number>(1);
 
   const fields = ref<Record<string, any>>({});
+
+  const userSubmissionsResource = createResource({
+    url: "forms_pro.api.submission.get_user_submissions",
+    makeParams() {
+      return {
+        form_id: currentFormId.value,
+      };
+    },
+    auto: false,
+  });
+
+  const userSubmissions = computed<UserSubmission[] | null>(
+    () => userSubmissionsResource.data || null,
+  );
 
   function initializeFields() {
     if (!formResource.value?.data) return;
@@ -34,7 +62,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   }
 
   async function initialize(route: string) {
-    currentFormId.value = route;
+    currentFormRoute.value = route;
     formResource.value = createResource({
       url: "forms_pro.api.form.get_form_by_route",
       params: {
@@ -56,7 +84,11 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
         inFormSubmission.value = 1;
       },
     });
+
     await formResource.value.fetch();
+    if (session.isLoggedIn) {
+      await userSubmissionsResource.fetch();
+    }
   }
 
   function saveAsDraft() {
@@ -118,12 +150,15 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   return {
     formResource,
     currentFormId,
+    currentFormRoute,
     fields,
     isLoading,
     allowIncompleteForms,
     errors,
     successSubmission,
     inFormSubmission,
+    userSubmissionsResource,
+    userSubmissions,
     initialize,
     submitForm,
     saveAsDraft,

@@ -211,3 +211,68 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         self.assertEqual(docshare.write, 1, "DocShare should have write permission")
         self.assertEqual(docshare.share, 1, "DocShare should have share permission")
         self.assertEqual(docshare.submit, 0, "DocShare should not have submit permission")
+
+    def test_status_field_is_added_custom_doctype(self):
+        """Test that status field is added to custom doctype"""
+        from forms_pro.utils.form_generator import SUBMISSION_STATUS_FIELDOPTIONS
+
+        frappe.set_user(self.test_user)
+        form_generator = FormGenerator(team_id=self.test_team)
+        form_generator.generate()
+
+        frappe.set_user("Administrator")
+        # Assertions
+        self.assertIsNotNone(form_generator.doctype.fields)
+        status_field = next(
+            field
+            for field in form_generator.doctype.fields
+            if field.fieldname == SUBMISSION_STATUS_FIELDOPTIONS["fieldname"]
+        )
+        assert status_field is not None, "Status field should be added to doctype"
+        self.assertEqual(status_field.label, SUBMISSION_STATUS_FIELDOPTIONS["label"])
+        self.assertEqual(status_field.fieldname, SUBMISSION_STATUS_FIELDOPTIONS["fieldname"])
+        self.assertEqual(status_field.fieldtype, SUBMISSION_STATUS_FIELDOPTIONS["fieldtype"])
+        self.assertEqual(status_field.options, SUBMISSION_STATUS_FIELDOPTIONS["options"])
+        self.assertEqual(status_field.default, SUBMISSION_STATUS_FIELDOPTIONS["default"])
+        self.assertEqual(status_field.read_only, SUBMISSION_STATUS_FIELDOPTIONS["read_only"])
+        self.assertEqual(status_field.in_list_view, SUBMISSION_STATUS_FIELDOPTIONS["in_list_view"])
+
+    def test_status_field_is_added_core_doctype(self):
+        """Test that status field is added to core doctype as a custom field"""
+        from forms_pro.utils.form_generator import SUBMISSION_STATUS_FIELDOPTIONS
+
+        test_doctype = frappe.new_doc("DocType")
+        test_doctype.name = "Test Status Field Doctype" + frappe.utils.random_string(8)
+        test_doctype.module = "Forms Pro"
+        test_doctype.custom = False
+        test_doctype.insert(ignore_permissions=True)
+
+        frappe.set_user(self.test_user)
+        form_generator = FormGenerator(linked_doctype=test_doctype.name, team_id=self.test_team)
+        form_generator.generate()
+
+        # Assertions
+        frappe.set_user("Administrator")
+        self.assertIsNotNone(form_generator.doctype.fields)
+        status_field = next(
+            field
+            for field in form_generator.doctype.fields
+            if field.fieldname == SUBMISSION_STATUS_FIELDOPTIONS["fieldname"]
+        )
+        assert status_field is not None, "Status field should be added to doctype"
+
+        custom_field_id = frappe.db.exists(
+            "Custom Field",
+            {"dt": test_doctype.name, "fieldname": SUBMISSION_STATUS_FIELDOPTIONS["fieldname"]},
+        )
+        self.assertIsNotNone(custom_field_id, "Custom field should be created for doctype")
+
+        custom_field = frappe.get_doc("Custom Field", custom_field_id)
+
+        self.assertEqual(custom_field.dt, test_doctype.name)
+        self.assertEqual(custom_field.fieldname, SUBMISSION_STATUS_FIELDOPTIONS["fieldname"])
+        self.assertEqual(custom_field.fieldtype, SUBMISSION_STATUS_FIELDOPTIONS["fieldtype"])
+        self.assertEqual(custom_field.options, SUBMISSION_STATUS_FIELDOPTIONS["options"])
+        self.assertEqual(custom_field.default, SUBMISSION_STATUS_FIELDOPTIONS["default"])
+        self.assertEqual(custom_field.read_only, SUBMISSION_STATUS_FIELDOPTIONS["read_only"])
+        self.assertEqual(custom_field.in_list_view, SUBMISSION_STATUS_FIELDOPTIONS["in_list_view"])

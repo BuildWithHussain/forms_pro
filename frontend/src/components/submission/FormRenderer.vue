@@ -3,12 +3,16 @@ import { ErrorMessage, LoadingIndicator, Button } from "frappe-ui";
 import { useSubmissionForm } from "@/stores/submissionForm";
 
 const submissionFormStore = useSubmissionForm();
+
+function handleSubmitForm() {
+    submissionFormStore.submitForm();
+}
 </script>
 <template>
     <div v-if="submissionFormStore.isLoading">
         <LoadingIndicator class="mx-auto my-auto w-5 h-5" />
     </div>
-    <div v-if="submissionFormStore.inFormSubmission" class="flex flex-col gap-4">
+    <div v-if="submissionFormStore.inFormFillingState" class="flex flex-col gap-4">
         <div v-for="field in submissionFormStore.formResource.data?.fields" :key="field.fieldname">
             <FieldRenderer
                 v-model="submissionFormStore.fields[field.fieldname]"
@@ -28,11 +32,7 @@ const submissionFormStore = useSubmissionForm();
             </Button>
             <Button
                 variant="solid"
-                @click="
-                    () => {
-                        submissionFormStore.submitForm();
-                    }
-                "
+                @click="handleSubmitForm"
                 :loading="submissionFormStore.isLoading"
             >
                 Submit

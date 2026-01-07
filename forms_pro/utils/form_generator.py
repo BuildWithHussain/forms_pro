@@ -1,3 +1,5 @@
+from enum import Enum
+
 import frappe
 from frappe import _
 from frappe.custom.doctype.custom_field.custom_field import CustomField
@@ -56,12 +58,18 @@ def create_form(team_id: str):
 
 USER_FORM_MODULE = "User Forms"
 
+
+class SubmissionStatus(str, Enum):
+    DRAFT = "Draft"
+    SUBMITTED = "Submitted"
+
+
 SUBMISSION_STATUS_FIELDOPTIONS = {
     "label": "Submission Status (Form)",
     "fieldname": "fp_submission_status",
     "fieldtype": "Select",
-    "options": "Draft\nSubmitted\nCompleted",
-    "default": "Draft",
+    "options": "\n".join([status.value for status in SubmissionStatus]),
+    "default": SubmissionStatus.DRAFT.value,
     "read_only": 1,
     "in_list_view": 1,
 }

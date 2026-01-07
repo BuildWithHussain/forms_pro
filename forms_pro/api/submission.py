@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Any
 
 import frappe
-from frappe.model.document import Document
 from frappe.share import add_docshare
 from pydantic import BaseModel, Field, field_validator
 
 from forms_pro.forms_pro.doctype.form.form import Form
+from forms_pro.utils.form_generator import SubmissionStatus
 
 
 class UserSubmissionResponse(BaseModel):
@@ -26,39 +26,48 @@ class UserSubmissionResponse(BaseModel):
 
 
 @frappe.whitelist(allow_guest=True)
-def submit_form_response(form_id: str, form_data: list[dict]) -> str:
+def submit_form_response(
+    form_id: str,
+    form_data: list[dict],
+    submission_status: SubmissionStatus = SubmissionStatus.SUBMITTED,
+) -> str:
     """
     Submit a form response
 
     Args:
         form_id: The ID of the form
         form_data: The data of the form
+        submission_status: The status of the submission: Default is `Submitted`
 
     Returns:
         The name of the submission
     """
-    form: Form = frappe.get_doc("Form", form_id)
-    linked_doctype = form.linked_doctype
+    try:
+        form: Form = frappe.get_doc("Form", form_id)
+        linked_doctype = form.linked_doctype
 
-    submission = frappe.new_doc(linked_doctype)
-    for data in form_data:
-        submission.set(data["fieldname"], data["value"])
-    submission.insert(ignore_permissions=True)
+        submission = frappe.new_doc(linked_doctype)
+        for data in form_data:
+            submission.set(data["fieldname"], data["value"])
 
-    # Share the submission with the owner
-    add_docshare(
-        doctype=linked_doctype,
-        name=submission.name,
-        user=frappe.session.user,
-        read=1,
-        write=1,
-        submit=1,
-        flags={
-            "ignore_share_permission": True,
-        },
-    )
+        submission.fp_submission_status = submission_status.value
+        submission.insert(ignore_permissions=True)
 
-    return submission.name
+        # Share the submission with the owner
+        add_docshare(
+            doctype=linked_doctype,
+            name=submission.name,
+            user=frappe.session.user,
+            read=1,
+            write=1,
+            flags={
+                "ignore_share_permission": True,
+            },
+        )
+
+        return submission.name
+    except Exception:
+        raise
 
 
 @frappe.whitelist()
@@ -79,11 +88,11 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
     form: Form = frappe.get_doc("Form", form_id)
     linked_doctype = form.linked_doctype
 
-    submissions = frappe.db.get_all(
+    submissions = frappe.get_all(
         doctype=linked_doctype,
         filters={"owner": frappe.session.user},
         fields=["name", "creation", "modified"],
-        order_by="creation desc",
+        order_by="creation",
     )
 
     return [UserSubmissionResponse.model_validate(submission).model_dump() for submission in submissions]

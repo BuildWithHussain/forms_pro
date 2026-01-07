@@ -14,15 +14,15 @@ submissionFormStore.initialize(route.params.route as string);
 <template>
     <div class="p-8 bg-surface-gray-1 min-h-svh">
         <PageHeader />
-        <PreviousSubmissionSection />
+        <PreviousSubmissionSection v-if="submissionFormStore.userSubmissions" />
         <div
             class="space-y-4 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] bg-surface-white border rounded-lg p-6 max-w-screen-md mx-auto mt-16"
         >
-            <div class="space-y-4" v-if="submissionFormStore.inFormSubmission">
+            <div class="space-y-4" v-if="submissionFormStore.inFormFillingState">
                 <FormHeader />
                 <FormRenderer />
             </div>
-            <SuccessSection v-if="submissionFormStore.successSubmission" />
+            <SuccessSection v-if="submissionFormStore.inSuccessState" />
         </div>
 
         <div class="z-10 absolute bottom-0 right-0 p-8">

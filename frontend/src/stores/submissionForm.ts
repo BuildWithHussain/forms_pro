@@ -28,8 +28,8 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     return formResource.value.data.name;
   });
   const errors = ref<string[]>([]);
-  const successSubmission = ref<number>(0);
-  const inFormSubmission = ref<number>(1);
+  const inSuccessState = ref<boolean>(false);
+  const inFormFillingState = ref<boolean>(true);
 
   const fields = ref<Record<string, any>>({});
 
@@ -43,9 +43,15 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     auto: false,
   });
 
-  const userSubmissions = computed<UserSubmission[] | null>(
-    () => userSubmissionsResource.data || null,
-  );
+  const userSubmissions = computed<UserSubmission[] | null>(() => {
+    if (
+      userSubmissionsResource.data &&
+      userSubmissionsResource.data.length > 0
+    ) {
+      return userSubmissionsResource.data;
+    }
+    return null;
+  });
 
   function initializeFields() {
     if (!formResource.value?.data) return;
@@ -81,7 +87,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
           fields.value = { ...fields.value, ...draftData.value };
         }
 
-        inFormSubmission.value = 1;
+        inFormFillingState.value = true;
       },
     });
 
@@ -124,8 +130,17 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
       },
       onSuccess() {
         clearDraft();
-        inFormSubmission.value = 0;
-        successSubmission.value = 1;
+        inFormFillingState.value = false;
+        inSuccessState.value = true;
+      },
+      onError(error: any) {
+        toast.error("Failed to submit form");
+        errors.value = error.messages?.map((message: string) => message) || [];
+        if (errors.value.length === 0) {
+          errors.value.push(
+            "Error while submitting form. Check the values and try again.",
+          );
+        }
       },
     });
 
@@ -155,8 +170,8 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     isLoading,
     allowIncompleteForms,
     errors,
-    successSubmission,
-    inFormSubmission,
+    inSuccessState,
+    inFormFillingState,
     userSubmissionsResource,
     userSubmissions,
     initialize,

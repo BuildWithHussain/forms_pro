@@ -64,6 +64,14 @@ class SubmissionStatus(str, Enum):
     SUBMITTED = "Submitted"
 
 
+LINKED_FORM_FIELDOPTIONS = {
+    "label": "Linked Form",
+    "fieldname": "fp_linked_form",
+    "fieldtype": "Link",
+    "options": "Form",
+    "read_only": 1,
+}
+
 SUBMISSION_STATUS_FIELDOPTIONS = {
     "label": "Submission Status (Form)",
     "fieldname": "fp_submission_status",
@@ -151,17 +159,31 @@ class FormGenerator:
         # If the doctype is not custom, add a `Custom Field` to the doctype
         if not self.doctype.custom:
             self._add_custom_field_for_status()
+            self._add_custom_field_for_linked_form()
 
         # If the doctype is custom, we can go ahead and append the field directly to the doctype
         self.doctype.append(
             "fields",
             SUBMISSION_STATUS_FIELDOPTIONS,
         )
+
+        # Add the linked form field
+        self.doctype.append(
+            "fields",
+            LINKED_FORM_FIELDOPTIONS,
+        )
         self.doctype.save(ignore_permissions=True)
 
     def _add_custom_field_for_status(self) -> None:
         custom_field: CustomField = frappe.new_doc("Custom Field")
         custom_field.update(SUBMISSION_STATUS_FIELDOPTIONS)
+        custom_field.dt = self.doctype.name
+        custom_field.is_system_generated = True
+        custom_field.insert(ignore_permissions=True)
+
+    def _add_custom_field_for_linked_form(self) -> None:
+        custom_field: CustomField = frappe.new_doc("Custom Field")
+        custom_field.update(LINKED_FORM_FIELDOPTIONS)
         custom_field.dt = self.doctype.name
         custom_field.is_system_generated = True
         custom_field.insert(ignore_permissions=True)

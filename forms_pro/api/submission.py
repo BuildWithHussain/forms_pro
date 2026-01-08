@@ -62,6 +62,7 @@ def submit_form_response(
         for data in form_data:
             submission.set(data["fieldname"], data["value"])
 
+        submission.fp_linked_form = form_id
         submission.fp_submission_status = submission_status.value
         submission.insert(ignore_permissions=True)
 
@@ -108,3 +109,25 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
     )
 
     return [UserSubmissionResponse.model_validate(submission).model_dump() for submission in submissions]
+
+
+@frappe.whitelist()
+def get_submission(submission_doctype: str, submission_name: str) -> dict[str, Any]:
+    """
+    Get a submission by name
+
+    Args:
+        submission_name: The name of the submission
+
+    Returns:
+        The submission
+    """
+    submission = frappe.get_doc(submission_doctype, submission_name)
+
+    if not frappe.has_permission(doctype=submission.doctype, ptype="read", doc=submission.name):
+        frappe.throw(
+            _("You do not have permission to read this submission."),
+            frappe.PermissionError,
+        )
+
+    return submission.as_dict()

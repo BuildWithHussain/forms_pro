@@ -45,20 +45,29 @@ export const useEditSubmission = defineStore("editSubmission", () => {
     );
   }
 
-  function updateForm(data: Record<string, any>) {
-    submissionResource.value.setValue.submit(data, {
-      onSuccess: () => {
-        toast.success("Submission updated");
-      },
-      onError: () => {
-        toast.error("Failed to update submission");
-      },
+  function updateForm(data: Record<string, any>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      submissionResource.value.setValue.submit(data, {
+        onSuccess: () => {
+          toast.success("Your response has been updated");
+          resolve();
+        },
+        onError: () => {
+          toast.error("Failed to update your response!");
+          reject(new Error("Failed to update submission"));
+        },
+      });
     });
   }
 
-  function updateAndSubmitForm(data: Record<string, any>) {
-    updateForm(data);
-    submitForm();
+  async function updateAndSubmitForm(data: Record<string, any>) {
+    try {
+      await updateForm(data);
+      submitForm();
+    } catch (error) {
+      // Error already handled in updateForm's onError callback
+      console.error("Error updating form before submission:", error);
+    }
   }
 
   function submitForm() {
@@ -68,10 +77,10 @@ export const useEditSubmission = defineStore("editSubmission", () => {
       },
       {
         onSuccess: () => {
-          toast.success("Submission submitted");
+          toast.success("Successfully submitted your response!");
         },
         onError: () => {
-          toast.error("Failed to submit submission");
+          toast.error("Failed to submit!");
         },
       }
     );

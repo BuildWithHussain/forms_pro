@@ -89,8 +89,8 @@ add_to_apps_screen = [
 # Installation
 # ------------
 
-before_install = "forms_pro.install.before_install"
-# after_install = "forms_pro.install.after_install"
+# before_install = "forms_pro.install.before_install"
+after_install = "forms_pro.install.after_install"
 
 # Uninstallation
 # ------------

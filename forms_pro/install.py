@@ -4,7 +4,7 @@ from frappe.core.doctype.user.user import User
 from forms_pro.roles import FORMS_PRO_ROLE
 
 
-def before_install():
+def after_install():
     create_user_forms_module()
 
 

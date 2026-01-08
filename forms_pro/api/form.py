@@ -56,6 +56,7 @@ def get_form(form_id: str) -> dict:
         "route": form.route,
         "is_published": form.is_published,
         "allow_incomplete": form.allow_incomplete,
+        "linked_doctype": form.linked_doctype,
     }
 
 

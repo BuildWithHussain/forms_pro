@@ -12,6 +12,11 @@ const props = defineProps({
         type: Boolean,
         required: true,
     },
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
 });
 
 const emit = defineEmits(["update:field"]);
@@ -48,6 +53,7 @@ const getClasses = computed(() => {
             v-model="modelValue"
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
+            :disabled="disabled"
         />
         <div class="flex flex-col gap-1">
             <div class="flex gap-2 items-start">
@@ -72,6 +78,7 @@ const getClasses = computed(() => {
             :field="fieldData"
             class="mt-1"
             :class="{ 'pointer-events-none': inEditMode }"
+            :disabled="disabled"
         />
         <div class="flex flex-col gap-1">
             <div class="flex gap-2 items-start">
@@ -111,6 +118,7 @@ const getClasses = computed(() => {
                 :field="fieldData"
                 @change="(value: any) => (modelValue = value)"
                 :class="{ 'pointer-events-none': inEditMode }"
+                :disabled="disabled"
             />
         </div>
     </div>
@@ -130,6 +138,7 @@ const getClasses = computed(() => {
             v-model="modelValue"
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
+            :disabled="disabled"
         />
         <small class="text-gray-500">
             {{ fieldData.description }}

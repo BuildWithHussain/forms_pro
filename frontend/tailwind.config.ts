@@ -10,6 +10,7 @@ export default {
   theme: {
     fontFamily: {
       instrument: ["Instrument Serif", "serif"],
+      mono: ["JetBrains Mono", "monospace"],
     },
     extend: {},
   },

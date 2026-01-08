@@ -25,13 +25,14 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     () => formResource.value?.data?.allow_incomplete,
   );
 
-  const currentFormId = computed(() => {
+  const currentFormId = computed((): string | null => {
     if (!formResource) {
       return null;
     }
 
     return formResource.value.data.name;
   });
+
   const formIsPublished = computed((): boolean | null => {
     if (!formResource.value.data) {
       return null;
@@ -56,7 +57,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     auto: false,
   });
 
-  const userSubmissions = computed<UserSubmission[] | null>(() => {
+  const userSubmissions = computed((): UserSubmission[] | null => {
     if (
       userSubmissionsResource.data &&
       userSubmissionsResource.data.length > 0
@@ -179,6 +180,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     formResource,
     currentFormId,
     currentFormRoute,
+    validateValues,
     fields,
     isLoading,
     allowIncompleteForms,

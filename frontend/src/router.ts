@@ -42,6 +42,11 @@ const routes: RouteRecordRaw[] = [
       return true;
     },
   },
+  {
+    path: "/p/:route(.*)/edit/:submissionName",
+    name: "Public Edit Submission Page",
+    component: () => import("@/pages/submission/PublicEdit.vue"),
+  },
 ];
 
 const router = createRouter({

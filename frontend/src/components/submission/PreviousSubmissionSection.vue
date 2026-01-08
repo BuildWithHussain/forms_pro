@@ -11,9 +11,10 @@ import {
     AccordionTrigger,
 } from "reka-ui";
 import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 
 const submissionFormStore = useSubmissionForm();
-
+const router = useRouter();
 const selectedValue = ref<string | string[] | undefined>("previous-submissions");
 const isOpen = computed(() => Boolean(selectedValue.value));
 </script>
@@ -63,7 +64,17 @@ const isOpen = computed(() => Boolean(selectedValue.value));
                             </div>
                         </div>
                     </div>
-                    <Button label="View" variant="outline" size="sm" class="text-sm" />
+                    <Button
+                        label="View"
+                        variant="outline"
+                        size="sm"
+                        class="text-sm"
+                        @click="
+                            router.push(
+                                `/p/${submissionFormStore.currentFormRoute}/edit/${submission.name}`,
+                            )
+                        "
+                    />
                 </div>
             </AccordionContent>
         </AccordionItem>

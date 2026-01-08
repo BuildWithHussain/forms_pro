@@ -22,7 +22,7 @@ submissionFormStore.initialize(route.params.route as string);
         <div v-else class="form-container-simple">
             <div class="space-y-4" v-if="submissionFormStore.inFormFillingState">
                 <FormHeader />
-                <FormRenderer />
+                <FormRenderer :disabled="false" />
             </div>
             <SuccessSection v-if="submissionFormStore.inSuccessState" />
         </div>

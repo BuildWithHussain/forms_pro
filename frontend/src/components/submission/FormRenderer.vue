@@ -11,7 +11,7 @@ const props = withDefaults(
     }>(),
     {
         disabled: false,
-    },
+    }
 );
 
 function handleSubmitForm() {

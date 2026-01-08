@@ -22,7 +22,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   const currentFormRoute = ref<string | null>(null);
   const isLoading = computed(() => formResource.value?.loading);
   const allowIncompleteForms = computed(
-    () => formResource.value?.data?.allow_incomplete,
+    () => formResource.value?.data?.allow_incomplete
   );
 
   const currentFormId = computed((): string | null => {
@@ -152,7 +152,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
         errors.value = error.messages?.map((message: string) => message) || [];
         if (errors.value.length === 0) {
           errors.value.push(
-            "Error while submitting form. Check the values and try again.",
+            "Error while submitting form. Check the values and try again."
           );
         }
       },

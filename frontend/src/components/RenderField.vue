@@ -12,7 +12,7 @@ const props = defineProps({
 const value = defineModel();
 const getComponent = computed(() => {
     return formFields.find(
-        (field: FormFields) => field.name === props.field.fieldtype,
+        (field: FormFields) => field.name === props.field.fieldtype
     ) as FormFieldType;
 });
 </script>

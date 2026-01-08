@@ -149,7 +149,7 @@ watch(
             teamForms.fetch();
         }
     },
-    { immediate: true },
+    { immediate: true }
 );
 
 watch(
@@ -159,6 +159,6 @@ watch(
             doctypesList.fetch();
         }
     },
-    { immediate: true },
+    { immediate: true }
 );
 </script>

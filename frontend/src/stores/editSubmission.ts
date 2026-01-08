@@ -9,10 +9,10 @@ export const useEditSubmission = defineStore("editSubmission", () => {
   const submissionResource = ref<any>(null);
   const submission = computed(() => submissionResource.value?.doc || null);
   const isDraft = computed(
-    () => submission.value?.fp_submission_status == "Draft",
+    () => submission.value?.fp_submission_status == "Draft"
   );
   const isSubmitted = computed(
-    () => submission.value?.fp_submission_status == "Submitted",
+    () => submission.value?.fp_submission_status == "Submitted"
   );
 
   const isLoading = ref(true);
@@ -41,7 +41,7 @@ export const useEditSubmission = defineStore("editSubmission", () => {
         onError: () => {
           toast.error("Failed to convert submission to draft");
         },
-      },
+      }
     );
   }
 
@@ -73,7 +73,7 @@ export const useEditSubmission = defineStore("editSubmission", () => {
         onError: () => {
           toast.error("Failed to submit submission");
         },
-      },
+      }
     );
   }
 

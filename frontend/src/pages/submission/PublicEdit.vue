@@ -20,11 +20,11 @@ watch(
         if (submissionFormStore.formResource.data) {
             editSubmissionStore.initialize(
                 submissionFormStore.formResource.data?.linked_doctype,
-                route.params.submissionName as string,
+                route.params.submissionName as string
             );
         }
     },
-    { immediate: true },
+    { immediate: true }
 );
 
 watch(
@@ -39,7 +39,7 @@ watch(
             });
         }
     },
-    { immediate: true },
+    { immediate: true }
 );
 
 const isDirty = computed(() => {
@@ -125,7 +125,7 @@ const isDirty = computed(() => {
                                                 return;
                                             }
                                             editSubmissionStore.updateForm(
-                                                submissionFormStore.fields,
+                                                submissionFormStore.fields
                                             );
                                         }
                                     "
@@ -163,7 +163,7 @@ const isDirty = computed(() => {
                                     variant="solid"
                                     @click="
                                         editSubmissionStore.updateAndSubmitForm(
-                                            submissionFormStore.fields,
+                                            submissionFormStore.fields
                                         )
                                     "
                                     :disabled="!isDirty"

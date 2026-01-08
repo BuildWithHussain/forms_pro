@@ -71,7 +71,7 @@ const isOpen = computed(() => Boolean(selectedValue.value));
                         class="text-sm"
                         @click="
                             router.push(
-                                `/p/${submissionFormStore.currentFormRoute}/edit/${submission.name}`,
+                                `/p/${submissionFormStore.currentFormRoute}/edit/${submission.name}`
                             )
                         "
                     />

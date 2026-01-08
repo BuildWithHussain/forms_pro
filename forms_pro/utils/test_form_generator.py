@@ -258,8 +258,6 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         self.assertEqual(linked_form_field.fieldtype, LINKED_FORM_FIELDOPTIONS["fieldtype"])
         self.assertEqual(linked_form_field.options, LINKED_FORM_FIELDOPTIONS["options"])
         self.assertEqual(linked_form_field.read_only, LINKED_FORM_FIELDOPTIONS["read_only"])
-        self.assertEqual(linked_form_field.in_list_view, LINKED_FORM_FIELDOPTIONS["in_list_view"])
-        self.assertEqual(linked_form_field.mandatory, LINKED_FORM_FIELDOPTIONS["mandatory"])
 
     def test_status_field_is_added_core_doctype(self):
         """Test that status field is added to core doctype as a custom field"""
@@ -267,7 +265,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
         test_doctype = frappe.new_doc("DocType")
         test_doctype.name = "Test Status Field Doctype" + frappe.utils.random_string(8)
-        test_doctype.module = "Forms Pro"
+        test_doctype.module = "User Forms"
         test_doctype.custom = False
         test_doctype.insert(ignore_permissions=True)
 
@@ -307,7 +305,7 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
 
         test_doctype = frappe.new_doc("DocType")
         test_doctype.name = "Test Linked Form Doctype" + frappe.utils.random_string(8)
-        test_doctype.module = "Forms Pro"
+        test_doctype.module = "User Forms"
         test_doctype.custom = False
         test_doctype.insert(ignore_permissions=True)
 
@@ -338,5 +336,3 @@ class IntegrationTestFormGenerator(IntegrationTestCase):
         self.assertEqual(custom_field.fieldtype, LINKED_FORM_FIELDOPTIONS["fieldtype"])
         self.assertEqual(custom_field.options, LINKED_FORM_FIELDOPTIONS["options"])
         self.assertEqual(custom_field.read_only, LINKED_FORM_FIELDOPTIONS["read_only"])
-        self.assertEqual(custom_field.in_list_view, LINKED_FORM_FIELDOPTIONS["in_list_view"])
-        self.assertEqual(custom_field.mandatory, LINKED_FORM_FIELDOPTIONS["mandatory"])

@@ -26,7 +26,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   );
 
   const currentFormId = computed((): string | null => {
-    if (!formResource) {
+    if (!formResource.value || !formResource.value.data) {
       return null;
     }
 
@@ -34,7 +34,7 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   });
 
   const formIsPublished = computed((): boolean | null => {
-    if (!formResource.value.data) {
+    if (!formResource.value || !formResource.value.data) {
       return null;
     }
 

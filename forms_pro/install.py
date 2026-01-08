@@ -4,6 +4,20 @@ from frappe.core.doctype.user.user import User
 from forms_pro.roles import FORMS_PRO_ROLE
 
 
+def before_install():
+    create_user_forms_module()
+
+
+def create_user_forms_module():
+    if frappe.db.exists("Module Def", "User Forms"):
+        return
+
+    module = frappe.new_doc("Module Def")
+    module.module_name = "User Forms"
+    module.app_name = "Forms Pro"
+    module.insert(ignore_permissions=True)
+
+
 def before_tests():
     give_admin_forms_pro_role()
     create_test_user()

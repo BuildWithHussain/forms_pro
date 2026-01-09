@@ -18,6 +18,7 @@ class FormField(Document):
         description: DF.SmallText | None
         fieldname: DF.Data
         fieldtype: DF.Literal[
+            "Attach",
             "Data",
             "Number",
             "Email",

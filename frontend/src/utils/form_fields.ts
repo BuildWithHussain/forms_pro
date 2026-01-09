@@ -129,6 +129,7 @@ export const CheckboxField: FormFieldType = {
 
 export const formFields: FormFields[] = [
   { name: "Data", ...DataField },
+  { name: "Link", ...SelectField },
   { name: "Number", ...NumberField },
   { name: "Email", ...EmailField },
   { name: "Date", ...DateField },

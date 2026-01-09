@@ -60,6 +60,24 @@ def get_form(form_id: str) -> dict:
     }
 
 
+@frappe.whitelist(allow_guest=True)
+def get_link_field_options(
+    doctype: str,
+    filters: dict | None = None,
+    page_length: int = 20,
+) -> list[str]:
+    meta = frappe.get_meta(doctype)
+    title_field = meta.title_field or "name"
+
+    results = frappe.get_all(
+        doctype=doctype,
+        filters=filters or {},
+        page_length=page_length,
+        fields=["name as value", f"{title_field} as label"],
+    )
+    return results
+
+
 @frappe.whitelist()
 def get_form_shared_with(form_id: str) -> list[frappe.Any]:
     """

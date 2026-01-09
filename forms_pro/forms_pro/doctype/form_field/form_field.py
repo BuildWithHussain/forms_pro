@@ -30,6 +30,7 @@ class FormField(Document):
             "Switch",
             "Textarea",
             "Text Editor",
+            "Link",
         ]
         label: DF.Data
         options: DF.SmallText | None

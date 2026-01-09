@@ -35,7 +35,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Fieldtype",
-   "options": "Data\nNumber\nEmail\nDate\nDate Time\nDate Range\nTime Picker\nPassword\nSelect\nSwitch\nTextarea\nText Editor",
+   "options": "Data\nNumber\nEmail\nDate\nDate Time\nDate Range\nTime Picker\nPassword\nSelect\nSwitch\nTextarea\nText Editor\nLink",
    "reqd": 1
   },
   {
@@ -68,7 +68,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-06 03:28:25.437379",
+ "modified": "2026-01-09 13:23:39.055114",
  "modified_by": "Administrator",
  "module": "Forms Pro",
  "name": "Form Field",

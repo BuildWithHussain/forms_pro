@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { Asterisk } from "lucide-vue-next";
 import RenderField from "../RenderField.vue";
+import { createResource } from "frappe-ui";
+import { useSubmissionForm } from "@/stores/submissionForm";
+
+const submissionFormStore = useSubmissionForm();
 
 const props = defineProps({
     field: {
@@ -47,7 +51,15 @@ const getClasses = computed(() => {
     }
 });
 
-const getOptions = () => {
+type SelectOption = {
+    label: string;
+    value: string;
+};
+
+// Reactive ref to store options
+const selectOptions = ref<string[] | SelectOption[] | null>(null);
+
+const getOptions = async () => {
     if (!fieldData.value.options) {
         return "";
     }
@@ -56,8 +68,42 @@ const getOptions = () => {
         return fieldData.value.options.split("\n");
     }
 
+    if (fieldData.value.fieldtype === "Link") {
+        const _options = createResource({
+            url: "forms_pro.api.form.get_link_field_options",
+            makeParams: () => {
+                return {
+                    doctype: fieldData.value.options,
+                    filters: {},
+                    page_length: 999,
+                };
+            },
+        });
+        await _options.fetch();
+        return _options.data;
+    }
+
     return fieldData.value.options;
 };
+
+// Load options when component mounts or field data changes
+const loadOptions = async () => {
+    selectOptions.value = await getOptions();
+};
+
+// Watch for changes to field type or options
+watch(
+    () => [fieldData.value.fieldtype, fieldData.value.options],
+    () => {
+        loadOptions();
+    },
+    { immediate: true }
+);
+
+// Also load on mount
+onMounted(() => {
+    loadOptions();
+});
 </script>
 <template>
     <div :class="getClasses" v-if="fieldData.fieldtype == 'Switch'">
@@ -151,7 +197,7 @@ const getOptions = () => {
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
             :disabled="disabled"
-            :options="getOptions()"
+            :options="selectOptions"
         />
         <small class="text-gray-500">
             {{ fieldData.description }}

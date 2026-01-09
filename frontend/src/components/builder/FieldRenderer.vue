@@ -180,6 +180,29 @@ onMounted(() => {
             />
         </div>
     </div>
+    <div v-else-if="fieldData.fieldtype == 'Attach'">
+        <div class="flex gap-2 items-start">
+            <input
+                v-if="inEditMode"
+                placeholder="Label"
+                type="text"
+                v-model="fieldData.label"
+                class="bg-transparent border-none outline-none text-base focus:ring-0 w-fit px-0 py-1"
+            />
+            <label class="text-base" v-else>{{ fieldData.label }}</label>
+            <Asterisk v-if="fieldData.reqd" class="w-4 h-4 text-red-400" />
+        </div>
+        <RenderField
+            :value="modelValue"
+            @update:value="(value: string) => (modelValue = value)"
+            :field="fieldData"
+            :class="{ 'pointer-events-none': inEditMode }"
+            :disabled="disabled"
+        />
+        <small class="text-gray-500">
+            {{ fieldData.description }}
+        </small>
+    </div>
     <div v-else :class="getClasses">
         <div class="flex gap-2 items-start">
             <input

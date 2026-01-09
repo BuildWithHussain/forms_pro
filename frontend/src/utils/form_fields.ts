@@ -4,7 +4,6 @@ import {
   DatePicker,
   DateRangePicker,
   DateTimePicker,
-  FileUploader,
   Rating,
   Select,
   Switch,
@@ -14,6 +13,7 @@ import {
   Password,
 } from "frappe-ui";
 import { Component } from "vue";
+import Attachment from "@/components/fields/Attachment.vue";
 
 export type FormFieldType = {
   component: Component;
@@ -25,6 +25,15 @@ export type FormFields = FormFieldType & {
 };
 
 // Individual form field components as dictionaries
+
+export const AttachmentField: FormFieldType = {
+  component: Attachment,
+  props: {
+    variant: "outline",
+    filetypes: ["image/*", ".jpg", ".gif", ".pdf"],
+  },
+};
+
 export const DataField: FormFieldType = {
   component: FormControl,
   props: { type: "text", variant: "outline" },
@@ -128,6 +137,7 @@ export const CheckboxField: FormFieldType = {
 };
 
 export const formFields: FormFields[] = [
+  { name: "Attach", ...AttachmentField },
   { name: "Data", ...DataField },
   { name: "Link", ...SelectField },
   { name: "Number", ...NumberField },

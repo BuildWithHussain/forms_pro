@@ -12,6 +12,7 @@ const submissionFormStore = useSubmissionForm();
 submissionFormStore.initialize(route.params.route as string);
 </script>
 <template>
+    <pre>{{ submissionFormStore }}</pre>
     <div class="p-8 bg-surface-gray-1 min-h-svh space-y-16">
         <PageHeader />
         <PreviousSubmissionSection v-if="submissionFormStore.userSubmissions" />

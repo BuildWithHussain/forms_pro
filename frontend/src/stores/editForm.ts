@@ -92,11 +92,14 @@ export const useEditForm = defineStore("editForm", () => {
 
   function save() {
     if (formResource.value) {
-      formResource.value.doc.fields.forEach((field: FormField) => {
-        if (!field.fieldname || field.fieldname.trim() === "") {
-          field.fieldname = scrubFieldname(field.label);
+      formResource.value.doc.fields.forEach(
+        (field: FormField, index: number) => {
+          field.idx = index + 1;
+          if (!field.fieldname || field.fieldname.trim() === "") {
+            field.fieldname = scrubFieldname(field.label);
+          }
         }
-      });
+      );
 
       return formResource.value.setValue.submit(formResource.value.doc, {
         onSuccess: () => {

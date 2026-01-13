@@ -1,10 +1,30 @@
-export interface FormField {
+export enum FormFieldTypes {
+  Attach = "Attach",
+  Data = "Data",
+  Number = "Number",
+  Email = "Email",
+  Date = "Date",
+  DateTime = "Date Time",
+  DateRange = "Date Range",
+  TimePicker = "Time Picker",
+  Password = "Password",
+  Select = "Select",
+  Switch = "Switch",
+  Textarea = "Textarea",
+  TextEditor = "Text Editor",
+  Link = "Link",
+  Checkbox = "Checkbox",
+  Rating = "Rating",
+}
+
+export type FormField = {
   label: string;
   fieldname: string;
-  fieldtype: string;
+  fieldtype: FormFieldTypes;
   description?: string;
   reqd?: boolean;
   options?: string;
   default?: string;
   idx?: number;
-}
+  display_depends_on?: string;
+};

@@ -16,6 +16,7 @@ class FormField(Document):
 
         default: DF.SmallText | None
         description: DF.SmallText | None
+        display_depends_on: DF.Code | None
         fieldname: DF.Data
         fieldtype: DF.Literal[
             "Attach",

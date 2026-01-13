@@ -6,14 +6,15 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "reqd",
   "label",
+  "fieldtype",
   "fieldname",
   "description",
   "column_break_yznn",
-  "fieldtype",
-  "reqd",
   "options",
-  "default"
+  "default",
+  "display_depends_on"
  ],
  "fields": [
   {
@@ -62,13 +63,18 @@
    "fieldname": "default",
    "fieldtype": "Small Text",
    "label": "Default"
+  },
+  {
+   "fieldname": "display_depends_on",
+   "fieldtype": "Code",
+   "label": "Display Depends On"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-09 14:57:39.192268",
+ "modified": "2026-01-13 19:30:52.799413",
  "modified_by": "Administrator",
  "module": "Forms Pro",
  "name": "Form Field",

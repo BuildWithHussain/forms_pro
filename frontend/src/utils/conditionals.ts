@@ -185,38 +185,6 @@ function evaluateCondition(
         .toLowerCase()
         .endsWith(String(conditionValue).toLowerCase());
 
-    case ConditionalOperators.IsBetween:
-      // For "Is Between", value should be a string like "min,max"
-      if (normalizedFieldValue === null || typeof conditionValue !== "string") {
-        return false;
-      }
-      const [min, max] = conditionValue.split(",").map((v) => Number(v.trim()));
-      if (
-        isNaN(min) ||
-        isNaN(max) ||
-        typeof normalizedFieldValue !== "number"
-      ) {
-        return false;
-      }
-      return normalizedFieldValue >= min && normalizedFieldValue <= max;
-
-    case ConditionalOperators.IsNotBetween:
-      // For "Is Not Between", value should be a string like "min,max"
-      if (normalizedFieldValue === null || typeof conditionValue !== "string") {
-        return true;
-      }
-      const [minNot, maxNot] = conditionValue
-        .split(",")
-        .map((v) => Number(v.trim()));
-      if (
-        isNaN(minNot) ||
-        isNaN(maxNot) ||
-        typeof normalizedFieldValue !== "number"
-      ) {
-        return true;
-      }
-      return normalizedFieldValue < minNot || normalizedFieldValue > maxNot;
-
     default:
       console.warn(`Unknown operator: ${operator}`);
       return false;
@@ -247,9 +215,10 @@ function evaluateConditions(
 }
 
 /**
- * Determine if a field should be visible based on all conditional logic rules
- * that target it. A field is visible if:
- * - No conditional logic targets it, OR
+ * Determine if a field should be visible based on conditional logic rules
+ * defined on other fields that target this field. Visibility is driven by
+ * rules on other fields, not a property on the field itself. A field is visible if:
+ * - No conditional logic rules target it, OR
  * - At least one "Show Field" action evaluates to true, OR
  * - No "Hide Field" actions evaluate to true
  */
@@ -258,11 +227,6 @@ export function shouldFieldBeVisible(
   formValues: Record<string, any>,
   allFields: FormField[]
 ): boolean {
-  // If field has no conditional_logic, it's always visible
-  if (!field.conditional_logic || field.conditional_logic.trim() === "") {
-    return true;
-  }
-
   // Find all conditional logic rules that target this field
   const targetingRules: ConditionalLogic[] = [];
 

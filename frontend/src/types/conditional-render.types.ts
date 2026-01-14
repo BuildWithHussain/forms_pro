@@ -10,8 +10,6 @@ export enum ConditionalOperators {
   IsLessThanOrEqualTo = "Is Less Than Or Equal To",
   IsGreaterThan = "Is Greater Than",
   IsGreaterThanOrEqualTo = "Is Greater Than Or Equal To",
-  IsBetween = "Is Between",
-  IsNotBetween = "Is Not Between",
   StartsWith = "Starts With",
   DoesNotStartWith = "Does Not Start With",
   EndsWith = "Ends With",

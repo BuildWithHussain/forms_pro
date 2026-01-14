@@ -5,6 +5,10 @@ import { computed, ref } from "vue";
 import { FormField } from "@/types/formfield";
 import { useStorage } from "@vueuse/core";
 import { session } from "@/data/session";
+import {
+  shouldFieldBeRequired,
+  shouldFieldBeVisible,
+} from "@/utils/conditionals";
 
 export type UserSubmission = {
   name: string;
@@ -163,8 +167,19 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
 
   function validateValues() {
     errors.value = [];
-    formResource.value.data.fields.forEach((field: FormField) => {
-      if (field.reqd && !fields.value[field.fieldname]) {
+    const allFields = formResource.value.data.fields || [];
+
+    allFields.forEach((field: FormField) => {
+      // Only validate visible fields
+      const isVisible = shouldFieldBeVisible(field, fields.value, allFields);
+      if (!isVisible) {
+        return;
+      }
+
+      // Check if field is required (including conditional requirements)
+      const isRequired = shouldFieldBeRequired(field, fields.value, allFields);
+
+      if (isRequired && !fields.value[field.fieldname]) {
         errors.value.push(`${field.label} is required`);
       }
     });

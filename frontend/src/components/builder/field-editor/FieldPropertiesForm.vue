@@ -3,9 +3,8 @@ import { useEditForm } from "@/stores/editForm";
 import { FormControl } from "frappe-ui";
 import { FormField, FormFieldTypes } from "@/types/formfield";
 import { computed } from "vue";
-
 import type { Component } from "vue";
-import ConditionRender from "./ConditionRender.vue";
+import ConditionalLogicSection from "./ConditionalLogicSection.vue";
 
 const editFormStore = useEditForm();
 
@@ -89,11 +88,19 @@ const fieldProperties = computed(() => {
                 variant: "outline",
             },
         },
+        {
+            fieldname: "display_depends_on",
+            component: ConditionalLogicSection,
+            props: {},
+        },
     ] as FieldProperty[];
 });
 </script>
 <template>
-    <div class="flex flex-col gap-6 p-4 w-full">
+    <div
+        class="flex flex-col gap-6 p-4 w-full"
+        data-form-builder-component="field-properties-form"
+    >
         <h3 class="text-lg font-medium">Edit Properties</h3>
         <hr />
         <template v-if="editFormStore.selectedField">

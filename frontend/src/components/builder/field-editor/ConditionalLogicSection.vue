@@ -192,27 +192,27 @@ const showValueInput = (operator: ConditionalOperators) => {
                     variant="outline"
                     v-model="condition.value"
                 />
-
-                <!-- Actions -->
-                <div class="flex items-center gap-2 text-ink-gray-5 text-sm">
-                    <Zap class="w-4 h-4" />
-                    <span>Then</span>
-                </div>
-                <FormControl
-                    type="select"
-                    placeholder="Select Action"
-                    variant="outline"
-                    :options="actionOptions"
-                    v-model="conditionalLogic.action"
-                />
-                <FormControl
-                    type="select"
-                    placeholder="Select Field"
-                    variant="outline"
-                    :options="availableFieldOptions"
-                    v-model="conditionalLogic.target_field"
-                />
             </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 text-ink-gray-5 text-sm">
+                <Zap class="w-4 h-4" />
+                <span>Then</span>
+            </div>
+            <FormControl
+                type="select"
+                placeholder="Select Action"
+                variant="outline"
+                :options="actionOptions"
+                v-model="conditionalLogic.action"
+            />
+            <FormControl
+                type="select"
+                placeholder="Select Field"
+                variant="outline"
+                :options="availableFieldOptions"
+                v-model="conditionalLogic.target_field"
+            />
         </div>
         <Button
             v-if="!conditionalLogic || conditionalLogic?.conditions.length === 0"

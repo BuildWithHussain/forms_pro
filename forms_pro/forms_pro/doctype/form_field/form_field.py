@@ -33,6 +33,8 @@ class FormField(Document):
             "Textarea",
             "Text Editor",
             "Link",
+            "Checkbox",
+            "Rating",
         ]
         label: DF.Data
         options: DF.SmallText | None

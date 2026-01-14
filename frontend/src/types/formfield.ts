@@ -9,6 +9,7 @@ export enum FormFieldTypes {
   TimePicker = "Time Picker",
   Password = "Password",
   Select = "Select",
+  Phone = "Phone",
   Switch = "Switch",
   Textarea = "Textarea",
   TextEditor = "Text Editor",

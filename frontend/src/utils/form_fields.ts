@@ -14,6 +14,7 @@ import {
 } from "frappe-ui";
 import { Component } from "vue";
 import Attachment from "@/components/fields/Attachment.vue";
+import Phone from "@/components/fields/Phone.vue";
 
 export type FormFieldType = {
   component: Component;
@@ -136,6 +137,13 @@ export const CheckboxField: FormFieldType = {
   props: {},
 };
 
+export const PhoneField: FormFieldType = {
+  component: Phone,
+  props: {
+    variant: "outline",
+  },
+};
+
 export const formFields: FormFields[] = [
   { name: "Attach", ...AttachmentField },
   { name: "Data", ...DataField },
@@ -153,6 +161,7 @@ export const formFields: FormFields[] = [
   { name: "Textarea", ...TextareaField },
   { name: "Text Editor", ...TextEditorField },
   { name: "Checkbox", ...CheckboxField },
+  { name: "Phone", ...PhoneField },
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {

@@ -59,7 +59,7 @@ class FormField(Document):
             _fieldtype = "Data"
         elif self.fieldtype == "Time Picker":
             _fieldtype = "Time"
-        elif self.fieldtype == "Switch":
+        elif self.fieldtype == "Switch" or self.fieldtype == "Checkbox":
             _fieldtype = "Check"
         elif self.fieldtype == "Textarea":
             _fieldtype = "Text"

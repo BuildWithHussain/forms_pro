@@ -215,18 +215,27 @@ function evaluateConditions(
 }
 
 /**
- * Determine if a field should be visible based on conditional logic rules
- * defined on other fields that target this field. Visibility is driven by
- * rules on other fields, not a property on the field itself. A field is visible if:
- * - No conditional logic rules target it, OR
- * - At least one "Show Field" action evaluates to true, OR
- * - No "Hide Field" actions evaluate to true
+ * Determine if a field should be visible based on:
+ * 1. The field's `hidden` property (base state)
+ * 2. Conditional logic rules defined on other fields that target this field
+ *
+ * Visibility logic:
+ * - If field.hidden === true, field starts as hidden
+ * - If field.hidden === false or undefined, field starts as visible
+ * - Conditional logic can override the base state:
+ *   - "Show Field" action can make a hidden field visible
+ *   - "Hide Field" action can make a visible field hidden
+ * - If no conditional logic applies, the base hidden state is used
  */
 export function shouldFieldBeVisible(
   field: FormField,
   formValues: Record<string, any>,
   allFields: FormField[]
 ): boolean {
+  // Start with the field's base hidden state
+  // If hidden is true, field is hidden by default; if false/undefined, it's visible
+  const baseIsVisible = !field.hidden;
+
   // Find all conditional logic rules that target this field
   const targetingRules: ConditionalLogic[] = [];
 
@@ -239,9 +248,9 @@ export function shouldFieldBeVisible(
     }
   });
 
-  // If no rules target this field, it's visible
+  // If no rules target this field, use the base hidden state
   if (targetingRules.length === 0) {
-    return true;
+    return baseIsVisible;
   }
 
   // Check each rule
@@ -260,18 +269,19 @@ export function shouldFieldBeVisible(
     }
   }
 
-  // If any "Show Field" rule is met, field is visible
+  // Conditional logic overrides base state:
+  // - "Show Field" action can override hidden state (make it visible)
   if (hasShowRule) {
     return true;
   }
 
-  // If any "Hide Field" rule is met, field is hidden
+  // - "Hide Field" action can override visible state (make it hidden)
   if (hasHideRule) {
     return false;
   }
 
-  // Default: field is visible if no rules are met
-  return true;
+  // If no conditional rules are met, use the base hidden state
+  return baseIsVisible;
 }
 
 /**

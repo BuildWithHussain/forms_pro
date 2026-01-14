@@ -89,7 +89,7 @@ const fieldProperties = computed(() => {
             },
         },
         {
-            fieldname: "display_depends_on",
+            fieldname: "conditional_logic",
             component: ConditionalLogicSection,
             props: {},
         },

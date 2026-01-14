@@ -26,5 +26,5 @@ export type FormField = {
   options?: string;
   default?: string;
   idx?: number;
-  display_depends_on?: string;
+  conditional_logic?: string;
 };

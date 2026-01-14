@@ -16,8 +16,8 @@ const editFormStore = useEditForm();
 const conditionalLogic = ref<ConditionalLogic | null>(null);
 const isUpdatingFromStore = ref(false);
 
-// Helper function to parse display_depends_on value
-const parseDisplayDependsOn = (
+// Helper function to parse conditional_logic value
+const parseConditionalLogic = (
     value: string | ConditionalLogic | undefined
 ): ConditionalLogic | null => {
     if (!value) return null;
@@ -25,7 +25,7 @@ const parseDisplayDependsOn = (
         try {
             return JSON.parse(value) as ConditionalLogic;
         } catch (e) {
-            console.error("Failed to parse display_depends_on:", e);
+            console.error("Failed to parse conditional_logic:", e);
             return null;
         }
     }
@@ -38,20 +38,20 @@ const stringifyConditionalLogic = (value: ConditionalLogic | null): string | und
     return JSON.stringify(value);
 };
 
-// Watch for changes in selectedField.display_depends_on from external sources
+// Watch for changes in selectedField.conditional_logic from external sources
 watch(
-    () => editFormStore.selectedField?.display_depends_on,
+    () => editFormStore.selectedField?.conditional_logic,
     (newValue) => {
         // Prevent infinite loop - don't update if we're the ones updating the store
         if (isUpdatingFromStore.value) return;
 
-        const parsed = parseDisplayDependsOn(newValue);
+        const parsed = parseConditionalLogic(newValue);
         conditionalLogic.value = parsed;
     },
     { immediate: true }
 );
 
-// Watch conditionalLogic and update selectedField.display_depends_on whenever it changes
+// Watch conditionalLogic and update selectedField.conditional_logic whenever it changes
 watch(
     conditionalLogic,
     (newValue) => {
@@ -62,9 +62,9 @@ watch(
 
         try {
             if (conditionalLogic.value?.conditions.length === 0) {
-                editFormStore.selectedField.display_depends_on = "";
+                editFormStore.selectedField.conditional_logic = "";
             } else {
-                editFormStore.selectedField.display_depends_on =
+                editFormStore.selectedField.conditional_logic =
                     stringifyConditionalLogic(newValue);
             }
         } finally {

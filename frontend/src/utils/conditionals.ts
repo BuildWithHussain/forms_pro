@@ -7,19 +7,19 @@ import {
 import { FormField } from "@/types/formfield";
 
 /**
- * Parse display_depends_on string into ConditionalLogic object
+ * Parse conditional_logic string into ConditionalLogic object
  */
 export function parseConditionalLogic(
-  displayDependsOn: string | undefined | null
+  conditionalLogic: string | undefined | null
 ): ConditionalLogic | null {
-  if (!displayDependsOn || displayDependsOn.trim() === "") {
+  if (!conditionalLogic || conditionalLogic.trim() === "") {
     return null;
   }
 
   try {
-    return JSON.parse(displayDependsOn) as ConditionalLogic;
+    return JSON.parse(conditionalLogic) as ConditionalLogic;
   } catch (e) {
-    console.error("Failed to parse display_depends_on:", e);
+    console.error("Failed to parse conditional_logic:", e);
     return null;
   }
 }
@@ -258,8 +258,8 @@ export function shouldFieldBeVisible(
   formValues: Record<string, any>,
   allFields: FormField[]
 ): boolean {
-  // If field has no display_depends_on, it's always visible
-  if (!field.display_depends_on || field.display_depends_on.trim() === "") {
+  // If field has no conditional_logic, it's always visible
+  if (!field.conditional_logic || field.conditional_logic.trim() === "") {
     return true;
   }
 
@@ -267,9 +267,9 @@ export function shouldFieldBeVisible(
   const targetingRules: ConditionalLogic[] = [];
 
   allFields.forEach((otherField) => {
-    if (!otherField.display_depends_on) return;
+    if (!otherField.conditional_logic) return;
 
-    const logic = parseConditionalLogic(otherField.display_depends_on);
+    const logic = parseConditionalLogic(otherField.conditional_logic);
     if (logic && logic.target_field === field.fieldname) {
       targetingRules.push(logic);
     }
@@ -325,9 +325,9 @@ export function shouldFieldBeRequired(
   const targetingRules: ConditionalLogic[] = [];
 
   allFields.forEach((otherField) => {
-    if (!otherField.display_depends_on) return;
+    if (!otherField.conditional_logic) return;
 
-    const logic = parseConditionalLogic(otherField.display_depends_on);
+    const logic = parseConditionalLogic(otherField.conditional_logic);
     if (
       logic &&
       logic.target_field === field.fieldname &&

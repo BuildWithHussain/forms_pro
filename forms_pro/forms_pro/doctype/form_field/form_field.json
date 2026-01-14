@@ -14,7 +14,7 @@
   "column_break_yznn",
   "options",
   "default",
-  "display_depends_on"
+  "conditional_logic"
  ],
  "fields": [
   {
@@ -65,16 +65,16 @@
    "label": "Default"
   },
   {
-   "fieldname": "display_depends_on",
+   "fieldname": "conditional_logic",
    "fieldtype": "Code",
-   "label": "Display Depends On"
+   "label": "Conditional Logic"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-13 19:30:52.799413",
+ "modified": "2026-01-14 21:30:43.961415",
  "modified_by": "Administrator",
  "module": "Forms Pro",
  "name": "Form Field",

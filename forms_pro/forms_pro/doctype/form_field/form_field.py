@@ -35,6 +35,7 @@ class FormField(Document):
             "Link",
             "Checkbox",
             "Rating",
+            "Phone",
         ]
         label: DF.Data
         options: DF.SmallText | None

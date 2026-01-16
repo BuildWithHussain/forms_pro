@@ -15,24 +15,9 @@ class FormField(Document):
         from frappe.types import DF
 
         default: DF.SmallText | None
-        description: DF.SmallText | None
+        description: DF.LongText | None
         fieldname: DF.Data
-        fieldtype: DF.Literal[
-            "Attach",
-            "Data",
-            "Number",
-            "Email",
-            "Date",
-            "Date Time",
-            "Date Range",
-            "Time Picker",
-            "Password",
-            "Select",
-            "Switch",
-            "Textarea",
-            "Text Editor",
-            "Link",
-        ]
+        fieldtype: DF.Literal["Attach", "Data", "Number", "Email", "Date", "Date Time", "Date Range", "Time Picker", "Password", "Select", "Switch", "Textarea", "Text Editor", "Link"]
         label: DF.Data
         options: DF.SmallText | None
         parent: DF.Data

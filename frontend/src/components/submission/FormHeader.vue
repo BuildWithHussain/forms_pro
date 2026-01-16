@@ -14,8 +14,7 @@ const submissionFormStore = useSubmissionForm();
         </h1>
         <TextEditor
             :model-value="submissionFormStore.formResource.data.description"
-            editor-class="h-fit !w-full form-description !px-0"
-            placeholder="Write a description for your form"
+            editor-class="h-fit !w-full form-description !px-0 max-w-full max-h-full"
             :editable="false"
         />
         <hr />

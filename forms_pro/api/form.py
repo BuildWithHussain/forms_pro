@@ -57,6 +57,8 @@ def get_form(form_id: str) -> dict:
         "is_published": form.is_published,
         "allow_incomplete": form.allow_incomplete,
         "linked_doctype": form.linked_doctype,
+        "success_title": form.success_title,
+        "success_description": form.success_description,
     }
 
 

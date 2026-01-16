@@ -126,17 +126,34 @@ const selectedCountry = computed(() => {
     );
 });
 
-// Get full phone number with country code
+// Get full phone number with country code (for display - with space)
 const getFullPhoneNumber = (): string => {
     if (!phoneNumber.value) return "";
     return `${selectedCountry.value.dialCode} ${phoneNumber.value}`.trim();
 };
 
+// Sanitize phone number: convert space to dash and remove dashes from number part (for model storage)
+const sanitizePhoneNumber = (phoneNumber: string): string => {
+    if (!phoneNumber) return "";
+    // Match country code and number parts (handles both space and dash separators)
+    const match = phoneNumber.match(/^(\+\d+)[\s-]+(.+)$/);
+    if (match) {
+        const countryCode = match[1];
+        const numberPart = match[2].replace(/-/g, ""); // Remove all dashes from number part
+        // Return as "+91-1234567890" (dash between country code and number, no dashes in number)
+        return `${countryCode}-${numberPart}`;
+    }
+    // Fallback: if format doesn't match, return as-is (shouldn't happen in normal flow)
+    return phoneNumber;
+};
+
 // Watch for changes and update model value
 const updatePhoneValue = () => {
     const fullNumber = getFullPhoneNumber();
-    emit("update:modelValue", fullNumber);
-    emit("change", fullNumber);
+    // Sanitize: convert space to dash before emitting to model
+    const sanitizedNumber = sanitizePhoneNumber(fullNumber);
+    emit("update:modelValue", sanitizedNumber);
+    emit("change", sanitizedNumber);
 };
 
 // Parse phone number from modelValue
@@ -146,22 +163,25 @@ const parsePhoneNumber = (value: string) => {
         return;
     }
 
+    // Convert dash to space for display (model has "+91-1234567890", display as "+91 1234567890")
+    const displayValue = value.replace(/^(\+\d+)-/, "$1 ");
+
     // If value starts with +, try to find matching country
-    if (value.startsWith("+")) {
+    if (displayValue.startsWith("+")) {
         // Find country by matching dial code (longest match first)
         const sortedCountries = [...availableCountries.value].sort(
             (a, b) => b.dialCode.length - a.dialCode.length
         );
-        const country = sortedCountries.find((c) => value.startsWith(c.dialCode));
+        const country = sortedCountries.find((c) => displayValue.startsWith(c.dialCode));
 
         if (country) {
             selectedCountryCode.value = country.code;
-            phoneNumber.value = value.replace(country.dialCode, "").trim();
+            phoneNumber.value = displayValue.replace(country.dialCode, "").trim();
         } else {
-            phoneNumber.value = value;
+            phoneNumber.value = displayValue;
         }
     } else {
-        phoneNumber.value = value;
+        phoneNumber.value = displayValue;
     }
 };
 

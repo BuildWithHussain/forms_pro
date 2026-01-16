@@ -6,14 +6,16 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "reqd",
+  "hidden",
   "label",
+  "fieldtype",
   "fieldname",
   "description",
   "column_break_yznn",
-  "fieldtype",
-  "reqd",
   "options",
-  "default"
+  "default",
+  "conditional_logic"
  ],
  "fields": [
   {
@@ -35,7 +37,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Fieldtype",
-   "options": "Attach\nData\nNumber\nEmail\nDate\nDate Time\nDate Range\nTime Picker\nPassword\nSelect\nSwitch\nTextarea\nText Editor\nLink",
+   "options": "Attach\nData\nNumber\nEmail\nDate\nDate Time\nDate Range\nTime Picker\nPassword\nSelect\nSwitch\nTextarea\nText Editor\nLink\nCheckbox\nRating",
    "reqd": 1
   },
   {
@@ -62,6 +64,17 @@
    "fieldname": "default",
    "fieldtype": "Small Text",
    "label": "Default"
+  },
+  {
+   "fieldname": "conditional_logic",
+   "fieldtype": "Code",
+   "label": "Conditional Logic"
+  },
+  {
+   "default": "0",
+   "fieldname": "hidden",
+   "fieldtype": "Check",
+   "label": "Hidden"
   }
  ],
  "grid_page_length": 50,

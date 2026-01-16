@@ -14,10 +14,29 @@ class FormField(Document):
     if TYPE_CHECKING:
         from frappe.types import DF
 
+        conditional_logic: DF.Code | None
         default: DF.SmallText | None
         description: DF.LongText | None
         fieldname: DF.Data
-        fieldtype: DF.Literal["Attach", "Data", "Number", "Email", "Date", "Date Time", "Date Range", "Time Picker", "Password", "Select", "Switch", "Textarea", "Text Editor", "Link"]
+        fieldtype: DF.Literal[
+            "Attach",
+            "Data",
+            "Number",
+            "Email",
+            "Date",
+            "Date Time",
+            "Date Range",
+            "Time Picker",
+            "Password",
+            "Select",
+            "Switch",
+            "Textarea",
+            "Text Editor",
+            "Link",
+            "Checkbox",
+            "Rating",
+        ]
+        hidden: DF.Check
         label: DF.Data
         options: DF.SmallText | None
         parent: DF.Data
@@ -41,7 +60,7 @@ class FormField(Document):
             _fieldtype = "Data"
         elif self.fieldtype == "Time Picker":
             _fieldtype = "Time"
-        elif self.fieldtype == "Switch":
+        elif self.fieldtype == "Switch" or self.fieldtype == "Checkbox":
             _fieldtype = "Check"
         elif self.fieldtype == "Textarea":
             _fieldtype = "Text"

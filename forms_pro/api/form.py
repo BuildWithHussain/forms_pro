@@ -156,6 +156,9 @@ def get_doctype_fields(doctype: str) -> dict:
         "Fold",
     ]
 
+    FIELDS_TO_REMOVE = ["fp_submission_status", "fp_linked_form"]
+
     fields = [field for field in fields if field.fieldtype not in FIELDTYPES_TO_REMOVE]
+    fields = [field for field in fields if field.fieldname not in FIELDS_TO_REMOVE]
 
     return fields

@@ -5,6 +5,10 @@ import { computed, ref } from "vue";
 import { FormField } from "@/types/formfield";
 import { useStorage } from "@vueuse/core";
 import { session } from "@/data/session";
+import {
+  shouldFieldBeRequired,
+  shouldFieldBeVisible,
+} from "@/utils/conditionals";
 
 export type UserSubmission = {
   name: string;
@@ -113,13 +117,18 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
 
   function saveAsDraft() {
     toast.info("Saving draft...");
-    submitForm(true);
+    submitForm(true, true);
   }
 
-  async function submitForm(isDraft: boolean = false) {
-    validateValues();
-    if (errors.value.length > 0) {
-      return;
+  async function submitForm(
+    is_draft: boolean = false,
+    ignore_validations: boolean = false
+  ) {
+    if (!ignore_validations) {
+      validateValues();
+      if (errors.value.length > 0) {
+        return;
+      }
     }
 
     const _submit_doc = createResource({
@@ -131,14 +140,14 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
             fieldname: fieldname,
             value: value,
           })),
-          submission_status: isDraft
+          submission_status: is_draft
             ? SubmissionStatus.DRAFT
             : SubmissionStatus.SUBMITTED,
         };
       },
       onSuccess() {
         clearDraft();
-        if (isDraft) {
+        if (is_draft) {
           toast.info("Draft saved successfully");
           inFormFillingState.value = true;
           userSubmissionsResource.fetch();
@@ -163,8 +172,19 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
 
   function validateValues() {
     errors.value = [];
-    formResource.value.data.fields.forEach((field: FormField) => {
-      if (field.reqd && !fields.value[field.fieldname]) {
+    const allFields = formResource.value.data.fields || [];
+
+    allFields.forEach((field: FormField) => {
+      // Only validate visible fields
+      const isVisible = shouldFieldBeVisible(field, fields.value, allFields);
+      if (!isVisible) {
+        return;
+      }
+
+      // Check if field is required (including conditional requirements)
+      const isRequired = shouldFieldBeRequired(field, fields.value, allFields);
+
+      if (isRequired && !fields.value[field.fieldname]) {
         errors.value.push(`${field.label} is required`);
       }
     });

@@ -6,18 +6,28 @@ import { TextEditor } from "frappe-ui";
 
 const submissionFormStore = useSubmissionForm();
 
+const isEmptyHtml = (html: string | null | undefined): boolean => {
+    if (!html) return true;
+    const textContent = html
+        .replace(/<[^>]*>/g, "") // Remove all HTML tags
+        .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+    return textContent.length === 0;
+};
+
 const successTitle = computed(() => {
-    if (!submissionFormStore.formResource.data?.success_title) {
-        return "Form submitted successfully";
-    }
-    return submissionFormStore.formResource.data.success_title;
+    const title = submissionFormStore.formResource.data?.success_title;
+    return title;
 });
 
 const successDescription = computed(() => {
-    if (!submissionFormStore.formResource.data?.success_description) {
-        return "Thank you for submitting the form. We will get back to you soon.";
+    const description = submissionFormStore.formResource.data?.success_description;
+    if (!description || isEmptyHtml(description)) {
+        return "<p style='text-align: center;'>Thank you for submitting the form. We will get back to you soon.</p>";
     }
-    return submissionFormStore.formResource.data.success_description;
+    return description;
 });
 </script>
 <template>

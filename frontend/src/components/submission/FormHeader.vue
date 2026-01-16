@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSubmissionForm } from "@/stores/submissionForm";
-import { LoadingIndicator } from "frappe-ui";
+import { LoadingIndicator, TextEditor } from "frappe-ui";
 
 const submissionFormStore = useSubmissionForm();
 </script>
@@ -12,10 +12,12 @@ const submissionFormStore = useSubmissionForm();
         <h1 class="text-3xl font-bold">
             {{ submissionFormStore.formResource.data.title }}
         </h1>
-        <div
-            v-html="submissionFormStore.formResource.data.description"
-            class="form-description !px-0"
-        ></div>
+        <TextEditor
+            :model-value="submissionFormStore.formResource.data.description"
+            editor-class="h-fit !w-full form-description !px-0"
+            placeholder="Write a description for your form"
+            :editable="false"
+        />
         <hr />
     </div>
 </template>

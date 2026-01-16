@@ -24,6 +24,7 @@ export type FormField = {
   fieldtype: FormFieldTypes;
   description?: string;
   reqd?: boolean;
+  hidden?: boolean;
   options?: string;
   default?: string;
   idx?: number;

@@ -57,6 +57,15 @@ const fieldProperties = computed(() => {
             },
         },
         {
+            fieldname: "hidden",
+            component: FormControl,
+            props: {
+                type: "checkbox",
+                label: "Hidden",
+                description: "If enabled, the field is hidden from the form.",
+            },
+        },
+        {
             fieldname: "description",
             component: FormControl,
             props: {

@@ -37,6 +37,7 @@ class FormField(Document):
             "Rating",
             "Phone",
         ]
+        hidden: DF.Check
         label: DF.Data
         options: DF.SmallText | None
         parent: DF.Data

@@ -29,6 +29,8 @@ class Form(Document):
         login_required: DF.Check
         metadata: DF.Code | None
         route: DF.Data | None
+        success_description: DF.TextEditor | None
+        success_title: DF.Data | None
         title: DF.Data
     # end: auto-generated types
 

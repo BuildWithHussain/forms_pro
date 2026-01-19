@@ -13,11 +13,11 @@ def get_brand_logo() -> str:
     """
     return str(get_app_logo())
 
+
 @frappe.whitelist(allow_guest=True)
 def get_form_settings() -> dict:
-    
     website_settings = get_website_settings()
     form_settings = {
-      "disable_sign_up": website_settings.get("disable_signup"),
+        "disable_sign_up": website_settings.get("disable_signup"),
     }
     return form_settings

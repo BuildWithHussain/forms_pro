@@ -41,10 +41,7 @@ function redirectToLogin() {
                     </div>
                 </template>
             </Popover>
-            <Button 
-                v-else-if="!formSettings.data?.disable_sign_up" 
-                @click="redirectToLogin"
-            >
+            <Button v-else-if="!formSettings.data?.disable_sign_up" @click="redirectToLogin">
                 Login
             </Button>
         </div>

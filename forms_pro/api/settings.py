@@ -1,5 +1,6 @@
 import frappe
 from frappe.core.doctype.navbar_settings.navbar_settings import get_app_logo
+from frappe.website.doctype.website_settings.website_settings import get_website_settings
 
 
 @frappe.whitelist(allow_guest=True)
@@ -11,3 +12,12 @@ def get_brand_logo() -> str:
         str: The brand logo of the website or the default app logo if brand logo is not set.
     """
     return str(get_app_logo())
+
+@frappe.whitelist(allow_guest=True)
+def get_form_settings() -> dict:
+    
+    website_settings = get_website_settings()
+    form_settings = {
+      "disable_sign_up": website_settings.get("disable_signup"),
+    }
+    return form_settings

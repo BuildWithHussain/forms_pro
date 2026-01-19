@@ -10,8 +10,8 @@ const brandLogo = createResource({
     auto: true,
 });
 
-const formSettings = createResource({
-    url: "forms_pro.api.settings.get_form_settings",
+const websiteSettings = createResource({
+    url: "forms_pro.api.settings.get_website_settings",
     auto: true,
 });
 
@@ -41,7 +41,7 @@ function redirectToLogin() {
                     </div>
                 </template>
             </Popover>
-            <Button v-else-if="!formSettings.data?.disable_sign_up" @click="redirectToLogin">
+            <Button v-else-if="!websiteSettings.data?.disable_sign_up" @click="redirectToLogin">
                 Login
             </Button>
         </div>

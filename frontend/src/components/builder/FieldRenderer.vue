@@ -42,7 +42,7 @@ const getClasses = computed(() => {
         case "Switch":
             return "w-full flex gap-4 my-2";
         case "Checkbox":
-            return "w-full flex gap-2 ";
+            return "w-full flex gap-2";
         default:
             return "w-full flex flex-col gap-2";
     }
@@ -131,23 +131,23 @@ onMounted(() => {
         <RenderField
             v-model="modelValue"
             :field="fieldData"
-            class="mt-1"
-            :class="{ 'pointer-events-none': inEditMode }"
+            :class="{ 'pointer-events-none mt-1': inEditMode }"
             :disabled="disabled"
         />
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1 w-full">
             <div class="flex gap-2 items-start">
                 <input
                     v-if="inEditMode"
+                    :id="fieldData.name + '_label'"
                     placeholder="Label"
                     type="text"
                     v-model="fieldData.label"
-                    class="bg-transparent border-none outline-none text-base focus:ring-0 w-fit px-0 py-1"
+                    class="bg-transparent border-none outline-none text-base focus:ring-0 px-0 py-1 !w-full"
                 />
                 <label class="text-base" v-else>{{ fieldData.label }}</label>
                 <Asterisk v-if="fieldData.reqd" class="w-4 h-4 text-red-400" />
             </div>
-            <small class="text-gray-500">
+            <small v-if="fieldData.description" class="text-gray-500">
                 {{ fieldData.description }}
             </small>
         </div>

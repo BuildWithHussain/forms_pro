@@ -11,11 +11,13 @@ const props = withDefaults(
         variant?: "default" | "outline" | "filled";
         shape?: "circle" | "square";
         className?: string;
+        disabled?: boolean;
     }>(),
     {
         size: "md",
         variant: "default",
         shape: "circle",
+        disabled: false,
     }
 );
 
@@ -29,11 +31,16 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Tooltip v-if="user?.full_name" :text="user?.full_name" placement="bottom">
+    <Tooltip
+        v-if="user?.full_name"
+        :disabled="disabled"
+        :text="user?.full_name"
+        placement="bottom"
+    >
         <FrappeAvatar
             :size="size"
             :shape="shape"
-            :image="user?.user_image"
+            :image="user?.user_image ?? undefined"
             :label="user?.full_name"
         />
     </Tooltip>

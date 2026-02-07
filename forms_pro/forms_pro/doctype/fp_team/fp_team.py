@@ -1,7 +1,6 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
-import frappe
 from frappe.model.document import Document
 from frappe.share import add_docshare
 from frappe.utils import cached_property
@@ -62,7 +61,7 @@ class FPTeam(Document):
         Returns:
             bool - True if the user is a member of the team, False otherwise
         """
-        return user in self.team_members
+        return user in [member["email"] for member in self.team_members]
 
     def after_insert(self) -> None:
         self.add_to_team(self.owner)
@@ -77,7 +76,7 @@ class FPTeam(Document):
             user: The user email address
         """
         if user == "Administrator":
-            frappe.throw("Administrator cannot be added to a team")
+            return
 
         self.append("users", {"user": user})
         add_docshare(

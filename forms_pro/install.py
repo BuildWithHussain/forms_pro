@@ -2,6 +2,7 @@ import frappe
 from frappe.core.doctype.user.user import User
 
 from forms_pro.roles import FORMS_PRO_ROLE
+from forms_pro.tests import FORMS_PRO_TEST_USER
 
 
 def after_install():
@@ -30,13 +31,11 @@ def give_admin_forms_pro_role():
 
 
 def create_test_user():
-    test_user = "test_forms_pro_user@example.com"
-
-    if frappe.db.exists("User", test_user):
+    if frappe.db.exists("User", FORMS_PRO_TEST_USER):
         return
 
     user: User = frappe.new_doc("User")
-    user.email = test_user
+    user.email = FORMS_PRO_TEST_USER
     user.first_name = "Test"
     user.last_name = "Forms Pro User"
     user.insert(ignore_permissions=True)

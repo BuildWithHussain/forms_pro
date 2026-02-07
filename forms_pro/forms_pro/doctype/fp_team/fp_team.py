@@ -1,6 +1,7 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
+import frappe
 from frappe.model.document import Document
 from frappe.share import add_docshare
 from frappe.utils import cached_property
@@ -77,6 +78,12 @@ class FPTeam(Document):
         """
         if user == "Administrator":
             return
+
+        if self.is_team_member(user):
+            frappe.throw(
+                frappe._("User is already a member of the team"),
+                frappe.DuplicateEntryError,
+            )
 
         self.append("users", {"user": user})
         add_docshare(

@@ -35,7 +35,6 @@ def get_team_members(team_id: str) -> list[GetTeamMembersResponse]:
         user=frappe.session.user,
         throw=True,
     )
-    print("team_id", team_id)
 
     team: FPTeam = frappe.get_doc("FP Team", team_id)
     members = team.team_members

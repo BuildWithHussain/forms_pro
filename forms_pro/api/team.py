@@ -1,7 +1,7 @@
 import frappe
 
 from forms_pro.forms_pro.doctype.fp_team.fp_team import FPTeam, GetTeamMembersResponse
-from forms_pro.utils.teams import GetTeamFormsResponseSchema
+from forms_pro.utils.teams import GetTeamFormsResponseSchema, set_current_team
 from forms_pro.utils.teams import get_team_forms as get_team_forms_utils
 
 
@@ -40,3 +40,38 @@ def get_team_members(team_id: str) -> list[GetTeamMembersResponse]:
     members = team.team_members
 
     return members
+
+
+@frappe.whitelist(methods=["POST"])
+def create_team(team_name: str) -> FPTeam:
+    """
+    Create a new team
+
+    Args:
+        team_name: Name of the team
+
+    Returns:
+        FPTeam - The created team
+    """
+
+    team: FPTeam = frappe.new_doc("FP Team")
+    team.team_name = team_name
+    team.insert()
+    return team
+
+
+@frappe.whitelist(methods=["POST"])
+def switch_team(team_id: str) -> None:
+    """
+    Switch to a new team
+    """
+
+    if not frappe.has_permission(
+        doctype="FP Team",
+        ptype="read",
+        doc=team_id,
+        user=frappe.session.user,
+    ):
+        raise frappe.PermissionError("You do not have permission to switch to this team")
+
+    set_current_team(team_id, frappe.session.user)

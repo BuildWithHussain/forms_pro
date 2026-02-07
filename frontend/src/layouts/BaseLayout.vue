@@ -1,5 +1,6 @@
 <template>
     <div class="flex h-screen w-full">
+        <CreateTeamDialog v-model="showCreateTeamDialog" />
         <Sidebar :header="sidebarHeader" :sections="sidebarSections">
             <template #footer-items="{ isCollapsed }">
                 <Popover placement="top-start">
@@ -49,17 +50,20 @@
 </template>
 <script setup lang="ts">
 import { session } from "@/data/session";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { Popover, Sidebar, type SidebarProps } from "frappe-ui";
 import { ChevronsUpDown, LayoutDashboard, Plus } from "lucide-vue-next";
 import type { PropType } from "vue";
 import Avatar from "@/components/ui/Avatar.vue";
 import { useUser } from "@/stores/user";
+import CreateTeamDialog from "@/components/team/CreateTeamDialog.vue";
 
 const userStore = useUser();
 
 type SidebarSectionProps = NonNullable<SidebarProps["sections"]> extends (infer T)[] ? T : never;
 type SidebarHeaderProps = NonNullable<SidebarProps["header"]>;
+
+const showCreateTeamDialog = ref(false);
 
 const props = defineProps({
     sidebarHeader: {
@@ -82,7 +86,7 @@ const sidebarHeader = computed(() => {
         .map((team) => ({
             label: `Switch to ${team.team_name}`,
             onClick: () => {
-                console.log("Change team to", team.team_name);
+                userStore.switchTeam(team);
             },
         }));
 
@@ -92,7 +96,7 @@ const sidebarHeader = computed(() => {
             label: "Create New Team",
             icon: Plus,
             onClick: () => {
-                console.log("Create new team");
+                showCreateTeamDialog.value = true;
             },
         },
     ];

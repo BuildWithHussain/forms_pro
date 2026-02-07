@@ -2,7 +2,7 @@ import frappe
 from frappe.core.doctype.user.user import User
 
 from forms_pro.roles import FORMS_PRO_ROLE
-from forms_pro.utils.teams import get_user_teams, set_current_team
+from forms_pro.utils.teams import get_user_teams
 
 
 def has_forms_pro_permission() -> bool:
@@ -48,4 +48,3 @@ def create_default_team_for_user(user: User) -> None:
         },
     )
     team.save(ignore_permissions=True)
-    set_current_team(team.name, user.name)

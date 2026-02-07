@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useUser } from "./user";
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useCall } from "frappe-ui";
 
 export type TeamMember = {
@@ -30,6 +30,10 @@ export const useTeam = defineStore("team", () => {
   function initialize() {
     teamMembersResource.fetch();
   }
+
+  watch(currentTeam, () => {
+    teamMembersResource.fetch();
+  });
 
   return {
     currentTeam,

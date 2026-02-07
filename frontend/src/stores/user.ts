@@ -3,11 +3,17 @@ import setTheme from "@/utils/theme";
 import { createResource } from "frappe-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
+import { toast } from "vue-sonner";
 
 export type UserTeam = {
   name: string;
   team_name: string;
   is_current: boolean;
+};
+
+export type CreateTeamResponse = {
+  name: string;
+  team_name: string;
 };
 
 export const useUser = defineStore("user", () => {
@@ -21,15 +27,23 @@ export const useUser = defineStore("user", () => {
 
   const userTeamsResource = createResource({
     url: "forms_pro.api.user.get_user_teams",
+    onSuccess(data: UserTeam[]) {
+      const _currTeam = data.find((team) => team.is_current);
+      if (!_currTeam) {
+        return;
+      }
+      setCurrentTeam(_currTeam);
+    },
+    onError(error: Error) {
+      toast.error("Failed to fetch user teams", {
+        description: error.message,
+      });
+    },
   });
 
   async function initialize() {
     await userResource.fetch();
     await userTeamsResource.fetch();
-    const _currTeam = getCurrentTeamFromAllTeams();
-    if (_currTeam) {
-      setCurrentTeam(_currTeam);
-    }
   }
 
   function fetchUser() {
@@ -46,6 +60,48 @@ export const useUser = defineStore("user", () => {
 
   function setCurrentTeam(team: UserTeam) {
     currentTeam.value = team;
+  }
+
+  function switchTeam(team: UserTeam) {
+    createResource({
+      url: "forms_pro.api.team.switch_team",
+      method: "POST",
+      makeParams() {
+        return {
+          team_id: team.name,
+        };
+      },
+      onSuccess() {
+        userTeamsResource.reload();
+        toast.success("Team switched successfully");
+      },
+      onError(error: Error) {
+        toast.error("Failed to switch team", {
+          description: error.message,
+        });
+      },
+    }).submit();
+  }
+
+  function createTeam(teamName: string) {
+    createResource({
+      url: "forms_pro.api.team.create_team",
+      method: "POST",
+      makeParams() {
+        return {
+          team_name: teamName,
+        };
+      },
+      onSuccess(data: CreateTeamResponse) {
+        userTeamsResource.reload();
+        toast.success("Team created successfully");
+      },
+      onError(error: Error) {
+        toast.error("Failed to create team", {
+          description: error.message,
+        });
+      },
+    }).submit();
   }
 
   async function toggleThemePreference(theme: ThemePreferenceType) {
@@ -70,6 +126,8 @@ export const useUser = defineStore("user", () => {
     fetchUser,
     fetchUserTeams,
     setCurrentTeam,
+    createTeam,
+    switchTeam,
     toggleThemePreference,
   };
 });

@@ -1,12 +1,14 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
-# import frappe
+import frappe
 from frappe.model.document import Document
+from frappe.share import add_docshare
 from frappe.utils import cached_property
 from pydantic import BaseModel, EmailStr
 
 from forms_pro.api.user import get_user
+from forms_pro.utils.teams import set_current_team
 
 
 class GetTeamMembersResponse(BaseModel):
@@ -61,3 +63,29 @@ class FPTeam(Document):
             bool - True if the user is a member of the team, False otherwise
         """
         return user in self.team_members
+
+    def after_insert(self) -> None:
+        self.add_to_team(self.owner)
+        set_current_team(self.name, self.owner)
+        self.save()
+
+    def add_to_team(self, user: str) -> None:
+        """
+        Add a user to the team
+
+        Args:
+            user: The user email address
+        """
+        if user == "Administrator":
+            frappe.throw("Administrator cannot be added to a team")
+
+        self.append("users", {"user": user})
+        add_docshare(
+            self.doctype,
+            self.name,
+            user,
+            read=1,
+            write=1,
+            share=1,
+            flags={"ignore_share_permission": True},
+        )

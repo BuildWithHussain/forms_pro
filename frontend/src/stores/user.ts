@@ -30,6 +30,9 @@ export const useUser = defineStore("user", () => {
     onSuccess(data: UserTeam[]) {
       const _currTeam = data.find((team) => team.is_current);
       if (!_currTeam) {
+        if (data.length > 0) {
+          setCurrentTeam(data[0]);
+        }
         return;
       }
       setCurrentTeam(_currTeam);

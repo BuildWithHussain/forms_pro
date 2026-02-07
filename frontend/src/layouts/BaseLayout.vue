@@ -81,14 +81,15 @@ const sidebarHeader = computed(() => {
         return props.sidebarHeader;
     }
 
-    const switchTeamItems = userStore.userTeams
-        ?.filter((team) => team.name !== userStore.currentTeam?.name)
-        .map((team) => ({
-            label: `Switch to ${team.team_name}`,
-            onClick: () => {
-                userStore.switchTeam(team);
-            },
-        }));
+    const switchTeamItems =
+        userStore.userTeams
+            ?.filter((team) => team.name !== userStore.currentTeam?.name)
+            .map((team) => ({
+                label: `Switch to ${team.team_name}`,
+                onClick: () => {
+                    userStore.switchTeam(team);
+                },
+            })) ?? [];
 
     const menuItems = [
         ...switchTeamItems,

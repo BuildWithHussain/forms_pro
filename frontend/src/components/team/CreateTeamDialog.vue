@@ -43,9 +43,9 @@ function createTeam() {
     const result = formSchema.safeParse(form);
     if (!result.success) {
         formErrors.value = result.error.issues.map((issue) => issue.message).join(", ");
-    } else {
-        formErrors.value = "";
+        return;
     }
+    formErrors.value = "";
     user.createTeam(form.team_name);
     model.value = false;
 }

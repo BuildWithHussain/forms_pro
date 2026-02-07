@@ -24,6 +24,10 @@ class IntegrationTestFPTeam(IntegrationTestCase):
         super().setUp()
         self.test_user = FORMS_PRO_TEST_USER
 
+    def tearDown(self):
+        frappe.set_user("Administrator")
+        super().tearDown()
+
     def test_add_owner_to_team(self):
         """
         Test that after a user creates a team, that owner user is added to the team and the team is shared with the owner user

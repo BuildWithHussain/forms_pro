@@ -13,12 +13,12 @@
                                 :disabled="true"
                                 v-if="session.user"
                                 :user-id="session.user"
-                                size="md"
+                                size="lg"
                                 shape="square"
                             />
                             <div v-if="!isCollapsed" class="flex items-center gap-2">
                                 <div class="flex flex-col gap-1">
-                                    <span class="text-sm font-medium text-ink-gray-8">
+                                    <span class="text-base font-medium text-ink-gray-7">
                                         {{ session.full_name }}
                                     </span>
                                     <span class="text-xs text-ink-gray-5">{{ session.user }}</span>

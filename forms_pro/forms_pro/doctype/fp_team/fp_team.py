@@ -4,7 +4,6 @@
 import frappe
 from frappe.model.document import Document
 from frappe.share import add_docshare
-from frappe.utils import cached_property
 from pydantic import BaseModel, EmailStr
 
 from forms_pro.api.user import get_user
@@ -32,7 +31,7 @@ class FPTeam(Document):
         users: DF.TableMultiSelect[FPTeamMember]
     # end: auto-generated types
 
-    @cached_property
+    @property
     def team_members(self) -> list[GetTeamMembersResponse]:
         """
         Get the list of team members

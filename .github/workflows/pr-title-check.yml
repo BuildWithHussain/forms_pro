@@ -18,6 +18,8 @@ jobs:
       - name: Validate PR title
         id: validate
         uses: amannn/action-semantic-pull-request@v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
         with:
           # Default types from: https://github.com/commitizen/conventional-commit-types

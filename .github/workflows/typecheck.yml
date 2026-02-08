@@ -5,11 +5,11 @@ on:
     branches:
       - develop
     paths:
-      - "apps/forms_pro/frontend/**"
+      - "frontend/**"
       - ".github/workflows/typecheck.yml"
   pull_request:
     paths:
-      - "apps/forms_pro/frontend/**"
+      - "frontend/**"
       - ".github/workflows/typecheck.yml"
 
 concurrency:
@@ -30,12 +30,12 @@ jobs:
         with:
           node-version: "24"
           cache: "yarn"
-          cache-dependency-path: apps/forms_pro/frontend/yarn.lock
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
-        working-directory: apps/forms_pro/frontend
+        working-directory: frontend
         run: yarn install --frozen-lockfile
 
       - name: Type check
-        working-directory: apps/forms_pro/frontend
+        working-directory: frontend
         run: yarn typecheck

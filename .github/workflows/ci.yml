@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - ".github/**"
   pull_request:
+    paths-ignore:
+      - ".github/**"
 
 concurrency:
   group: develop-forms_pro-${{ github.event.number }}

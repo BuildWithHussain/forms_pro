@@ -20,6 +20,7 @@
       "@/*": ["src/*"]
     }
   },
+  "skipLibCheck": true,
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/main.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

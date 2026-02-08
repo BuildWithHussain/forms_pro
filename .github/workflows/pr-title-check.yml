@@ -10,7 +10,6 @@ on:
 
 permissions:
   pull-requests: write
-  statuses: write
 
 jobs:
   validate-pr-title:
@@ -25,7 +24,6 @@ jobs:
         with:
           # Default types from: https://github.com/commitizen/conventional-commit-types
           requireScope: false
-          wip: true
 
       - name: Print Failure Documentation
         if: steps.validate.outcome == 'failure'

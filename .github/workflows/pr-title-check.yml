@@ -24,6 +24,8 @@ jobs:
         with:
           # Default types from: https://github.com/commitizen/conventional-commit-types
           requireScope: false
+          wip: false
+
 
       - name: Print Failure Documentation
         if: steps.validate.outcome == 'failure'

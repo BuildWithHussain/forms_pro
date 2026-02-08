@@ -28,10 +28,12 @@ jobs:
 
       - name: Print Failure Documentation
         if: steps.validate.outcome == 'failure'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           echo "## ❌ PR Title Validation Failed"
           echo ""
-          echo "**Current title:** \`${{ github.event.pull_request.title }}\`"
+          echo "**Current title:** \`$PR_TITLE\`"
           echo ""
           echo "Use a conventional commit style so we can keep a clear history. Fix it like this:"
           echo ""

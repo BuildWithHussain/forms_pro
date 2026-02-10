@@ -57,6 +57,7 @@ export const useUser = defineStore("user", () => {
     userTeamsResource.fetch();
   }
 
+  // @ts-ignore
   function getCurrentTeamFromAllTeams() {
     return userTeams.value?.find((team) => team.is_current);
   }
@@ -95,7 +96,7 @@ export const useUser = defineStore("user", () => {
           team_name: teamName,
         };
       },
-      onSuccess(data: CreateTeamResponse) {
+      onSuccess() {
         userTeamsResource.reload();
         toast.success("Team created successfully");
       },

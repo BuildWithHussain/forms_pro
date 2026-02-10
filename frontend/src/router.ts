@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
     name: "Form Submission Page",
     component: () => import("@/pages/SubmissionPage.vue"),
     meta: { allowGuest: true },
-    beforeEnter: async (to, from) => {
+    beforeEnter: async (to, _from) => {
       const loginRequired = await isLoginRequired(to.params.route as string);
 
       if (loginRequired && !session.isLoggedIn) {
@@ -54,7 +54,7 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   let isLoggedIn = session.isLoggedIn;
   try {
     await userResource.promise;

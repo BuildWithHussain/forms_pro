@@ -1,4 +1,4 @@
-import { createDocumentResource, createResource } from "frappe-ui";
+import { createDocumentResource } from "frappe-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { toast } from "vue-sonner";

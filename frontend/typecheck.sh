@@ -1,7 +1,7 @@
 #!/bin/bash
 # Typecheck script that filters out errors from node_modules
 # Doing this because frappe-ui has a lot of errors that are not related to our code
-OUTPUT=$(tsc --noEmit 2>&1)
+OUTPUT=$(vue-tsc --noEmit 2>&1)
 ERRORS=$(echo "$OUTPUT" | grep -E "^(src/|error TS)" | grep -v "node_modules/")
 
 if [ -n "$ERRORS" ]; then

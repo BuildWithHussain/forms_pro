@@ -77,6 +77,7 @@ function setPermission(row: any, column: any, value: boolean) {
             }"
             row-key="email"
         >
+            <!-- @vue-ignore -->
             <template #cell="{ item, row, column }">
                 <div
                     v-if="column.key === 'full_name'"

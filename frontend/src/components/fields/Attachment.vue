@@ -11,6 +11,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:value"]);
 
+// @ts-ignore
 const value = defineModel<string>();
 
 const inPreview = ref(false);
@@ -68,6 +69,7 @@ const handleRemove = () => {
             v-bind="props.field"
             @success="(file: FileType) => handleChange(file)"
         >
+            <!-- @vue-ignore -->
             <template #default="{ uploading, progress, error, openFileSelector }">
                 <Button @click="openFileSelector()" :loading="uploading">
                     {{ uploading ? `Uploading ${progress}%` : "Upload" }}

@@ -17,7 +17,7 @@
                     />
                 </div>
             </template>
-            <template #actions="{ close }">
+            <template #actions>
                 <Button
                     class="w-full"
                     variant="solid"

@@ -53,12 +53,6 @@ function createTeam() {
     model.value = false;
 }
 
-const teamName = ref<string>("");
-
-watch(teamName, (newVal) => {
-    form.team_name = newVal;
-});
-
 function setTeamLogo(file: FileType) {
     form.logo_url = file.file_url;
 }
@@ -89,7 +83,7 @@ function removeTeamLogo() {
                             @click="removeTeamLogo"
                         />
                         <TeamLogo
-                            :team-name="teamName"
+                            :team-name="form.team_name"
                             class="size-12"
                             :logo-url="form.logo_url ?? null"
                         />
@@ -133,7 +127,7 @@ function removeTeamLogo() {
                 </div>
                 <input
                     type="text"
-                    v-model="teamName"
+                    v-model="form.team_name"
                     class="text-lg text-ink-gray-9 !outline-0 !ring-0 !border-0 bg-inherit text-center"
                     placeholder="Enter team name"
                 />

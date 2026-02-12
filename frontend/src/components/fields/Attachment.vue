@@ -16,7 +16,7 @@ const value = defineModel<string>();
 
 const inPreview = ref(false);
 
-type FileType = {
+export type FileType = {
     content_hash: string;
     creation: string;
     docstatus: number;

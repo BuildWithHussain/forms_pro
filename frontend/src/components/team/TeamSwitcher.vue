@@ -15,7 +15,7 @@ const teamOptions = computed(() => {
         ?.filter((team) => team.name !== userStore.currentTeam?.name)
         .map((team) => ({
             label: `${team.team_name}`,
-            imgUrl: "/avatars/avatar-2.jpg",
+            logoUrl: team.logo ?? undefined,
             isTeam: true,
             onClick: () => {
                 userStore.switchTeam(team);
@@ -72,7 +72,7 @@ const groupOptions = computed(() => {
                 v-if="item.isTeam"
                 class="p-2 w-full hover:bg-surface-gray-2 cursor-pointer rounded"
                 :label="item.label"
-                :imgUrl="item.imgUrl"
+                :logo-url="item.logoUrl"
             />
             <Button
                 v-else

@@ -43,7 +43,7 @@ def get_team_members(team_id: str) -> list[GetTeamMembersResponse]:
 
 
 @frappe.whitelist(methods=["POST"])
-def create_team(team_name: str) -> FPTeam:
+def create_team(team_name: str, logo_url: str | None = None) -> FPTeam:
     """
     Create a new team
 
@@ -56,6 +56,8 @@ def create_team(team_name: str) -> FPTeam:
 
     team: FPTeam = frappe.new_doc("FP Team")
     team.team_name = team_name
+    if logo_url:
+        team.logo = logo_url
     team.insert()
     return team
 

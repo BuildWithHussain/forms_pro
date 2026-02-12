@@ -91,7 +91,7 @@ function removeTeamLogo() {
                         <TeamLogo
                             :team-name="teamName"
                             class="size-12"
-                            :logo-url="form.logo_url"
+                            :logo-url="form.logo_url ?? null"
                         />
                     </div>
                     <div class="text-xs text-ink-gray-6 text-center flex flex-col gap-2">

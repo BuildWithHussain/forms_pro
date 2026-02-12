@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 type Props = {
     teamName: string;
-    logoUrl?: string;
+    logoUrl: string | null;
     classNames?: string;
 };
 
@@ -21,8 +21,8 @@ function avatarIndex(name: string): number {
     return (((h % 50) + 50) % 50) + 1;
 }
 
-const avatarSrc = computed(
-    () => props.logoUrl ?? `${AVATAR_BASE}${avatarIndex(props.teamName)}.jpg`
+const avatarSrc = computed(() =>
+    props.logoUrl ? props.logoUrl : `${AVATAR_BASE}${avatarIndex(props.teamName)}.jpg`
 );
 </script>
 

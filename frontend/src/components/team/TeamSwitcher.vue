@@ -3,7 +3,9 @@ import { useUser } from "@/stores/user";
 import { Dropdown } from "frappe-ui";
 import { ChevronsUpDown } from "lucide-vue-next";
 import { computed, inject, ref } from "vue";
-import TeamSwitcherItem from "./TeamSwitcherItem.vue";
+import CreateTeamDialog from "@/components/team/CreateTeamDialog.vue";
+import TeamSwitcherItem from "@/components/team/TeamSwitcherItem.vue";
+import TeamLogo from "@/components/team/TeamLogo.vue";
 
 const isSidebarCollapsed = inject("isSidebarCollapsed");
 
@@ -54,13 +56,13 @@ const groupOptions = computed(() => {
             >
                 <TeamLogo
                     v-if="isSidebarCollapsed"
-                    :teamName="userStore.currentTeam!.team_name"
-                    :logoUrl="userStore.currentTeam!.logo"
+                    :team-name="userStore.currentTeam!.team_name"
+                    :logo-url="userStore.currentTeam?.logo ?? null"
                 />
                 <div v-else class="flex items-center gap-2 justify-between w-full">
                     <TeamSwitcherItem
                         :label="userStore.currentTeam!.team_name"
-                        :logo-url="userStore.currentTeam!.logo"
+                        :logo-url="userStore.currentTeam?.logo ?? null"
                     />
                     <ChevronsUpDown class="size-4 text-ink-gray-6" />
                 </div>

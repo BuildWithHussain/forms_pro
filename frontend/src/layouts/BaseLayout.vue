@@ -1,7 +1,9 @@
 <template>
     <div class="flex h-screen w-full">
-        <CreateTeamDialog v-model="showCreateTeamDialog" />
-        <Sidebar :header="sidebarHeader" :sections="sidebarSections">
+        <Sidebar :sections="sidebarSections">
+            <template #header>
+                <TeamSwitcher />
+            </template>
             <template #footer-items="{ isCollapsed }">
                 <Popover placement="top-start">
                     <template #target="{ togglePopover, isOpen }">
@@ -24,7 +26,7 @@
                                     </span>
                                     <span class="text-xs text-ink-gray-5">{{ session.user }}</span>
                                 </div>
-                                <ChevronsUpDown class="size-4 text-ink-gray-6" />
+                                <EllipsisVertical class="size-4 text-ink-gray-6" />
                             </div>
                         </div>
                     </template>
@@ -50,20 +52,15 @@
 </template>
 <script setup lang="ts">
 import { session } from "@/data/session";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { Popover, Sidebar, type SidebarProps } from "frappe-ui";
-import { ChevronsUpDown, LayoutDashboard, Plus } from "lucide-vue-next";
+import { EllipsisVertical, LayoutDashboard } from "lucide-vue-next";
 import type { PropType } from "vue";
 import Avatar from "@/components/ui/Avatar.vue";
-import { useUser } from "@/stores/user";
-import CreateTeamDialog from "@/components/team/CreateTeamDialog.vue";
-
-const userStore = useUser();
+import TeamSwitcher from "@/components/team/TeamSwitcher.vue";
 
 type SidebarSectionProps = NonNullable<SidebarProps["sections"]> extends (infer T)[] ? T : never;
 type SidebarHeaderProps = NonNullable<SidebarProps["header"]>;
-
-const showCreateTeamDialog = ref(false);
 
 const props = defineProps({
     sidebarHeader: {
@@ -74,40 +71,6 @@ const props = defineProps({
         type: Array as PropType<SidebarSectionProps[]>,
         default: () => [],
     },
-});
-
-const sidebarHeader = computed(() => {
-    if (props.sidebarHeader) {
-        return props.sidebarHeader;
-    }
-
-    const switchTeamItems =
-        userStore.userTeams
-            ?.filter((team) => team.name !== userStore.currentTeam?.name)
-            .map((team) => ({
-                label: `Switch to ${team.team_name}`,
-                onClick: () => {
-                    userStore.switchTeam(team);
-                },
-            })) ?? [];
-
-    const menuItems = [
-        ...switchTeamItems,
-        {
-            label: "Create New Team",
-            icon: Plus,
-            onClick: () => {
-                showCreateTeamDialog.value = true;
-            },
-        },
-    ];
-
-    return {
-        title: userStore.currentTeam?.team_name || "",
-        subtitle: "Switch Teams",
-        logo: "/assets/forms_pro/images/logo_300.svg",
-        menuItems: menuItems,
-    } as SidebarHeaderProps;
 });
 
 const sidebarSections = computed((): SidebarSectionProps[] => {

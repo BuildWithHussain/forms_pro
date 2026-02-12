@@ -8,12 +8,8 @@ import { toast } from "vue-sonner";
 export type UserTeam = {
   name: string;
   team_name: string;
+  logo: string | null;
   is_current: boolean;
-};
-
-export type CreateTeamResponse = {
-  name: string;
-  team_name: string;
 };
 
 export const useUser = defineStore("user", () => {

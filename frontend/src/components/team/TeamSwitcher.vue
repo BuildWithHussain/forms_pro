@@ -52,16 +52,15 @@ const groupOptions = computed(() => {
                 class="flex items-center gap-2 p-2 rounded cursor-pointer transition-colors duration-150 ease-[cubic-bezier(0.4, 0, 0.2, 1)] hover:bg-surface-gray-2"
                 :class="{ 'bg-surface-white': open, 'px-1.5 ': isSidebarCollapsed }"
             >
-                <img
+                <TeamLogo
                     v-if="isSidebarCollapsed"
-                    src="/avatars/avatar-1.jpg"
-                    alt="Team Logo"
-                    class="size-5 rounded-sm"
+                    :teamName="userStore.currentTeam!.team_name"
+                    :logoUrl="userStore.currentTeam!.logo"
                 />
                 <div v-else class="flex items-center gap-2 justify-between w-full">
                     <TeamSwitcherItem
                         :label="userStore.currentTeam!.team_name"
-                        imgUrl="/avatars/avatar-1.jpg"
+                        :logo-url="userStore.currentTeam!.logo"
                     />
                     <ChevronsUpDown class="size-4 text-ink-gray-6" />
                 </div>

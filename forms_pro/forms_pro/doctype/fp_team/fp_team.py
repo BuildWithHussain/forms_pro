@@ -27,6 +27,7 @@ class FPTeam(Document):
 
         from forms_pro.forms_pro.doctype.fp_team_member.fp_team_member import FPTeamMember
 
+        logo: DF.AttachImage | None
         team_name: DF.Data
         users: DF.TableMultiSelect[FPTeamMember]
     # end: auto-generated types

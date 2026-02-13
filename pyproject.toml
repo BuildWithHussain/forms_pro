@@ -22,9 +22,10 @@ Repository = "https://github.com/buildwithhussain/forms_pro"
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
-# Required Frappe version; bench uses this for get-app/install validation (version-15 deployment)
+# Required Frappe version; bench uses this for get-app/install validation (version-15 deployment).
+# NPM-style bounded range only (no ^, ~, or single-sided constraints).
 [tool.bench.frappe-dependencies]
-frappe = ">=15.0.0 <16.0.0"
+frappe = ">=15.0.0,<16.0.0"
 
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]

@@ -3,18 +3,18 @@
 
 import frappe
 from frappe.defaults import get_user_default
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase
 
 from forms_pro.tests import FORMS_PRO_TEST_USER
 
-# On IntegrationTestCase, the doctype test records and all
+# On FrappeTestCase, the doctype test records and all
 # link-field test record dependencies are recursively loaded
 # Use these module variables to add/remove to/from that list
 EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class IntegrationTestFPTeam(IntegrationTestCase):
+class IntegrationTestFPTeam(FrappeTestCase):
     """
     Integration tests for FPTeam.
     Use this class for testing interactions between multiple components.

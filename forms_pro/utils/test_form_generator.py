@@ -4,13 +4,13 @@
 import unittest
 
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase
 
 from forms_pro.utils.form_generator import FormGenerator
 from forms_pro.utils.teams import get_user_teams
 
 
-class IntegrationTestFormGenerator(IntegrationTestCase):
+class IntegrationTestFormGenerator(FrappeTestCase):
     def setUp(self):
         super().setUp()
         self.test_user = "test_forms_pro_user@example.com"

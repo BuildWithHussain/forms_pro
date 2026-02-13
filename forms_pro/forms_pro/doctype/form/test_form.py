@@ -2,18 +2,18 @@
 # See license.txt
 
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase
 
 from forms_pro.utils.teams import get_user_teams
 
-# On IntegrationTestCase, the doctype test records and all
+# On FrappeTestCase, the doctype test records and all
 # link-field test record dependencies are recursively loaded
 # Use these module variables to add/remove to/from that list
 EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class IntegrationTestForm(IntegrationTestCase):
+class IntegrationTestForm(FrappeTestCase):
     def setUp(self):
         """Set up test data before each test method."""
         # Create a test DocType for testing

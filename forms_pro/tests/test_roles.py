@@ -1,13 +1,13 @@
 import frappe
 from faker import Faker
 from frappe.core.doctype.user.user import User
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase
 
 from forms_pro.roles import FORMS_PRO_ROLE
 from forms_pro.utils.teams import get_user_teams
 
 
-class TestRoles(IntegrationTestCase):
+class TestRoles(FrappeTestCase):
     def setUp(self):
         super().setUp()
 

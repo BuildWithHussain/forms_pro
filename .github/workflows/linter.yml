@@ -1,7 +1,10 @@
 name: Linters
 
+# Runs on version-15 deployment branch (Python 3.10)
 on:
   pull_request:
+    branches:
+      - version-15
     paths-ignore:
       - ".github/**"
   workflow_dispatch:

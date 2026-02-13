@@ -1,19 +1,22 @@
 name: Frontend TypeScript
 
+# Frappe version-15 deployment branch: Node 18
 on:
   push:
     branches:
-      - develop
+      - version-15
     paths:
       - "frontend/**"
       - ".github/workflows/typecheck.yml"
   pull_request:
+    branches:
+      - version-15
     paths:
       - "frontend/**"
       - ".github/workflows/typecheck.yml"
 
 concurrency:
-  group: typecheck-forms_pro-${{ github.event.number || github.sha }}
+  group: typecheck-version-15-forms_pro-${{ github.event.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +31,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "18"
           cache: "yarn"
           cache-dependency-path: frontend/yarn.lock
 

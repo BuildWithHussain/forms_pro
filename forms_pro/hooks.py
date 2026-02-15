@@ -30,7 +30,7 @@ add_to_apps_screen = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/forms_pro/css/forms_pro.css"
-# app_include_js = "/assets/forms_pro/js/forms_pro.js"
+app_include_js = "/assets/forms_pro/js/forms_pro_desk.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/forms_pro/css/forms_pro.css"

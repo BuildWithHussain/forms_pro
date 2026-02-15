@@ -9,6 +9,7 @@ from forms_pro.utils.teams import get_user_teams as get_user_teams_utils
 class GetUserTeamsResponseSchema(BaseModel):
     name: str = Field(description="ID of the team")
     team_name: str = Field(description="The name of the team")
+    logo: str | None = Field(description="Logo of the team")
     is_current: bool = Field(description="Whether this is the current team")
 
 

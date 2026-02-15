@@ -69,6 +69,7 @@ def get_user_teams(user: str = frappe.session.user):
         .where(FP_TEAM_MEMBER.user == user)
         .select(
             FP_TEAM.team_name,
+            FP_TEAM.logo,
             FP_TEAM.name,
             Case().when(FP_TEAM.name == user_default_team, True).else_(False).as_("is_current"),
         )

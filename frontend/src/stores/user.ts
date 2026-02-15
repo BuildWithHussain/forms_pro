@@ -8,12 +8,8 @@ import { toast } from "vue-sonner";
 export type UserTeam = {
   name: string;
   team_name: string;
+  logo: string | null;
   is_current: boolean;
-};
-
-export type CreateTeamResponse = {
-  name: string;
-  team_name: string;
 };
 
 export const useUser = defineStore("user", () => {
@@ -87,13 +83,14 @@ export const useUser = defineStore("user", () => {
     }).submit();
   }
 
-  function createTeam(teamName: string) {
+  function createTeam(teamName: string, logoUrl: string | undefined) {
     createResource({
       url: "forms_pro.api.team.create_team",
       method: "POST",
       makeParams() {
         return {
           team_name: teamName,
+          logo_url: logoUrl,
         };
       },
       onSuccess() {

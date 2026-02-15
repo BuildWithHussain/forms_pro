@@ -6,6 +6,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "logo",
   "team_name",
   "users"
  ],
@@ -22,12 +23,17 @@
    "fieldtype": "Table MultiSelect",
    "label": "Users",
    "options": "FP Team Member"
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-19 19:43:50.515720",
+ "modified": "2026-02-12 19:54:29.693501",
  "modified_by": "Administrator",
  "module": "Forms Pro",
  "name": "FP Team",

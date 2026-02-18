@@ -2,6 +2,7 @@
 import { useCall, Button } from "frappe-ui";
 import { computed } from "vue";
 import FieldRenderer from "../builder/FieldRenderer.vue";
+import { mapDoctypeFieldForForm } from "@/utils/form_fields";
 
 type Row = {
     [key: string]: any;
@@ -33,6 +34,7 @@ const columns = computed(() => {
         label: column.label,
         key: column.fieldname,
         ...column,
+        fieldtype: mapDoctypeFieldForForm(column.fieldtype) ?? "Data",
     }));
 });
 

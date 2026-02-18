@@ -1,6 +1,6 @@
 import { createResource } from "frappe-ui";
 import type { Ref, ComputedRef } from "vue";
-import { ref, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 
 export type SelectOption = {
   label: string;
@@ -66,10 +66,6 @@ export function useFieldOptions(
     () => load(),
     { immediate: true }
   );
-
-  onMounted(() => {
-    load();
-  });
 
   return { options, load };
 }

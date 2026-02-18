@@ -16,6 +16,7 @@ export enum FormFieldTypes {
   Link = "Link",
   Checkbox = "Checkbox",
   Rating = "Rating",
+  Table = "Table",
 }
 
 export type FormField = {

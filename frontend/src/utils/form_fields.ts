@@ -15,6 +15,7 @@ import {
 import { Component } from "vue";
 import Attachment from "@/components/fields/Attachment.vue";
 import Phone from "@/components/fields/Phone.vue";
+import Table from "@/components/fields/Table.vue";
 
 export type FormFieldType = {
   component: Component;
@@ -144,6 +145,18 @@ export const PhoneField: FormFieldType = {
   },
 };
 
+export const TableField: FormFieldType = {
+  component: Table,
+  props: {
+    options: {
+      emptyState: {
+        title: "This is a table field",
+        description: "Use this field to input a list of items.",
+      },
+    },
+  },
+};
+
 export const formFields: FormFields[] = [
   { name: "Attach", ...AttachmentField },
   { name: "Data", ...DataField },
@@ -162,6 +175,7 @@ export const formFields: FormFields[] = [
   { name: "Text Editor", ...TextEditorField },
   { name: "Checkbox", ...CheckboxField },
   { name: "Phone", ...PhoneField },
+  { name: "Table", ...TableField },
 ];
 
 export const mapDoctypeFieldForForm = (fieldtype: string): string => {

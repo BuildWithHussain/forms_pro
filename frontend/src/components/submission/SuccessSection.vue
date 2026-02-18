@@ -39,9 +39,9 @@ const successDescription = computed(() => {
             :height="150"
             class="h-[150px]"
         />
-        <h2 class="text-3xl font-bold">{{ successTitle }}</h2>
+        <h2 class="text-3xl font-bold text-center">{{ successTitle }}</h2>
         <TextEditor
-            :model-value="successDescription"
+            :content="successDescription"
             editor-class="h-fit !w-full form-description !px-0 max-w-full max-h-full"
             :editable="false"
         />

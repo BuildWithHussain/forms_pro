@@ -11,11 +11,11 @@ import {
   TextEditor,
   TimePicker,
   Password,
-  ListView,
 } from "frappe-ui";
 import { Component } from "vue";
 import Attachment from "@/components/fields/Attachment.vue";
 import Phone from "@/components/fields/Phone.vue";
+import Table from "@/components/fields/Table.vue";
 
 export type FormFieldType = {
   component: Component;
@@ -146,7 +146,7 @@ export const PhoneField: FormFieldType = {
 };
 
 export const TableField: FormFieldType = {
-  component: ListView,
+  component: Table,
   props: {
     options: {
       emptyState: {

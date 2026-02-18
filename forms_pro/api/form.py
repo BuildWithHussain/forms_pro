@@ -142,7 +142,7 @@ def get_doctype_list() -> list[str]:
     )
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_doctype_fields(doctype: str) -> dict:
     doctype = frappe.get_doc("DocType", doctype)
     fields = doctype.fields

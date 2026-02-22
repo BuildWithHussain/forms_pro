@@ -17,7 +17,7 @@
     "dayjs": "^1.11.19",
     "feather-icons": "^4.29.2",
     "frappe-ui": "^0.1.262",
-    "lucide-vue-next": "^0.543.0",
+    "lucide-vue-next": "^0.575.0",
     "pinia": "^3.0.3",
     "socket.io-client": "^4.7.2",
     "vue": "^3.5.13",

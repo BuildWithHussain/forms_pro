@@ -47,7 +47,9 @@
                 </Popover>
             </template>
         </Sidebar>
-        <slot> </slot>
+        <div class="p-4 flex-1 max-w-screen-lg mx-auto">
+            <slot> </slot>
+        </div>
     </div>
 </template>
 <script setup lang="ts">

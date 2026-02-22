@@ -69,7 +69,7 @@ const breadcrumbItems = computed(() => {
 </script>
 <template>
     <BaseLayout :sidebar-sections="sidebarSections">
-        <div class="p-4 space-y-4 w-full bg-surface-white flex justify-center">
+        <div class="space-y-4 w-full bg-surface-white flex justify-center">
             <div class="max-w-screen-lg mx-auto w-full space-y-4">
                 <Breadcrumbs :items="breadcrumbItems" />
                 <RouterView />

@@ -14,6 +14,8 @@ class GetTeamMembersResponse(BaseModel):
     full_name: str
     user_image: str | None
     email: EmailStr
+    can_edit_team: bool
+    is_owner: bool
 
 
 class FPTeam(Document):
@@ -48,6 +50,8 @@ class FPTeam(Document):
         for member in self.users:
             _user = get_user(member.user)
             _user["email"] = member.user
+            _user["can_edit_team"] = self.has_permission("write", user=member.user)
+            _user["is_owner"] = self.owner == member.user
             members.append(GetTeamMembersResponse.model_validate(_user).model_dump())
 
         return members
@@ -76,7 +80,7 @@ class FPTeam(Document):
         Args:
             user: The user email address
         """
-        if user == "Administrator":
+        if user == "Administrator" or user == "Guest":
             return
 
         if self.is_team_member(user):

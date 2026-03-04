@@ -1,8 +1,15 @@
 import frappe
+from frappe.core.api.user_invitation import invite_by_email
+from frappe.core.doctype.user_invitation.user_invitation import UserInvitation
 
 from forms_pro.forms_pro.doctype.fp_team.fp_team import FPTeam, GetTeamMembersResponse
-from forms_pro.utils.teams import GetTeamFormsResponseSchema, set_current_team
-from forms_pro.utils.teams import get_team_forms as get_team_forms_utils
+from forms_pro.utils.teams import (
+    GetTeamFormsResponseSchema,
+    set_current_team,
+)
+from forms_pro.utils.teams import (
+    get_team_forms as get_team_forms_utils,
+)
 
 
 @frappe.whitelist()
@@ -77,3 +84,62 @@ def switch_team(team_id: str) -> None:
         raise frappe.PermissionError("You do not have permission to switch to this team")
 
     set_current_team(team_id, frappe.session.user)
+
+
+@frappe.whitelist(methods=["POST"])
+def invite_team_members(team_id: str, emails: list[str]) -> None:
+    """
+    Invite team members to a team
+    """
+
+    if not frappe.has_permission(
+        doctype="FP Team",
+        ptype="read",
+        doc=team_id,
+        user=frappe.session.user,
+    ):
+        raise frappe.PermissionError("You do not have permission to invite team members to this team")
+
+    emails_str = ", ".join(emails)
+
+    invite_by_email(
+        emails=emails_str,
+        roles=["Forms Pro User"],
+        redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team_id}",
+        app_name="forms_pro",
+    )
+
+
+@frappe.whitelist()
+def add_member_to_team_via_invitation(team_id: str, invite_id: str | None = None) -> None:
+    """
+    Add a member to a team when an invitation is accepted.
+    Accepts invite_id from query param (URL may send it as 'id').
+    """
+    invite_id = invite_id or frappe.form_dict.get("id")
+    if not invite_id:
+        raise frappe.PermissionError("Invitation id is required")
+
+    invite: UserInvitation = frappe.get_doc("User Invitation", invite_id)
+
+    if invite.status != "Accepted":
+        raise frappe.PermissionError("Invitation not accepted")
+
+    if not frappe.has_permission(
+        doctype="FP Team",
+        ptype="read",
+        doc=team_id,
+        user=invite.invited_by,
+    ):
+        raise frappe.PermissionError("You do not have permission to add a member to this team")
+
+    if not frappe.db.exists("User", invite.email):
+        raise frappe.PermissionError("User not found")
+
+    team: FPTeam = frappe.get_doc("FP Team", team_id)
+    team.add_to_team(invite.email)
+    team.save(ignore_permissions=True)
+    set_current_team(team_id, invite.email)
+
+    frappe.local.response["type"] = "redirect"
+    frappe.local.response["location"] = "/forms"

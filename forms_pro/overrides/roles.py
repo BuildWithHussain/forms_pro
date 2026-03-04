@@ -32,6 +32,13 @@ def handle_forms_pro_role_change(doc, method) -> None:
         if not has_forms_pro_role_before_save and has_forms_pro_role_after_save:
             if len(get_user_teams(user.name)) > 0:
                 return
+            # If the user was invited via Forms Pro, the invitation redirect will
+            # add them to the correct team — don't create a spurious default team.
+            if frappe.db.exists(
+                "User Invitation",
+                {"email": user.name, "app_name": "forms_pro", "status": ["in", ["Pending", "Accepted"]]},
+            ):
+                return
             create_default_team_for_user(user)
 
 

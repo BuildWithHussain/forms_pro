@@ -179,6 +179,29 @@ def toggle_can_edit_team(team_id: str, member_email: str) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
+def save(team_id: str, fields: dict) -> None:
+    """
+    Update team fields. Only fields present in the dict are updated.
+    """
+    frappe.has_permission(
+        doctype="FP Team",
+        ptype="write",
+        doc=team_id,
+        user=frappe.session.user,
+        throw=True,
+    )
+
+    ALLOWED_SAVE_FIELDS = ["team_name", "logo"]
+
+    team: FPTeam = frappe.get_doc("FP Team", team_id)
+    for key, value in fields.items():
+        if key not in ALLOWED_SAVE_FIELDS:
+            frappe.throw(f"Field '{key}' is not allowed")
+        setattr(team, key, value)
+    team.save()
+
+
+@frappe.whitelist(methods=["POST"])
 def remove_member_from_team(team_id: str, member_email: str) -> None:
     """
     Remove a member from a team

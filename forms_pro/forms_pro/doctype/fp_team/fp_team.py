@@ -3,7 +3,8 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.share import add_docshare
+from frappe.share import add_docshare, get_share_name
+from frappe.share import remove as remove_docshare
 from pydantic import BaseModel, EmailStr
 
 from forms_pro.api.user import get_user
@@ -50,7 +51,8 @@ class FPTeam(Document):
         for member in self.users:
             _user = get_user(member.user)
             _user["email"] = member.user
-            _user["can_edit_team"] = self.has_permission("write", user=member.user)
+            share_name = get_share_name(doctype="FP Team", name=self.name, user=member.user, everyone=0)
+            _user["can_edit_team"] = frappe.db.get_value("DocShare", share_name, "write")
             _user["is_owner"] = self.owner == member.user
             members.append(GetTeamMembersResponse.model_validate(_user).model_dump())
 
@@ -98,4 +100,21 @@ class FPTeam(Document):
             write=1,
             share=1,
             flags={"ignore_share_permission": True},
+        )
+
+    def remove_from_team(self, user: str) -> None:
+        """
+        Remove a user from the team
+
+        Args:
+            user: The user email address
+        """
+
+        self.users = [member for member in self.users if member.user != user]
+        self.save()
+        remove_docshare(
+            doctype="FP Team",
+            name=self.name,
+            user=user,
+            flags={"ignore_permissions": True},
         )

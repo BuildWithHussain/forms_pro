@@ -1,6 +1,8 @@
 import frappe
 from frappe.core.api.user_invitation import invite_by_email
+from frappe.core.doctype.docshare.docshare import DocShare
 from frappe.core.doctype.user_invitation.user_invitation import UserInvitation
+from frappe.share import get_share_name
 
 from forms_pro.forms_pro.doctype.fp_team.fp_team import FPTeam, GetTeamMembersResponse
 from forms_pro.utils.teams import (
@@ -42,6 +44,9 @@ def get_team_members(team_id: str) -> list[GetTeamMembersResponse]:
         user=frappe.session.user,
         throw=True,
     )
+
+    # Clear cache so we read fresh DocShare data (e.g. after toggle_can_edit_team)
+    frappe.clear_document_cache("FP Team", team_id)
 
     team: FPTeam = frappe.get_doc("FP Team", team_id)
     members = team.team_members
@@ -143,3 +148,49 @@ def add_member_to_team_via_invitation(team_id: str, invite_id: str | None = None
 
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = "/forms"
+
+
+@frappe.whitelist(methods=["POST"])
+def toggle_can_edit_team(team_id: str, member_email: str) -> None:
+    """
+    Toggle the can_edit_team permission for a team member
+    """
+
+    if not frappe.has_permission(
+        doctype="FP Team",
+        ptype="write",
+        doc=team_id,
+        user=frappe.session.user,
+    ):
+        raise frappe.PermissionError(
+            "You do not have permission to toggle the can_edit_team permission for this team member"
+        )
+
+    share_name = get_share_name(doctype="FP Team", name=team_id, user=member_email, everyone=0)
+    if not share_name:
+        raise frappe.PermissionError(
+            "You do not have permission to toggle the can_edit_team permission for this team member"
+        )
+
+    share: DocShare = frappe.get_doc("DocShare", share_name)
+    share.write = not share.write
+    share.share = not share.share
+    share.save(ignore_permissions=True)
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_member_from_team(team_id: str, member_email: str) -> None:
+    """
+    Remove a member from a team
+    """
+
+    if not frappe.has_permission(
+        doctype="FP Team",
+        ptype="write",
+        doc=team_id,
+        user=frappe.session.user,
+    ):
+        raise frappe.PermissionError("You do not have permission to remove a member from this team")
+
+    team: FPTeam = frappe.get_doc("FP Team", team_id)
+    team.remove_from_team(member_email)

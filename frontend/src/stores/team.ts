@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { useUser } from "./user";
 import { computed, watch } from "vue";
-import { useCall, createResource, call } from "frappe-ui";
+import { useCall, createResource } from "frappe-ui";
 import { toast } from "vue-sonner";
 
 export type TeamMember = {

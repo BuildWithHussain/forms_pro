@@ -99,11 +99,13 @@ def invite_team_members(team_id: str, emails: list[str]) -> None:
 
     if not frappe.has_permission(
         doctype="FP Team",
-        ptype="read",
+        ptype="write",
         doc=team_id,
         user=frappe.session.user,
     ):
-        raise frappe.PermissionError("You do not have permission to invite team members to this team")
+        raise frappe.PermissionError(
+            "You do not have write permission on this team; write access is required to invite members"
+        )
 
     emails_str = ", ".join(emails)
 

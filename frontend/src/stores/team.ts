@@ -86,9 +86,10 @@ export const useTeam = defineStore("team", () => {
           fields,
         };
       },
-      onSuccess() {
+      async onSuccess() {
         toast.success("Team Details Updated");
-        teamMembersResource.fetch();
+        await teamMembersResource.fetch();
+        user.fetchUserTeams();
       },
       onError(error: Error) {
         console.error(error);

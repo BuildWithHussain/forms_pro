@@ -81,6 +81,7 @@ function handleMemberRemoval(row: TeamMember) {
                         size="sm"
                         variant="ghost"
                         icon="trash"
+                        :label="`Remove ${row.full_name} from the team`"
                         @click="handleMemberRemoval(row)"
                     />
                 </div>

@@ -6,8 +6,20 @@ import { isLoginRequired } from "@/utils/form";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    name: "Dashboard",
-    component: () => import("@/pages/Dashboard.vue"),
+    name: "Home",
+    component: () => import("@/pages/home/Home.vue"),
+    children: [
+      {
+        path: "",
+        name: "Dashboard",
+        component: () => import("@/pages/home/Dashboard.vue"),
+      },
+      {
+        path: "team",
+        name: "Manage Team",
+        component: () => import("@/pages/team/ManageTeam.vue"),
+      },
+    ],
   },
   {
     path: "/manage/:id",

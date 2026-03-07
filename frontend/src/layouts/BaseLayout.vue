@@ -47,14 +47,15 @@
                 </Popover>
             </template>
         </Sidebar>
-        <slot> </slot>
+        <div class="p-4 flex-1 max-w-screen-lg mx-auto">
+            <slot> </slot>
+        </div>
     </div>
 </template>
 <script setup lang="ts">
 import { session } from "@/data/session";
-import { computed } from "vue";
 import { Popover, Sidebar, type SidebarProps } from "frappe-ui";
-import { EllipsisVertical, LayoutDashboard } from "lucide-vue-next";
+import { EllipsisVertical } from "lucide-vue-next";
 import type { PropType } from "vue";
 import Avatar from "@/components/ui/Avatar.vue";
 import TeamSwitcher from "@/components/team/TeamSwitcher.vue";
@@ -71,27 +72,5 @@ const props = defineProps({
         type: Array as PropType<SidebarSectionProps[]>,
         default: () => [],
     },
-});
-
-const sidebarSections = computed((): SidebarSectionProps[] => {
-    if (props.sidebarSections && props.sidebarSections.length > 0) {
-        return props.sidebarSections;
-    }
-
-    const _sections: SidebarSectionProps[] = [
-        {
-            label: "",
-            items: [
-                {
-                    label: "Dashboard",
-                    to: "/",
-                    isActive: true,
-                    icon: LayoutDashboard,
-                },
-            ],
-        },
-    ];
-
-    return _sections;
 });
 </script>

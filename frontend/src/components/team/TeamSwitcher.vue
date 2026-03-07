@@ -48,7 +48,7 @@ const groupOptions = computed(() => {
 </script>
 <template>
     <CreateTeamDialog v-model="showCreateTeamDialog" />
-    <Dropdown :options="groupOptions">
+    <Dropdown v-if="userStore.currentTeam" :options="groupOptions">
         <template #default="{ open }">
             <div
                 class="flex items-center gap-2 p-2 rounded cursor-pointer transition-colors duration-150 ease-[cubic-bezier(0.4, 0, 0.2, 1)] hover:bg-surface-gray-2"
@@ -56,7 +56,7 @@ const groupOptions = computed(() => {
             >
                 <TeamLogo
                     v-if="isSidebarCollapsed"
-                    :team-name="userStore.currentTeam!.team_name"
+                    :team-name="userStore.currentTeam?.team_name"
                     :logo-url="userStore.currentTeam?.logo ?? null"
                 />
                 <div v-else class="flex items-center gap-2 justify-between w-full">

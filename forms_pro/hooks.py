@@ -139,7 +139,10 @@ after_install = "forms_pro.install.after_install"
 doc_events = {
     "User": {
         "on_update": "forms_pro.overrides.roles.handle_forms_pro_role_change",
-    }
+    },
+    "User Invitation": {
+        "after_insert": "forms_pro.overrides.invitations.after_insert",
+    },
 }
 
 # Scheduled Tasks
@@ -239,6 +242,12 @@ export_python_type_annotations = True
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+user_invitation = {
+    "allowed_roles": {
+        "Forms Pro User": ["Forms Pro User"],
+    },
+    "after_accept": ["forms_pro.overrides.invitations.after_accept"],
+}
 
 website_route_rules = [
     {"from_route": "/forms/<path:app_path>", "to_route": "forms"},

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TeamLogo from "@/components/team/TeamLogo.vue";
-import { Button } from "frappe-ui";
+import ImageUploader from "@/components/ImageUploader/ImageUploader.vue";
+import { Button, ErrorMessage } from "frappe-ui";
 import { useTeam } from "@/stores/team";
 import { EditableArea, EditableInput, EditablePreview, EditableRoot } from "reka-ui";
 import { ref, watch } from "vue";
@@ -29,11 +30,28 @@ function onSubmit() {
                 :team-name="teamStore.currentTeam!.team_name"
                 :logo-url="teamStore.currentTeam?.logo ?? null"
             />
-            <Button
-                :label="teamStore.currentTeam?.logo ? 'Change' : 'Upload Logo'"
-                icon-left="upload"
-                variant="outline"
-            />
+            <ImageUploader
+                :crop-dimensions="{ width: 400, height: 400 }"
+                :upload-args="{ folder: 'Home' }"
+                @success="(file) => teamStore.save({ logo: file.file_url })"
+            >
+                <template #default="{ uploading, progress, error, openFileSelector }">
+                    <ErrorMessage :message="error ?? undefined" />
+                    <Button
+                        :label="
+                            teamStore.currentTeam?.logo
+                                ? 'Change'
+                                : uploading
+                                ? `Uploading ${progress}%`
+                                : 'Upload Logo'
+                        "
+                        icon-left="upload"
+                        variant="outline"
+                        :loading="uploading"
+                        @click="openFileSelector"
+                    />
+                </template>
+            </ImageUploader>
         </div>
         <div class="flex pt-4">
             <EditableRoot

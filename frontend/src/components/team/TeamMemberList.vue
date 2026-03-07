@@ -36,10 +36,7 @@ function handleMemberRemoval(row: TeamMember) {
 </script>
 <template>
     <InviteMemberDialog v-model="openInviteMemberDialog" />
-    <RemoveMemberDialog
-        v-model="openRemoveMemberDialog"
-        v-model:member-email="memberToRemove as TeamMember"
-    />
+    <RemoveMemberDialog v-model="openRemoveMemberDialog" v-model:member="memberToRemove" />
     <div class="flex flex-col gap-2">
         <div class="flex justify-between items-center">
             <h3 class="font-medium">Team Members</h3>

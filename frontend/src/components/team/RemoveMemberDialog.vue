@@ -2,13 +2,19 @@
 import { Dialog } from "frappe-ui";
 import { useTeam } from "@/stores/team";
 import type { TeamMember } from "@/stores/team";
+import { toast } from "vue-sonner";
 
 const teamStore = useTeam();
 const open = defineModel<boolean>({ required: true, default: false });
-const memberEmail = defineModel<TeamMember>("memberEmail", { required: true });
+const member = defineModel<TeamMember | null>("member", { required: true, default: null });
 
 function removeMember() {
-    teamStore.removeMemberFromTeam(memberEmail.value.email);
+    if (!member.value) {
+        toast.error("No member selected");
+        return;
+    }
+    teamStore.removeMemberFromTeam(member.value.email);
+    member.value = null;
     open.value = false;
 }
 </script>
@@ -41,7 +47,7 @@ function removeMember() {
         <template #body-content>
             <div class="text-p-base">
                 Are you sure you want to remove
-                <strong>{{ memberEmail.full_name }}</strong> from the team?
+                <strong>{{ member?.full_name }}</strong> from the team?
             </div>
         </template>
     </Dialog>

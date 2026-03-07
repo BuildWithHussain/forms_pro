@@ -142,6 +142,10 @@ def add_member_to_team_via_invitation(team_id: str, invite_id: str | None = None
         raise frappe.PermissionError("User not found")
 
     team: FPTeam = frappe.get_doc("FP Team", team_id)
+
+    if team.is_team_member(invite.email):
+        raise frappe.DuplicateEntryError("User is already a member of the team")
+
     team.add_to_team(invite.email)
     team.save(ignore_permissions=True)
     set_current_team(team_id, invite.email)
@@ -164,6 +168,12 @@ def toggle_can_edit_team(team_id: str, member_email: str) -> None:
     ):
         raise frappe.PermissionError(
             "You do not have permission to toggle the can_edit_team permission for this team member"
+        )
+
+    team: FPTeam = frappe.get_doc("FP Team", team_id)
+    if team.owner == member_email:
+        raise frappe.PermissionError(
+            "The team owner always retains full permissions and cannot have edit access toggled"
         )
 
     share_name = get_share_name(doctype="FP Team", name=team_id, user=member_email, everyone=0)

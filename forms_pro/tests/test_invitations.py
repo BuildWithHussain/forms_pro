@@ -82,7 +82,7 @@ class TestTeamInvitations(IntegrationTestCase):
         frappe.set_user("Administrator")
         return team.name
 
-    def _make_accepted_invitation(self, invitee_email: str, owner: str, team_id: str) -> object:
+    def _make_accepted_invitation(self, invitee_email: str, owner: str) -> object:
         inv_doc = frappe.get_doc(
             {
                 "doctype": "User Invitation",
@@ -227,7 +227,7 @@ class TestTeamInvitations(IntegrationTestCase):
         owner = self._create_user()
         invitee_email = self._create_user(with_forms_pro_role=False)
         team_id = self._create_team(owner)
-        inv_doc = self._make_accepted_invitation(invitee_email, owner, team_id)
+        inv_doc = self._make_accepted_invitation(invitee_email, owner)
 
         add_member_to_team_via_invitation(team_id=team_id, invite_id=inv_doc.name)
 

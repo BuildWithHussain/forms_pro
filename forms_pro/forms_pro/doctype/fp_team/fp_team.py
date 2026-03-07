@@ -110,6 +110,12 @@ class FPTeam(Document):
             user: The user email address
         """
 
+        if user == self.owner:
+            frappe.throw(
+                frappe._("Cannot remove the owner from the team"),
+                frappe.ValidationError,
+            )
+
         self.users = [member for member in self.users if member.user != user]
         self.save()
         remove_docshare(

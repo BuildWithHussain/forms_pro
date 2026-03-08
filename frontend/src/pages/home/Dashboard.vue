@@ -31,6 +31,7 @@
         </template>
     </Dialog>
     <div class="flex flex-col gap-4 w-full overflow-y-auto">
+        <Breadcrumbs :items="breadcrumbItems" />
         <div class="flex flex-col gap-2">
             <h2 class="text-3xl font-bold">Dashboard</h2>
             <p class="text-base">Manage and create forms</p>
@@ -82,14 +83,15 @@ import { useRouter } from "vue-router";
 import { ref, watch, computed } from "vue";
 import { toast } from "vue-sonner";
 import { useUser } from "@/stores/user";
-import { Dropdown, Dialog, createResource, Combobox } from "frappe-ui";
+import { Dropdown, Dialog, createResource, Combobox, Breadcrumbs } from "frappe-ui";
 import { createNewFormWithDoctype, createNewForm } from "@/utils/form_generator";
 import FormPreviewCard from "@/components/dashboard/FormPreviewCard.vue";
 const router = useRouter();
 const showSelectDoctypeDialog = ref(false);
 const selectedDoctype = ref<string | null>(null);
-
 const user = useUser();
+
+const breadcrumbItems = ref([{ label: "Manage" }, { label: "All Forms" }]);
 
 const doctypesList = createResource({
     url: "forms_pro.api.form.get_doctype_list",

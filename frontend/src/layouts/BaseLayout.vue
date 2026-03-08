@@ -32,15 +32,15 @@
                     </template>
                     <template #body>
                         <div
-                            class="flex flex-col gap-2 bg-surface-white shadow-2xl z-0 rounded-t-lg -mb-2 p-2 pb-4 w-full"
-                            :class="{ 'rounded-br-lg': isCollapsed }"
+                            class="flex flex-col gap-2 bg-surface-white shadow-lg z-0 rounded-lg mb-2 p-2"
+                            :class="{ 'w-56': !isCollapsed }"
                         >
                             <Button
                                 variant="ghost"
                                 theme="red"
                                 @click="session.logout.submit"
                                 label="Log out"
-                                icon-left="log-out"
+                                :icon-left="LogOut"
                             />
                         </div>
                     </template>
@@ -55,7 +55,7 @@
 <script setup lang="ts">
 import { session } from "@/data/session";
 import { Popover, Sidebar, type SidebarProps } from "frappe-ui";
-import { EllipsisVertical } from "lucide-vue-next";
+import { EllipsisVertical, LogOut } from "lucide-vue-next";
 import type { PropType } from "vue";
 import Avatar from "@/components/ui/Avatar.vue";
 import TeamSwitcher from "@/components/team/TeamSwitcher.vue";

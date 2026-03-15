@@ -19,6 +19,7 @@ class UserSubmissionResponse(BaseModel):
         alias="fp_submission_status",
         default=SubmissionStatus.SUBMITTED.value,
     )
+    owner: str = Field(description="Owner of the submission")
 
     @field_validator("creation", "modified", mode="before")
     @classmethod
@@ -104,7 +105,7 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
     submissions = frappe.get_all(
         doctype=linked_doctype,
         filters={"owner": frappe.session.user},
-        fields=["name", "creation", "modified", "fp_submission_status"],
+        fields=["name", "creation", "modified", "fp_submission_status", "owner"],
         order_by="creation",
     )
 
@@ -131,3 +132,35 @@ def get_submission(submission_doctype: str, submission_name: str) -> dict[str, A
         )
 
     return submission.as_dict()
+
+
+@frappe.whitelist()
+def get_all_submissions(form_id: str) -> list[UserSubmissionResponse]:
+    """
+    Get all submissions for a form
+
+    Args:
+        form_id: The ID of the form
+
+    Returns:
+        A list of submissions for the form
+    """
+    linked_team = frappe.db.get_value("Form", form_id, "linked_team_id")
+
+    if not frappe.has_permission(doctype="FP Team", ptype="write", doc=linked_team, user=frappe.session.user):
+        frappe.throw(
+            _("You do not have permission to read this form's submissions."),
+            frappe.PermissionError,
+        )
+
+    form: Form = frappe.get_doc("Form", form_id)
+    linked_doctype = form.linked_doctype
+
+    submissions = frappe.get_all(
+        doctype=linked_doctype,
+        fields=["name", "creation", "modified", "fp_submission_status", "owner"],
+        filters={"fp_submission_status": "Submitted"},
+        order_by="creation",
+    )
+
+    return [UserSubmissionResponse.model_validate(submission).model_dump() for submission in submissions]

@@ -13,7 +13,7 @@ export interface DrawerAction {
 
 const props = withDefaults(
     defineProps<{
-        size?: "sm" | "md" | "lg";
+        size?: "sm" | "md" | "lg" | "xl";
         position?: "top" | "bottom" | "right" | "left";
         title?: string | null;
         actions?: DrawerAction[] | null;
@@ -60,8 +60,8 @@ const panelClasses = computed(() => {
     const isHorizontal = props.position === "left" || props.position === "right";
 
     const sizeClasses = {
-        horizontal: { sm: "w-80", md: "w-[26rem]", lg: "w-[35rem]" },
-        vertical: { sm: "h-[30vh]", md: "h-[50vh]", lg: "h-[70vh]" },
+        horizontal: { sm: "w-80", md: "w-[26rem]", lg: "w-[35rem]", xl: "w-[50rem]" },
+        vertical: { sm: "h-[30vh]", md: "h-[50vh]", lg: "h-[70vh]", xl: "h-[90vh]" },
     };
 
     const orientation = isHorizontal ? "horizontal" : "vertical";

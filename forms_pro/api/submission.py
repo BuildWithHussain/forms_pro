@@ -113,9 +113,40 @@ def get_user_submissions(form_id: str) -> list[UserSubmissionResponse]:
 
 
 @frappe.whitelist()
+def get_submission_response(submission_id: str, doctype: str) -> dict[str, Any]:
+    """
+    Get a full submission response by ID.
+    This API checks if the user is the team member / the form is shared with the user.
+
+    Args:
+        submission_id: The name/ID of the submission document
+        doctype: The submission's doctype (linked_doctype of the form)
+
+    Returns:
+        The submission document as a dict
+    """
+    linked_form = frappe.db.get_value(doctype, submission_id, "fp_linked_form")
+    if not linked_form:
+        frappe.throw(_("Submission not found."), frappe.DoesNotExistError)
+
+    linked_team_id = frappe.db.get_value("Form", linked_form, "linked_team_id")
+
+    if not frappe.has_permission(
+        doctype="FP Team", ptype="write", doc=linked_team_id, user=frappe.session.user
+    ):
+        frappe.throw(
+            _("You do not have permission to read this form's submissions."),
+            frappe.PermissionError,
+        )
+
+    submission = frappe.get_doc(doctype, submission_id)
+    return submission.as_dict()
+
+
+@frappe.whitelist()
 def get_submission(submission_doctype: str, submission_name: str) -> dict[str, Any]:
     """
-    Get a submission by name
+    Get a submission by name. Used usually by the form owner to view the submission details.
 
     Args:
         submission_name: The name of the submission

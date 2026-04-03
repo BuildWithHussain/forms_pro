@@ -3,8 +3,18 @@ import { useManageForm } from "@/stores/form/manageForm";
 import { ListView, Badge, createResource } from "frappe-ui";
 import { formatDateTime } from "@/utils/date";
 import Avatar from "@/components/ui/Avatar.vue";
+import Drawer from "@/components/ui/Drawer.vue";
+import SubmissionDetails from "@/components/form/submissions/SubmissionDetails.vue";
 import { computed, onMounted, ref } from "vue";
 import { toast } from "vue-sonner";
+
+const drawerOpen = ref(false);
+const selectedSubmission = ref<Record<string, any> | null>(null);
+
+function onRowClick(row: Record<string, any>) {
+    selectedSubmission.value = row;
+    drawerOpen.value = true;
+}
 
 const manageFormStore = useManageForm();
 const isLoading = ref(false);
@@ -67,6 +77,7 @@ const columns = computed(() => [
         :options="{
             selectable: false,
             showTooltip: false,
+            onRowClick,
             emptyState: {
                 title: 'No Submissions Yet',
                 description: 'Submissions for this form will appear here.',
@@ -97,4 +108,12 @@ const columns = computed(() => [
             <span v-else class="text-sm">{{ item }}</span>
         </template>
     </ListView>
+
+    <Drawer v-model="drawerOpen" size="lg" title="Submission Details">
+        <SubmissionDetails
+            v-if="selectedSubmission && manageFormStore.formData?.linked_doctype"
+            :submissionId="selectedSubmission.name"
+            :doctype="manageFormStore.formData.linked_doctype"
+        />
+    </Drawer>
 </template>

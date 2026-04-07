@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
         name: "Manage Form Overview",
         component: () => import("@/pages/manage/overview/Overview.vue"),
       },
+      {
+        path: "submissions",
+        name: "Manage Form Submissions",
+        component: () => import("@/pages/manage/submissions/Submissions.vue"),
+      },
     ],
   },
   {

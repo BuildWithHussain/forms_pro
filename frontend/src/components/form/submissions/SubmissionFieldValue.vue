@@ -97,7 +97,7 @@ const classNames = computed<string>(() => {
             v-else-if="fieldtype === FormFieldTypes.Textarea"
             class="text-sm text-ink-gray-7 whitespace-pre-wrap"
         >
-            {{ value }}
+            {{ value ?? "–" }}
         </span>
 
         <span v-else-if="isDateField" class="text-sm text-ink-gray-7">

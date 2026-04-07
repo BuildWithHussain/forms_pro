@@ -31,7 +31,7 @@ frappe = ">=16.0.0-dev,<18.0.0"
 
 [tool.ruff]
 line-length = 110
-target-version = "py314"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "UP", "B", "RUF"]

@@ -25,7 +25,7 @@
     "vue-router": "^4.5.0",
     "vue-sonner": "^2.0.9",
     "vuedraggable": "^4.1.0",
-    "zod": "^4.1.12"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

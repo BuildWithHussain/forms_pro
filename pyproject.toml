@@ -10,7 +10,7 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
-    "Faker~=38.2.0",
+    "Faker~=40.13.0",
     "dnspython==2.8.0",
     "email-validator==2.3.0",
 ]

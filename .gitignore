@@ -25,6 +25,9 @@ MANIFEST
 
 # Environments
 .env
+.env.*
+!.env.example
+!.env.sample
 .venv
 env/
 venv/
@@ -53,6 +56,9 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
+
+# Local AI tooling settings
+.claude/settings.local.json
 
 /forms_pro/public/frontend
 /forms_pro/www/forms.html

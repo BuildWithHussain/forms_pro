@@ -4,11 +4,7 @@ on:
   push:
     branches:
       - develop
-    paths-ignore:
-      - ".github/**"
   pull_request:
-    paths-ignore:
-      - ".github/**"
 
 concurrency:
   group: develop-forms_pro-${{ github.event.number }}
@@ -50,7 +46,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.14"
+          python-version: "3.10"
 
       - name: Setup Node
         uses: actions/setup-node@v3

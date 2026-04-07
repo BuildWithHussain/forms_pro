@@ -110,5 +110,6 @@ const columns = computed(() => [
             :submissionId="selectedSubmission.name"
             :doctype="manageFormStore.formData.linked_doctype"
         />
+        <div v-else-if="selectedSubmission" class="text-sm text-ink-gray-5">Loading...</div>
     </Drawer>
 </template>

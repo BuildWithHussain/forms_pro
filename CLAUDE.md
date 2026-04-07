@@ -108,7 +108,7 @@ When a form is saved, its fields are synced to the linked DocType as `CustomFiel
 
 ## Key Conventions
 
-- **Python target**: 3.10+; formatted with `ruff`
+- **Python target**: 3.14+; formatted with `ruff`
 - **TypeScript**: strict mode; `vue-tsc` enforced in CI
 - **Frappe patterns**: use `frappe.get_doc`, `frappe.get_all`, `frappe.db.*`; avoid raw SQL unless necessary
 - **PR titles**: validated by CI workflow (conventional commit format expected)

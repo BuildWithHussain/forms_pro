@@ -4,6 +4,5 @@ dist
 dist-ssr
 *.local
 coverage
-../<app-name>
 sites
 src/types/frappe-ui.d.ts

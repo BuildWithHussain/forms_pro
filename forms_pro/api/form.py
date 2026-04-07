@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.share import remove
+from frappe.share import add_docshare, remove
 from pydantic import BaseModel, Field
 
 from forms_pro.api.user import get_user
@@ -126,6 +126,57 @@ def remove_form_access(form_id: str, user_email: str) -> None:
         frappe.throw(_("You do not have write access to this form"))
 
     return remove(doctype="Form", name=form_id, user=user_email, flags={"ignore_permissions": True})
+
+
+@frappe.whitelist()
+def add_form_access(
+    form_id: str,
+    user: str,
+    read: bool = True,
+    write: bool = False,
+    share: bool = False,
+    submit: bool = False,
+) -> None:
+    """
+    Share a form with a user, bypassing role-level permission checks.
+    Validates that the calling user has share access on this specific form.
+    """
+    if not frappe.has_permission("Form", "share", form_id):
+        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
+
+    add_docshare(
+        doctype="Form",
+        name=form_id,
+        user=user,
+        read=int(read),
+        write=int(write),
+        share=int(share),
+        submit=int(submit),
+        flags={"ignore_share_permission": True},
+    )
+
+
+@frappe.whitelist()
+def set_form_permission(
+    form_id: str,
+    user: str,
+    permission_to: str,
+    value: bool,
+) -> None:
+    """
+    Update a specific permission for a user on a form.
+    Validates that the calling user has share access on this specific form.
+    """
+    if not frappe.has_permission("Form", "share", form_id):
+        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
+
+    add_docshare(
+        doctype="Form",
+        name=form_id,
+        user=user,
+        **{permission_to: int(value)},
+        flags={"ignore_share_permission": True},
+    )
 
 
 @frappe.whitelist()

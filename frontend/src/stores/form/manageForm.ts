@@ -68,12 +68,11 @@ export const useManageForm = defineStore("manageForm", () => {
    */
   function addAccess(userId: string, access: AccessPermissions) {
     const _access = createResource({
-      url: "frappe.share.add",
+      url: "forms_pro.api.form.add_form_access",
       method: "POST",
       makeParams() {
         return {
-          doctype: "Form",
-          name: currentFormId.value,
+          form_id: currentFormId.value,
           user: userId,
           read: Boolean(access.read),
           write: Boolean(access.write),
@@ -106,12 +105,11 @@ export const useManageForm = defineStore("manageForm", () => {
     value: boolean
   ) {
     const _permission = createResource({
-      url: "frappe.share.set_permission",
+      url: "forms_pro.api.form.set_form_permission",
       method: "POST",
       makeParams() {
         return {
-          doctype: "Form",
-          name: currentFormId.value,
+          form_id: currentFormId.value,
           user: userId,
           permission_to: permission,
           value: value ? 1 : 0,

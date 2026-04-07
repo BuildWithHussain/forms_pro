@@ -17,7 +17,6 @@ function onRowClick(row: Record<string, any>) {
 }
 
 const manageFormStore = useManageForm();
-const isLoading = ref(false);
 
 const allSubmissionsResource = createResource({
     url: "forms_pro.api.submission.get_all_submissions",
@@ -25,9 +24,6 @@ const allSubmissionsResource = createResource({
         return {
             form_id: manageFormStore.currentFormId,
         };
-    },
-    onSuccess() {
-        isLoading.value = false;
     },
     onError(error: Error) {
         toast.error("Failed to fetch submissions", {
@@ -38,7 +34,6 @@ const allSubmissionsResource = createResource({
 const allSubmissions = computed(() => allSubmissionsResource.data ?? []);
 
 onMounted(() => {
-    isLoading.value = true;
     allSubmissionsResource.fetch();
 });
 

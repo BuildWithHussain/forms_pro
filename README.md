@@ -96,6 +96,7 @@ yarn build  # For production build
 ## 🤝 Contributing
 
 We welcome contributions! Forms Pro uses `pre-commit` for code formatting and linting.
+Please review [`CONTRIBUTING.md`](CONTRIBUTING.md) for the contribution workflow and [`SECURITY.md`](SECURITY.md) for responsible disclosure.
 
 ### Setup for Contribution
 
@@ -135,7 +136,7 @@ This project uses the following tools for code quality:
 
 The project includes automated testing via GitHub Actions:
 
-- **CI**: Installs the app and runs unit tests on every push to `develop` branch
+- **CI**: Installs the app and runs unit tests on pull requests and pushes to `develop`
 - **Linters**: Runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request
 
 ## 📄 License

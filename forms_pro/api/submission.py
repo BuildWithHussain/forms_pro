@@ -129,17 +129,20 @@ def get_submission_response(submission_id: str, doctype: str) -> dict[str, Any]:
     if not linked_form:
         frappe.throw(_("Submission not found."), frappe.DoesNotExistError)
 
-    linked_team_id = frappe.db.get_value("Form", linked_form, "linked_team_id")
+    form_data = frappe.db.get_value("Form", linked_form, ["linked_team_id", "linked_doctype"], as_dict=True)
+
+    if form_data.linked_doctype != doctype:
+        frappe.throw(_("Invalid doctype for this submission."), frappe.PermissionError)
 
     if not frappe.has_permission(
-        doctype="FP Team", ptype="write", doc=linked_team_id, user=frappe.session.user
+        doctype="FP Team", ptype="write", doc=form_data.linked_team_id, user=frappe.session.user
     ):
         frappe.throw(
             _("You do not have permission to read this form's submissions."),
             frappe.PermissionError,
         )
 
-    submission = frappe.get_doc(doctype, submission_id)
+    submission = frappe.get_doc(form_data.linked_doctype, submission_id)
     return submission.as_dict()
 
 

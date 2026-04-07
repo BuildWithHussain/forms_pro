@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.share import remove
+from frappe.share import add_docshare, remove
 from pydantic import BaseModel, Field
 
 from forms_pro.api.user import get_user
@@ -126,6 +126,94 @@ def remove_form_access(form_id: str, user_email: str) -> None:
         frappe.throw(_("You do not have write access to this form"))
 
     return remove(doctype="Form", name=form_id, user=user_email, flags={"ignore_permissions": True})
+
+
+@frappe.whitelist()
+def add_form_access(
+    form_id: str,
+    user: str,
+    read: bool = True,
+    write: bool = False,
+    share: bool = False,
+    submit: bool = False,
+) -> None:
+    """
+    Grant a user access to a form with the specified permissions.
+
+    Uses ``ignore_share_permission`` so the record can be shared regardless of
+    the caller's role-level DocShare permissions — the explicit
+    ``frappe.has_permission`` check below enforces that only users with share
+    access on this particular form can invoke this endpoint.
+
+    Args:
+        form_id: Name of the Form document to share.
+        user: Email of the user to grant access to.
+        read: Allow the user to read the form (default True).
+        write: Allow the user to edit the form (default False).
+        share: Allow the user to share the form with others (default False).
+        submit: Allow the user to submit the form (default False).
+
+    Raises:
+        frappe.PermissionError: If the calling user does not have share access
+            on the specified form.
+    """
+    if not frappe.has_permission("Form", "share", form_id):
+        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
+
+    add_docshare(
+        doctype="Form",
+        name=form_id,
+        user=user,
+        read=int(read),
+        write=int(write),
+        share=int(share),
+        submit=int(submit),
+        flags={"ignore_share_permission": True},
+    )
+
+
+@frappe.whitelist()
+def set_form_permission(
+    form_id: str,
+    user: str,
+    permission_to: str,
+    value: bool,
+) -> None:
+    """
+    Toggle a single permission bit for a user on a form.
+
+    Designed for per-toggle updates from the sharing UI — only the specified
+    permission field is changed; all other existing permissions are preserved by
+    Frappe's ``add_docshare`` merge behaviour.
+
+    Args:
+        form_id: Name of the Form document.
+        user: Email of the user whose permission is being updated.
+        permission_to: Which permission to update. Must be one of:
+            ``"read"``, ``"write"``, ``"share"``, ``"submit"``.
+        value: ``True`` to grant the permission, ``False`` to revoke it.
+
+    Raises:
+        frappe.PermissionError: If the calling user does not have share access
+            on the specified form.
+        frappe.ValidationError: If ``permission_to`` is not a recognised
+            permission type.
+    """
+    if not frappe.has_permission("Form", "share", form_id):
+        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
+
+    # Guard against arbitrary kwargs being forwarded to add_docshare
+    allowed_permissions = {"read", "write", "share", "submit"}
+    if permission_to not in allowed_permissions:
+        frappe.throw(_("Invalid permission type"), frappe.ValidationError)
+
+    add_docshare(
+        doctype="Form",
+        name=form_id,
+        user=user,
+        **{permission_to: int(bool(value))},
+        flags={"ignore_share_permission": True},
+    )
 
 
 @frappe.whitelist()

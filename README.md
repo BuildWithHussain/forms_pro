@@ -7,7 +7,7 @@
 A powerful, modern form builder built on the Frappe Framework. Forms Pro takes Frappe web forms to the next level with an intuitive drag-and-drop interface, advanced field types, and seamless integration.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/downloads/)
 [![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js)](https://vuejs.org/)
 
 <img src=".github/preview/logo_300.png" alt="Forms Pro Logo" width="100" style="border-radius: 16px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);"/>
@@ -47,7 +47,7 @@ Forms Pro is a Frappe app and can be installed using the [bench](https://github.
 ### Prerequisites
 
 - Frappe Framework installed via bench
-- Python 3.10 or higher
+- Python 3.14 or higher
 - Node.js and npm/yarn (for frontend development)
 
 ### Install via Bench
@@ -86,7 +86,7 @@ yarn build  # For production build
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Python 3.10+, Frappe Framework
+- **Backend**: Python 3.14+, Frappe Framework
 - **Frontend**: Vue 3, TypeScript, Vite
 - **UI Components**: Frappe UI, Tailwind CSS
 - **Form Builder**: Vue Draggable
@@ -96,6 +96,7 @@ yarn build  # For production build
 ## 🤝 Contributing
 
 We welcome contributions! Forms Pro uses `pre-commit` for code formatting and linting.
+Please review [`CONTRIBUTING.md`](CONTRIBUTING.md) for the contribution workflow and [`SECURITY.md`](SECURITY.md) for responsible disclosure.
 
 ### Setup for Contribution
 
@@ -135,7 +136,7 @@ This project uses the following tools for code quality:
 
 The project includes automated testing via GitHub Actions:
 
-- **CI**: Installs the app and runs unit tests on every push to `develop` branch
+- **CI**: Installs the app and runs unit tests on pull requests and pushes to `develop`
 - **Linters**: Runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request
 
 ## 📄 License

@@ -44,15 +44,25 @@ const isDateField = computed(() =>
         FormFieldTypes.TimePicker,
     ].includes(props.fieldtype)
 );
+
+const classNames = computed<string>(() => {
+    if ([FormFieldTypes.Switch, FormFieldTypes.Checkbox].includes(props.fieldtype)) {
+        return "flex gap-1 flex-row-reverse items-start justify-end";
+    }
+    return "flex flex-col gap-1";
+});
 </script>
 
 <template>
-    <div class="flex flex-col gap-1">
-        <span class="text-sm text-ink-gray-5">{{ label }}</span>
-        <p v-if="description" class="text-xs text-ink-gray-4">{{ description }}</p>
+    <div :class="classNames">
+        <div>
+            <span class="text-sm text-ink-gray-5">{{ label }}</span>
+            <p v-if="description" class="text-xs text-ink-gray-4">{{ description }}</p>
+        </div>
 
         <Checkbox
             v-if="fieldtype === FormFieldTypes.Checkbox"
+            class="mt-1"
             :modelValue="Boolean(value)"
             disabled
         />

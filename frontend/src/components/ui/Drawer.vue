@@ -95,6 +95,7 @@ const transitionName = computed(() => `drawer-${props.position}`);
                 v-if="open"
                 role="dialog"
                 aria-modal="true"
+                :aria-labelledby="title ? 'drawer-title' : undefined"
                 :class="panelClasses"
                 class="fixed z-50 flex flex-col bg-surface-modal shadow-2xl"
             >
@@ -108,6 +109,7 @@ const transitionName = computed(() => `drawer-${props.position}`);
                     <slot name="title">
                         <h3
                             v-if="title"
+                            id="drawer-title"
                             class="text-lg font-semibold text-ink-gray-9 truncate pr-2"
                         >
                             {{ title }}

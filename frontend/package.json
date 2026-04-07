@@ -19,7 +19,7 @@
     "frappe-ui": "^0.1.262",
     "lucide-vue-next": "^0.575.0",
     "pinia": "^3.0.3",
-    "socket.io-client": "^4.7.2",
+    "socket.io-client": "^4.8.3",
     "vue": "^3.5.32",
     "vue-advanced-cropper": "^2.6.2",
     "vue-router": "^4.5.0",

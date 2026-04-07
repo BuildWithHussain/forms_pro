@@ -5,7 +5,7 @@ authors = [
     { name = "BWH Studios", email = "developers@buildwithhussain.com" },
 ]
 description = "Web Forms on steroids!"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
@@ -31,7 +31,7 @@ frappe = ">=16.0.0-dev,<18.0.0"
 
 [tool.ruff]
 line-length = 110
-target-version = "py310"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "UP", "B", "RUF"]

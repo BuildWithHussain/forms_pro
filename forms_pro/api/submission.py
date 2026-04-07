@@ -181,6 +181,9 @@ def get_all_submissions(form_id: str) -> list[UserSubmissionResponse]:
     """
     linked_team = frappe.db.get_value("Form", form_id, "linked_team_id")
 
+    if not linked_team:
+        frappe.throw(_("Form not found."), frappe.DoesNotExistError)
+
     if not frappe.has_permission(doctype="FP Team", ptype="write", doc=linked_team, user=frappe.session.user):
         frappe.throw(
             _("You do not have permission to read this form's submissions."),

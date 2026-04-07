@@ -138,8 +138,24 @@ def add_form_access(
     submit: bool = False,
 ) -> None:
     """
-    Share a form with a user, bypassing role-level permission checks.
-    Validates that the calling user has share access on this specific form.
+    Grant a user access to a form with the specified permissions.
+
+    Uses ``ignore_share_permission`` so the record can be shared regardless of
+    the caller's role-level DocShare permissions — the explicit
+    ``frappe.has_permission`` check below enforces that only users with share
+    access on this particular form can invoke this endpoint.
+
+    Args:
+        form_id: Name of the Form document to share.
+        user: Email of the user to grant access to.
+        read: Allow the user to read the form (default True).
+        write: Allow the user to edit the form (default False).
+        share: Allow the user to share the form with others (default False).
+        submit: Allow the user to submit the form (default False).
+
+    Raises:
+        frappe.PermissionError: If the calling user does not have share access
+            on the specified form.
     """
     if not frappe.has_permission("Form", "share", form_id):
         frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
@@ -164,17 +180,38 @@ def set_form_permission(
     value: bool,
 ) -> None:
     """
-    Update a specific permission for a user on a form.
-    Validates that the calling user has share access on this specific form.
+    Toggle a single permission bit for a user on a form.
+
+    Designed for per-toggle updates from the sharing UI — only the specified
+    permission field is changed; all other existing permissions are preserved by
+    Frappe's ``add_docshare`` merge behaviour.
+
+    Args:
+        form_id: Name of the Form document.
+        user: Email of the user whose permission is being updated.
+        permission_to: Which permission to update. Must be one of:
+            ``"read"``, ``"write"``, ``"share"``, ``"submit"``.
+        value: ``True`` to grant the permission, ``False`` to revoke it.
+
+    Raises:
+        frappe.PermissionError: If the calling user does not have share access
+            on the specified form.
+        frappe.ValidationError: If ``permission_to`` is not a recognised
+            permission type.
     """
     if not frappe.has_permission("Form", "share", form_id):
         frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
+
+    # Guard against arbitrary kwargs being forwarded to add_docshare
+    allowed_permissions = {"read", "write", "share", "submit"}
+    if permission_to not in allowed_permissions:
+        frappe.throw(_("Invalid permission type"), frappe.ValidationError)
 
     add_docshare(
         doctype="Form",
         name=form_id,
         user=user,
-        **{permission_to: int(value)},
+        **{permission_to: int(bool(value))},
         flags={"ignore_share_permission": True},
     )
 

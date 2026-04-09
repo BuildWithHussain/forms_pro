@@ -1,6 +1,8 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
+from unittest.mock import patch
+
 import frappe
 from faker import Faker
 from frappe.tests import IntegrationTestCase
@@ -33,14 +35,18 @@ class TestTeamInvitations(IntegrationTestCase):
 
     def setUp(self):
         super().setUp()
-        frappe.flags.mute_emails = True
+        self.sendmail_patcher = patch("frappe.sendmail")
+        mock_sendmail = self.sendmail_patcher.start()
+        # Ensure the return value's .message is a string so any Frappe version
+        # that accesses q.message (e.g. for regex/parser ops) doesn't get a MagicMock.
+        mock_sendmail.return_value.message = ""
         self.fake = Faker()
         self.teams_created = []
         self.users_created = []
         frappe.set_user("Administrator")
 
     def tearDown(self):
-        frappe.flags.mute_emails = False
+        self.sendmail_patcher.stop()
         frappe.set_user("Administrator")
         for team_id in self.teams_created:
             if frappe.db.exists("FP Team", team_id):
@@ -49,7 +55,6 @@ class TestTeamInvitations(IntegrationTestCase):
             if frappe.db.exists("User", email):
                 frappe.delete_doc("User", email, force=True, ignore_permissions=True)
         frappe.db.delete("User Invitation", {"app_name": "forms_pro"})
-        frappe.db.delete("Email Queue")
         frappe.db.commit()
         super().tearDown()
 

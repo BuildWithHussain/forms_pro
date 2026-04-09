@@ -1,8 +1,6 @@
 # Copyright (c) 2025, harsh@buildwithhussain.com and contributors
 # For license information, please see license.txt
 
-from unittest.mock import patch
-
 import frappe
 from faker import Faker
 from frappe.tests import IntegrationTestCase
@@ -35,17 +33,14 @@ class TestTeamInvitations(IntegrationTestCase):
 
     def setUp(self):
         super().setUp()
-        self.sendmail_patcher = patch("frappe.sendmail")
-        self.sendmail_patcher.start()
+        frappe.flags.mute_emails = True
         self.fake = Faker()
         self.teams_created = []
         self.users_created = []
         frappe.set_user("Administrator")
 
     def tearDown(self):
-        patcher = getattr(self, "sendmail_patcher", None)
-        if patcher is not None:
-            patcher.stop()
+        frappe.flags.mute_emails = False
         frappe.set_user("Administrator")
         for team_id in self.teams_created:
             if frappe.db.exists("FP Team", team_id):
@@ -54,6 +49,7 @@ class TestTeamInvitations(IntegrationTestCase):
             if frappe.db.exists("User", email):
                 frappe.delete_doc("User", email, force=True, ignore_permissions=True)
         frappe.db.delete("User Invitation", {"app_name": "forms_pro"})
+        frappe.db.delete("Email Queue")
         frappe.db.commit()
         super().tearDown()
 

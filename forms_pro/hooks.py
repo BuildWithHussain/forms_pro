@@ -9,11 +9,6 @@ app_license = "agpl-3.0"
 fixtures = [
     {"dt": "Role", "filters": {"role_name": "Forms Pro User"}},
 ]
-# Apps
-# ------------------
-
-# required_apps = []
-
 # Each item in the list will be shown as an app in the apps page
 add_to_apps_screen = [
     {

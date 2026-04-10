@@ -1,6 +1,5 @@
 from typing import Any
 
-import frappe
 from faker import Faker
 from frappe_factory_bot.frappe_factory_bot.base_factory import BaseFactory
 
@@ -25,11 +24,3 @@ class UserFactory(BaseFactory):
         # Frappe accepts child table rows as dicts in the initial doc dict.
         # on_update fires with the role already set, so the default team is created.
         return {"roles": [{"role": FORMS_PRO_ROLE}]}
-
-    @staticmethod
-    def __del_override__(_self: Any) -> None:
-        try:
-            if frappe.db.exists("User", _self.name):
-                frappe.delete_doc("User", _self.name, force=True, ignore_permissions=True)
-        except Exception:
-            pass

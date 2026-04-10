@@ -4,6 +4,7 @@
 from unittest.mock import patch
 
 import frappe
+from faker import Faker
 from frappe.model.document import Document
 from frappe.tests import IntegrationTestCase
 
@@ -11,6 +12,9 @@ from forms_pro.api.team import add_member_to_team_via_invitation, invite_team_me
 from forms_pro.overrides.invitations import after_accept, after_insert
 from forms_pro.roles import FORMS_PRO_ROLE
 from forms_pro.tests.factories import FPTeamFactory, UserFactory
+from forms_pro.tests.factories.user_invitation_factory import UserInvitationFactory
+
+fake = Faker()
 
 
 class _StubRole:
@@ -39,36 +43,12 @@ class TestTeamInvitations(IntegrationTestCase):
         self.sendmail_patcher = patch("frappe.sendmail")
         mock_sendmail = self.sendmail_patcher.start()
         mock_sendmail.return_value.message = ""
-        self._created_users: list[Document] = []
-        self._created_teams: list[Document] = []
         frappe.set_user("Administrator")
 
     def tearDown(self):
         self.sendmail_patcher.stop()
         frappe.set_user("Administrator")
-        for team in self._created_teams:
-            if frappe.db.exists("FP Team", team.name):
-                frappe.delete_doc("FP Team", team.name, force=True, ignore_permissions=True)
-        for user in self._created_users:
-            if frappe.db.exists("User", user.name):
-                frappe.delete_doc("User", user.name, force=True, ignore_permissions=True)
-        frappe.db.delete("User Invitation", {"app_name": "forms_pro"})
-        frappe.db.commit()
         super().tearDown()
-
-    def _user(self, *traits: str) -> Document:
-        """Create and track a user via factory."""
-        user = UserFactory.create(*traits)
-        self._created_users.append(user)
-        return user
-
-    def _team(self, owner: Document) -> Document:
-        """Create and track a team owned by the given user."""
-        frappe.set_user(owner.name)
-        team = FPTeamFactory.create()
-        self._created_teams.append(team)
-        frappe.set_user("Administrator")
-        return team
 
     def _make_accepted_invitation(self, invitee: Document, owner: Document) -> Document:
         inv_doc = frappe.get_doc(
@@ -84,7 +64,6 @@ class TestTeamInvitations(IntegrationTestCase):
         inv_doc.insert(ignore_permissions=True)
         inv_doc.db_set("status", "Accepted")
         inv_doc.db_set("user", invitee.name)
-        frappe.db.commit()
         return inv_doc
 
     def _get_team_memberships(self, user: Document) -> list:
@@ -93,25 +72,26 @@ class TestTeamInvitations(IntegrationTestCase):
     # --- invite_team_members ---
 
     def test_invite_requires_permission(self):
-        """User without read permission on team cannot invite members."""
-        owner = self._user("with_forms_pro_role")
-        other = self._user()
-        team = self._team(owner)
+        """User without write permission on team cannot invite members."""
+        owner = UserFactory.create("with_forms_pro_role")
+        other = UserFactory.create()
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
 
         frappe.set_user(other.name)
         with self.assertRaises(frappe.PermissionError) as ctx:
-            invite_team_members(team_id=team.name, emails=[UserFactory.build().email])
+            invite_team_members(team_id=team.name, emails=[other.email])
         self.assertIn("permission", str(ctx.exception).lower())
 
     def test_invite_creates_invitation_with_redirect(self):
         """Inviting creates a User Invitation whose redirect contains team_id and invite_id."""
-        owner = self._user("with_forms_pro_role")
-        invitee_email = UserFactory.build().email
-        team = self._team(owner)
+        owner = UserFactory.create("with_forms_pro_role")
+        invitee_email = fake.email()
 
         frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+
         invite_team_members(team_id=team.name, emails=[invitee_email])
-        frappe.db.commit()
 
         invitations = frappe.get_all(
             "User Invitation",
@@ -128,96 +108,113 @@ class TestTeamInvitations(IntegrationTestCase):
 
     def test_after_insert_adds_invite_id_to_redirect(self):
         """after_insert hook rewrites redirect_to_path to include invite_id."""
-        owner = self._user("with_forms_pro_role")
-        team = self._team(owner)
-        doc = frappe.get_doc(
-            {
-                "doctype": "User Invitation",
-                "email": UserFactory.build().email,
-                "app_name": "forms_pro",
-                "redirect_to_path": f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
-                "roles": [{"role": FORMS_PRO_ROLE}],
-            }
+        owner = UserFactory.create("with_forms_pro_role")
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
+
+        invite_doc = UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            team=team,
+            email=fake.email(),
+            redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
         )
-        doc.insert(ignore_permissions=True)
-        doc.reload()
-        self.assertIn(team.name, doc.redirect_to_path)
-        self.assertIn(f"invite_id={doc.name}", doc.redirect_to_path)
-        self.assertIn("add_member_to_team_via_invitation", doc.redirect_to_path)
-        frappe.delete_doc("User Invitation", doc.name, force=True)
+        self.assertIn(team.name, invite_doc.redirect_to_path)
+        self.assertIn(f"invite_id={invite_doc.name}", invite_doc.redirect_to_path)
+        self.assertIn("add_member_to_team_via_invitation", invite_doc.redirect_to_path)
 
     def test_after_insert_skips_non_forms_pro_app(self):
         """after_insert does not modify redirect when app_name is not forms_pro."""
         original_path = "/some/path?team_id=abc"
-        doc = _StubInvitationDoc(
-            app_name="other_app", redirect_to_path=original_path, roles=[_StubRole(FORMS_PRO_ROLE)]
+        invite_doc = UserInvitationFactory.create(
+            app_name="frappe",
+            redirect_to_path=original_path,
+            roles=[{"role": "System Manager"}],
+            invited_by="Administrator",
         )
-        after_insert(doc, "after_insert")
-        self.assertEqual(doc.redirect_to_path, original_path)
+        after_insert(invite_doc, "after_insert")
+        self.assertEqual(invite_doc.redirect_to_path, original_path)
 
-    def test_after_insert_skips_wrong_roles(self):
-        """after_insert does not modify redirect when roles do not include Forms Pro User."""
-        owner = self._user("with_forms_pro_role")
-        team = self._team(owner)
+    def test_after_insert_raises_when_roles_do_not_include_forms_pro_user(self):
+        """after_insert raises when roles do not include Forms Pro User for forms_pro app"""
+        owner = UserFactory.create("with_forms_pro_role")
+        frappe.set_user(owner.name)
+
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
+
         original_path = f"/api/v2/method/some.method?team_id={team.name}"
-        doc = _StubInvitationDoc(
-            app_name="forms_pro", redirect_to_path=original_path, roles=[_StubRole("System Manager")]
-        )
-        after_insert(doc, "after_insert")
-        self.assertEqual(doc.redirect_to_path, original_path)
+        role = "System Manager"
+
+        with self.assertRaises(frappe.ValidationError) as ctx:
+            UserInvitationFactory.create(
+                app_name="forms_pro",
+                redirect_to_path=original_path,
+                roles=[{"role": role}],
+            )
+        self.assertIn(f"{role} is not an allowed role for forms_pro", str(ctx.exception))
 
     # --- add_member_to_team_via_invitation ---
 
-    def test_add_member_raises_when_invitation_not_accepted(self):
+    def test_add_member_to_team_via_invitation_raises_when_invitation_is_pending(self):
         """Raises PermissionError when invitation status is not Accepted."""
-        owner = self._user("with_forms_pro_role")
-        team = self._team(owner)
-        inv_doc = frappe.get_doc(
-            {
-                "doctype": "User Invitation",
-                "email": UserFactory.build().email,
-                "app_name": "forms_pro",
-                "redirect_to_path": "/forms",
-                "roles": [{"role": FORMS_PRO_ROLE}],
-                "invited_by": owner.name,
-                "status": "Pending",
-            }
+        owner = UserFactory.create("with_forms_pro_role")
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
+
+        inv_doc = UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            team=team,
+            email=fake.email(),
+            redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
+            status="Pending",
         )
-        inv_doc.insert(ignore_permissions=True)
-        frappe.db.commit()
 
         with self.assertRaises(frappe.PermissionError) as ctx:
             add_member_to_team_via_invitation(team_id=team.name, invite_id=inv_doc.name)
         self.assertIn("Invitation not accepted", str(ctx.exception))
 
-    def test_add_member_raises_when_user_not_found(self):
+    def test_add_member_to_team_via_invitation_raises_when_user_not_found(self):
         """Raises PermissionError when the invited email has no User record."""
-        owner = self._user("with_forms_pro_role")
-        team = self._team(owner)
-        inv_doc = frappe.get_doc(
-            {
-                "doctype": "User Invitation",
-                "email": UserFactory.build().email,
-                "app_name": "forms_pro",
-                "redirect_to_path": "/forms",
-                "roles": [{"role": FORMS_PRO_ROLE}],
-                "invited_by": owner.name,
-            }
+        owner = UserFactory.create("with_forms_pro_role")
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
+
+        inv_doc = UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            team=team,
+            email=fake.email(),
+            redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
         )
-        inv_doc.insert(ignore_permissions=True)
-        inv_doc.db_set("status", "Accepted")
-        frappe.db.commit()
+        inv_doc.status = "Accepted"
+        inv_doc.save(ignore_permissions=True)
 
         with self.assertRaises(frappe.PermissionError) as ctx:
             add_member_to_team_via_invitation(team_id=team.name, invite_id=inv_doc.name)
         self.assertIn("User not found", str(ctx.exception))
 
-    def test_add_member_adds_user_to_team_and_redirects(self):
+    def test_add_member_to_team_via_invitation_adds_user_to_team_and_redirects(self):
         """Successfully adds user to team and sets redirect response to /forms."""
-        owner = self._user("with_forms_pro_role")
-        invitee = self._user()
-        team = self._team(owner)
-        inv_doc = self._make_accepted_invitation(invitee, owner)
+        owner = UserFactory.create("with_forms_pro_role")
+        invitee = UserFactory.create()
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
+
+        inv_doc = UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            team=team,
+            email=invitee.email,
+            redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
+        )
+        inv_doc.status = "Accepted"
+        inv_doc.save(ignore_permissions=True)
 
         add_member_to_team_via_invitation(team_id=team.name, invite_id=inv_doc.name)
 
@@ -230,52 +227,46 @@ class TestTeamInvitations(IntegrationTestCase):
 
     def test_after_accept_adds_user_to_inviting_team(self):
         """after_accept adds the invited user to the team and updates redirect to /forms."""
-        owner = self._user("with_forms_pro_role")
-        invitee = self._user()
-        team = self._team(owner)
+        owner = UserFactory.create("with_forms_pro_role")
+        invitee = UserFactory.create()
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
 
-        inv_doc = frappe.get_doc(
-            {
-                "doctype": "User Invitation",
-                "email": invitee.name,
-                "app_name": "forms_pro",
-                "redirect_to_path": f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}&invite_id=TEST-001",
-                "roles": [{"role": FORMS_PRO_ROLE}],
-                "invited_by": owner.name,
-            }
+        inv_doc = UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            team=team,
+            email=invitee.email,
+            redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
         )
-        inv_doc.insert(ignore_permissions=True)
-        frappe.db.commit()
+        inv_doc.status = "Accepted"
+        inv_doc.save(ignore_permissions=True)
 
         after_accept(invitation=inv_doc, user=invitee, user_inserted=True)
 
         team_doc = frappe.get_doc("FP Team", team.name)
         self.assertIn(invitee.name, [row.user for row in team_doc.users])
         self.assertEqual(inv_doc.redirect_to_path, "/forms")
-        frappe.delete_doc("User Invitation", inv_doc.name, force=True)
 
     def test_after_accept_skips_when_no_team_id(self):
         """after_accept is a no-op when redirect_to_path has no team_id."""
-        owner = self._user("with_forms_pro_role")
-        invitee = self._user()
-        inv_doc = frappe.get_doc(
-            {
-                "doctype": "User Invitation",
-                "email": invitee.name,
-                "app_name": "forms_pro",
-                "redirect_to_path": "/forms",
-                "roles": [{"role": FORMS_PRO_ROLE}],
-                "invited_by": owner.name,
-            }
+        owner = UserFactory.create("with_forms_pro_role")
+        invitee = UserFactory.create()
+
+        inv_doc = UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            email=invitee.email,
+            redirect_to_path="/forms",
         )
-        inv_doc.insert(ignore_permissions=True)
-        frappe.db.commit()
+        inv_doc.status = "Accepted"
+        inv_doc.save(ignore_permissions=True)
 
         after_accept(invitation=inv_doc, user=invitee, user_inserted=True)
 
         self.assertEqual(inv_doc.redirect_to_path, "/forms")
         self.assertEqual(self._get_team_memberships(invitee), [])
-        frappe.delete_doc("User Invitation", inv_doc.name, force=True)
 
     # --- default team creation guard (bug fix) ---
 
@@ -285,35 +276,32 @@ class TestTeamInvitations(IntegrationTestCase):
         the role-change hook must NOT create a default team — the invitation
         redirect will place them in the correct inviting team instead.
         """
-        invitee = self._user()
-        owner = self._user("with_forms_pro_role")
-        team = self._team(owner)
+        invitee = UserFactory.create()
+        owner = UserFactory.create("with_forms_pro_role")
+        frappe.set_user(owner.name)
+        team = FPTeamFactory.create()
+        frappe.set_user("Administrator")
 
         # Simulate a pending invitation (exists before the user accepts)
-        frappe.get_doc(
-            {
-                "doctype": "User Invitation",
-                "email": invitee.name,
-                "app_name": "forms_pro",
-                "redirect_to_path": f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
-                "roles": [{"role": FORMS_PRO_ROLE}],
-                "invited_by": owner.name,
-                "status": "Pending",
-            }
-        ).insert(ignore_permissions=True)
-        frappe.db.commit()
-
-        memberships_before = self._get_team_memberships(invitee)
+        UserInvitationFactory.create(
+            "to_forms_pro_app",
+            invited_by=owner.name,
+            email=invitee.email,
+            redirect_to_path=f"/api/v2/method/forms_pro.api.team.add_member_to_team_via_invitation?team_id={team.name}",
+            status="Pending",
+        )
 
         # Assigning the Forms Pro role is what Frappe does on invitation acceptance;
         # the hook must skip default team creation here.
         invitee.append_roles(FORMS_PRO_ROLE)
         invitee.save(ignore_permissions=True)
-        frappe.db.commit()
 
-        memberships_after = self._get_team_memberships(invitee)
+        # There should be no team memberships for the invited user
+        # because the role change hook will not create a default team.
+        # Team will be created by the invitation redirect.
+
         self.assertEqual(
-            len(memberships_before),
-            len(memberships_after),
+            self._get_team_memberships(invitee),
+            [],
             "A default team must not be created for an invited user",
         )

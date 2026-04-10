@@ -139,6 +139,28 @@ The project includes automated testing via GitHub Actions:
 - **CI**: Installs the app and runs unit tests on pull requests and pushes to `develop`
 - **Linters**: Runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request
 
+### Running Tests Locally
+
+The test suite uses [frappe_factory_bot](https://github.com/harshtandiya/frappe_factory_bot) for test data factories. You must install it on your bench before running tests.
+
+**1. Install frappe_factory_bot:**
+
+```bash
+cd $PATH_TO_YOUR_BENCH
+bench get-app https://github.com/harshtandiya/frappe_factory_bot.git --branch main
+bench --site <your-site> install-app frappe_factory_bot
+```
+
+**2. Run the tests:**
+
+```bash
+# Run all Forms Pro tests
+bench --site <your-site> run-tests --app forms_pro
+
+# Run a specific test module
+bench --site <your-site> run-tests --module forms_pro.tests.test_roles
+```
+
 ## 📄 License
 
 This project is licensed under the **AGPL-3.0** License - see the [LICENSE](LICENSE) file for details.

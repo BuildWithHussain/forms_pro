@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Checkbox, Switch, Rating, TextEditor } from "frappe-ui";
-import { FormFieldTypes } from "@/types/formfield";
+import { Fieldtype } from "@/types/formfield";
+import { getFieldTypeDef } from "@/config/fieldTypes";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
 
@@ -8,20 +9,20 @@ const props = defineProps<{
     fieldname: string;
     label: string;
     description?: string;
-    fieldtype: FormFieldTypes;
+    fieldtype: Fieldtype;
     value: any;
 }>();
 
 const formattedDateValue = computed(() => {
     if (!props.value) return "";
     switch (props.fieldtype) {
-        case FormFieldTypes.Date:
+        case Fieldtype.DATE:
             return formatDate(props.value);
-        case FormFieldTypes.DateTime:
+        case Fieldtype.DATE_TIME:
             return formatDateTime(props.value);
-        case FormFieldTypes.TimePicker:
+        case Fieldtype.TIME_PICKER:
             return formatTime(props.value);
-        case FormFieldTypes.DateRange:
+        case Fieldtype.DATE_RANGE:
             try {
                 const dates = JSON.parse(props.value);
                 if (Array.isArray(dates) && dates.length === 2) {
@@ -36,21 +37,29 @@ const formattedDateValue = computed(() => {
     }
 });
 
-const isDateField = computed(() =>
-    [
-        FormFieldTypes.Date,
-        FormFieldTypes.DateTime,
-        FormFieldTypes.DateRange,
-        FormFieldTypes.TimePicker,
-    ].includes(props.fieldtype)
-);
+const typeDef = computed(() => getFieldTypeDef(props.fieldtype));
+const isDateField = computed(() => typeDef.value?.isDate ?? false);
 
-const classNames = computed<string>(() => {
-    if ([FormFieldTypes.Switch, FormFieldTypes.Checkbox].includes(props.fieldtype)) {
-        return "flex gap-1 flex-row-reverse items-start justify-end";
+// Only allow safe attachment URLs (relative Frappe paths or http/https).
+// Rejects javascript: and other unsafe schemes.
+const safeAttachUrl = computed<string | null>(() => {
+    if (!props.value) return null;
+    const url = String(props.value);
+    if (url.startsWith("/")) return url;
+    try {
+        const { protocol } = new URL(url);
+        if (protocol === "https:" || protocol === "http:") return url;
+    } catch {
+        // unparseable — not a valid URL
     }
-    return "flex flex-col gap-1";
+    return null;
 });
+
+const classNames = computed<string>(() =>
+    typeDef.value?.isBoolean
+        ? "flex gap-1 flex-row-reverse items-start justify-end"
+        : "flex flex-col gap-1"
+);
 </script>
 
 <template>
@@ -61,20 +70,16 @@ const classNames = computed<string>(() => {
         </div>
 
         <Checkbox
-            v-if="fieldtype === FormFieldTypes.Checkbox"
+            v-if="fieldtype === Fieldtype.CHECKBOX"
             class="mt-1"
             :modelValue="Boolean(value)"
             disabled
         />
 
-        <Switch
-            v-else-if="fieldtype === FormFieldTypes.Switch"
-            :modelValue="Boolean(value)"
-            disabled
-        />
+        <Switch v-else-if="fieldtype === Fieldtype.SWITCH" :modelValue="Boolean(value)" disabled />
 
         <TextEditor
-            v-else-if="fieldtype === FormFieldTypes.TextEditor"
+            v-else-if="fieldtype === Fieldtype.TEXT_EDITOR"
             :content="value"
             :editable="false"
             :bubbleMenu="false"
@@ -82,19 +87,23 @@ const classNames = computed<string>(() => {
             editorClass="prose-sm !border-none !p-0 !shadow-none"
         />
 
-        <Rating v-else-if="fieldtype === FormFieldTypes.Rating" :modelValue="value" readonly />
+        <Rating v-else-if="fieldtype === Fieldtype.RATING" :modelValue="value" readonly />
 
         <a
-            v-else-if="fieldtype === FormFieldTypes.Attach && value"
-            :href="value"
+            v-else-if="fieldtype === Fieldtype.ATTACH && safeAttachUrl"
+            :href="safeAttachUrl"
             target="_blank"
+            rel="noopener noreferrer"
             class="text-sm text-blue-600 hover:text-blue-700 underline truncate"
         >
             {{ value }}
         </a>
+        <span v-else-if="fieldtype === Fieldtype.ATTACH && value" class="text-sm text-ink-gray-5">
+            {{ value }}
+        </span>
 
         <span
-            v-else-if="fieldtype === FormFieldTypes.Textarea"
+            v-else-if="fieldtype === Fieldtype.TEXTAREA"
             class="text-sm text-ink-gray-7 whitespace-pre-wrap"
         >
             {{ value ?? "–" }}

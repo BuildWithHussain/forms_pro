@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { createDocumentResource, createResource } from "frappe-ui";
 import { mapDoctypeFieldForForm } from "@/utils/form_fields";
-import { FormField, FormFieldTypes } from "@/types/formfield";
+import { FormField, Fieldtype } from "@/types/formfield";
 import { Form } from "@/types/form";
 import { toast } from "vue-sonner";
 
@@ -119,7 +119,7 @@ export const useEditForm = defineStore("editForm", () => {
   function saveAndPublish() {
     if (formResource.value) {
       formResource.value.doc.is_published = 1;
-      save();
+      return save();
     }
   }
 
@@ -151,11 +151,11 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
-  function addField(fieldtype: string) {
+  function addField(fieldtype: Fieldtype) {
     if (formResource.value?.doc) {
       const newField: FormField = {
         idx: formResource.value.doc.fields.length + 1,
-        fieldtype: fieldtype as FormFieldTypes,
+        fieldtype,
         label: "",
         fieldname: "",
         options: "",

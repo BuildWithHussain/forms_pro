@@ -2,16 +2,13 @@
 import { ErrorMessage, FileUploader } from "frappe-ui";
 import { ref } from "vue";
 
-const props = defineProps({
+defineProps({
     field: {
         type: Object,
         required: true,
     },
 });
 
-const emit = defineEmits(["update:value"]);
-
-// @ts-ignore
 const value = defineModel<string>();
 
 const inPreview = ref(false);
@@ -51,24 +48,20 @@ const formatFileSize = (fileSize: number) => {
 const handleChange = (file: FileType) => {
     fileData.value = file;
     if (file.file_url) {
-        emit("update:value", file.file_url);
+        value.value = file.file_url;
     }
     inPreview.value = true;
 };
 
 const handleRemove = () => {
     fileData.value = null;
-    emit("update:value", "");
+    value.value = "";
     inPreview.value = false;
 };
 </script>
 <template>
     <div class="flex gap-2 flex-col mt-2">
-        <FileUploader
-            v-if="!inPreview"
-            v-bind="props.field"
-            @success="(file: FileType) => handleChange(file)"
-        >
+        <FileUploader v-if="!inPreview" @success="(file: FileType) => handleChange(file)">
             <!-- @vue-ignore -->
             <template #default="{ uploading, progress, error, openFileSelector }">
                 <Button @click="openFileSelector()" :loading="uploading">

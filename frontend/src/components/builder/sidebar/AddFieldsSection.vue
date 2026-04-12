@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { formFields, FormFields } from "@/utils/form_fields";
+import { Fieldtype } from "@/types/formfield";
 import { FormControl, Button } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import RenderField from "@/components/RenderField.vue";
@@ -40,7 +41,7 @@ const editFormStore = useEditForm();
                         class="absolute top-4 -right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         variant="outline"
                         icon="plus"
-                        @click="editFormStore.addField(component)"
+                        @click="editFormStore.addField(component as Fieldtype)"
                     />
                 </div>
             </div>

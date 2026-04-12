@@ -62,13 +62,13 @@ def _evaluate_conditions(conditions: list[dict], form_data: dict, field_map: dic
         # types match — avoids str(True)=="True" vs "true" mismatches and
         # str(3.0)=="3.0" vs "3" mismatches for Number fields.
         expected_coerced = _coerce_field_value(expected, field.fieldtype)
-        if operator == "is" and actual != expected_coerced:
+        if operator == "Is" and actual != expected_coerced:
             return False
-        if operator == "is_not" and actual == expected_coerced:
+        if operator == "Is Not" and actual == expected_coerced:
             return False
-        if operator == "is_empty" and actual is not None and actual != "":
+        if operator == "Is Empty" and actual is not None and actual != "":
             return False
-        if operator == "is_not_empty" and (actual is None or actual == ""):
+        if operator == "Is Not Empty" and (actual is None or actual == ""):
             return False
     return True
 
@@ -102,11 +102,11 @@ def _validate_form_response(form: "Form", form_data: dict) -> None:
             conditions_met = _evaluate_conditions(logic.get("conditions", []), form_data, field_map)
             if conditions_met:
                 action = logic.get("action")
-                if action == "show_field":
+                if action == "Show Field":
                     is_visible = True
-                elif action == "hide_field":
+                elif action == "Hide Field":
                     is_visible = False
-                elif action == "require_answer":
+                elif action == "Require Answer":
                     is_required = True
 
         if not is_visible:

@@ -40,6 +40,8 @@ def is_login_required(route: str) -> bool:
 @frappe.whitelist(allow_guest=True)
 def get_form_by_route(route: str) -> dict:
     form_id = frappe.db.get_value("Form", {"route": route}, pluck="name")
+    if not form_id:
+        frappe.throw(_("Form not found"), frappe.DoesNotExistError)
     return get_form(form_id)
 
 
@@ -232,7 +234,7 @@ def get_doctype_list() -> list[str]:
 
 
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
-def get_doctype_fields(doctype: str) -> dict:
+def get_doctype_fields(doctype: str) -> list:
     doctype = frappe.get_doc("DocType", doctype)
     fields = [
         field

@@ -119,7 +119,7 @@ export const useEditForm = defineStore("editForm", () => {
   function saveAndPublish() {
     if (formResource.value) {
       formResource.value.doc.is_published = 1;
-      save();
+      return save();
     }
   }
 

@@ -63,26 +63,26 @@ class TestEvaluateConditions(unittest.TestCase):
 
     def test_is_operator_match(self):
         fields = self._field_map(_field("status", "Data"))
-        conditions = [{"fieldname": "status", "operator": "is", "value": "Active"}]
+        conditions = [{"fieldname": "status", "operator": "Is", "value": "Active"}]
         self.assertTrue(_evaluate_conditions(conditions, {"status": "Active"}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"status": "Inactive"}, fields))
 
     def test_is_not_operator(self):
         fields = self._field_map(_field("status", "Data"))
-        conditions = [{"fieldname": "status", "operator": "is_not", "value": "Active"}]
+        conditions = [{"fieldname": "status", "operator": "Is Not", "value": "Active"}]
         self.assertTrue(_evaluate_conditions(conditions, {"status": "Inactive"}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"status": "Active"}, fields))
 
     def test_is_empty_operator(self):
         fields = self._field_map(_field("note", "Data"))
-        conditions = [{"fieldname": "note", "operator": "is_empty", "value": None}]
+        conditions = [{"fieldname": "note", "operator": "Is Empty", "value": None}]
         self.assertTrue(_evaluate_conditions(conditions, {"note": ""}, fields))
         self.assertTrue(_evaluate_conditions(conditions, {"note": None}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"note": "some text"}, fields))
 
     def test_is_not_empty_operator(self):
         fields = self._field_map(_field("note", "Data"))
-        conditions = [{"fieldname": "note", "operator": "is_not_empty", "value": None}]
+        conditions = [{"fieldname": "note", "operator": "Is Not Empty", "value": None}]
         self.assertTrue(_evaluate_conditions(conditions, {"note": "hi"}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"note": ""}, fields))
 
@@ -90,33 +90,33 @@ class TestEvaluateConditions(unittest.TestCase):
         """AND logic — all conditions must be true."""
         fields = self._field_map(_field("a", "Data"), _field("b", "Data"))
         conditions = [
-            {"fieldname": "a", "operator": "is", "value": "yes"},
-            {"fieldname": "b", "operator": "is", "value": "yes"},
+            {"fieldname": "a", "operator": "Is", "value": "yes"},
+            {"fieldname": "b", "operator": "Is", "value": "yes"},
         ]
         self.assertTrue(_evaluate_conditions(conditions, {"a": "yes", "b": "yes"}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"a": "yes", "b": "no"}, fields))
 
     def test_unknown_field_returns_false(self):
-        conditions = [{"fieldname": "nonexistent", "operator": "is", "value": "x"}]
+        conditions = [{"fieldname": "nonexistent", "operator": "Is", "value": "x"}]
         self.assertFalse(_evaluate_conditions(conditions, {}, {}))
 
     def test_number_condition_matches_float(self):
         """float("3.14") must equal float(3.14) — old int() coercion would have failed."""
         fields = self._field_map(_field("score", "Number"))
-        conditions = [{"fieldname": "score", "operator": "is", "value": 3.14}]
+        conditions = [{"fieldname": "score", "operator": "Is", "value": 3.14}]
         self.assertTrue(_evaluate_conditions(conditions, {"score": "3.14"}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"score": "3.15"}, fields))
 
     def test_number_condition_int_vs_float_parity(self):
         """Condition value stored as int 42 must match submitted value "42"."""
         fields = self._field_map(_field("age", "Number"))
-        conditions = [{"fieldname": "age", "operator": "is", "value": 42}]
+        conditions = [{"fieldname": "age", "operator": "Is", "value": 42}]
         self.assertTrue(_evaluate_conditions(conditions, {"age": "42"}, fields))
 
     def test_boolean_condition_type_aware(self):
         """True (bool) condition must match truthy submitted value without str() mismatch."""
         fields = self._field_map(_field("agreed", "Switch"))
-        conditions = [{"fieldname": "agreed", "operator": "is", "value": True}]
+        conditions = [{"fieldname": "agreed", "operator": "Is", "value": True}]
         self.assertTrue(_evaluate_conditions(conditions, {"agreed": 1}, fields))
         self.assertFalse(_evaluate_conditions(conditions, {"agreed": 0}, fields))
 
@@ -145,8 +145,8 @@ class TestValidateFormResponse(unittest.TestCase):
         logic = json.dumps(
             {
                 "target_field": "phone",
-                "action": "require_answer",
-                "conditions": [{"fieldname": "contact_method", "operator": "is", "value": "Phone"}],
+                "action": "Require Answer",
+                "conditions": [{"fieldname": "contact_method", "operator": "Is", "value": "Phone"}],
             }
         )
         contact = _field("contact_method")
@@ -162,8 +162,8 @@ class TestValidateFormResponse(unittest.TestCase):
         logic = json.dumps(
             {
                 "target_field": "extra",
-                "action": "hide_field",
-                "conditions": [{"fieldname": "flag", "operator": "is", "value": "yes"}],
+                "action": "Hide Field",
+                "conditions": [{"fieldname": "flag", "operator": "Is", "value": "yes"}],
             }
         )
         flag = _field("flag")

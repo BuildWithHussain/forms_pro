@@ -43,12 +43,12 @@ export { Fieldtype };
 /**
  * Controls how FieldRenderer positions the label relative to the input widget.
  *
- * - "default"      label on top, input below, description at the bottom
- * - "inline"       input first, label to the right (Switch, Checkbox)
- * - "below-label"  label on top, input immediately below before description (Text Editor, Attach)
- * - "custom"       the component handles its own full layout (Table)
+ * - "default"           label on top, input below, description at the bottom
+ * - "inline"            input first, label to the right (Switch, Checkbox)
+ * - "description-first" label on top, description below label, input at the bottom (Text Editor)
+ * - "custom"            the component handles its own full layout (Table)
  */
-export type FieldLayout = "default" | "inline" | "below-label" | "custom";
+export type FieldLayout = "default" | "inline" | "description-first" | "custom";
 
 export type FieldTypeDefinition = {
   /** Canonical name — must match a Fieldtype enum value */
@@ -205,7 +205,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
       bubbleMenu: true,
       starterkitOptions: { heading: { levels: [2, 3, 4] } },
     },
-    layout: "below-label",
+    layout: "description-first",
     frappeFieldtype: "Text Editor",
     isBoolean: false,
     isDate: false,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Checkbox, Switch, Rating, TextEditor } from "frappe-ui";
 import { Fieldtype } from "@/types/formfield";
+import { getFieldTypeDef } from "@/config/fieldTypes";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
 
@@ -36,18 +37,14 @@ const formattedDateValue = computed(() => {
     }
 });
 
-const isDateField = computed(() =>
-    [Fieldtype.DATE, Fieldtype.DATE_TIME, Fieldtype.DATE_RANGE, Fieldtype.TIME_PICKER].includes(
-        props.fieldtype
-    )
-);
+const typeDef = computed(() => getFieldTypeDef(props.fieldtype));
+const isDateField = computed(() => typeDef.value?.isDate ?? false);
 
-const classNames = computed<string>(() => {
-    if ([Fieldtype.SWITCH, Fieldtype.CHECKBOX].includes(props.fieldtype)) {
-        return "flex gap-1 flex-row-reverse items-start justify-end";
-    }
-    return "flex flex-col gap-1";
-});
+const classNames = computed<string>(() =>
+    typeDef.value?.isBoolean
+        ? "flex gap-1 flex-row-reverse items-start justify-end"
+        : "flex flex-col gap-1"
+);
 </script>
 
 <template>

@@ -167,6 +167,16 @@ class TestValidateFormResponse(unittest.TestCase):
         self.assertIn("First Name", error_msg)
         self.assertIn("Last Name", error_msg)
 
+    def test_required_field_with_zero_passes(self):
+        """Numeric 0 is a valid value and must not trigger a required-field error."""
+        form = _form(_field("score", fieldtype="Number", reqd=1))
+        _validate_form_response(form, {"score": 0})  # must not raise
+
+    def test_required_field_with_false_passes(self):
+        """Boolean False (unchecked Switch) is a valid value for a required field."""
+        form = _form(_field("agreed", fieldtype="Switch", reqd=1))
+        _validate_form_response(form, {"agreed": False})  # must not raise
+
 
 class TestConstants(unittest.TestCase):
     def test_system_fieldnames_derived_from_form_generator(self):

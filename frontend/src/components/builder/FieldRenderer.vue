@@ -23,7 +23,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:field"]);
-const modelValue = defineModel();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const modelValue = defineModel<any>();
 
 const fieldData = computed({
     get() {
@@ -100,11 +101,7 @@ const { options: selectOptions } = useFieldOptions(fieldData);
             @update:label="fieldData.label = $event"
         />
         <small class="text-gray-500">{{ fieldData.description }}</small>
-        <Table
-            v-model="modelValue as undefined"
-            :in-edit-mode="inEditMode"
-            :doctype="fieldData.options"
-        />
+        <Table v-model="modelValue" :in-edit-mode="inEditMode" :doctype="fieldData.options" />
     </div>
 
     <!-- default: label → input → description -->

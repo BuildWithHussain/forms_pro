@@ -108,7 +108,8 @@ def _validate_form_response(form: "Form", form_data: dict) -> None:
         if not is_visible:
             continue
 
-        if is_required and not form_data.get(field.fieldname):
+        value = form_data.get(field.fieldname)
+        if is_required and (value is None or value == ""):
             errors.append(_("{0} is required").format(field.label))
 
     if errors:
@@ -151,6 +152,11 @@ def submit_form_response(
             )
 
         form_data_dict = {item["fieldname"]: item["value"] for item in form_data}
+
+        # Whitelist to declared form fields only — prevents injecting system fields
+        # like owner, docstatus, etc. into the linked DocType.
+        allowed_fieldnames = {f.fieldname for f in form.fields}
+        form_data_dict = {k: v for k, v in form_data_dict.items() if k in allowed_fieldnames}
 
         if status == SubmissionStatus.SUBMITTED:
             _validate_form_response(form, form_data_dict)

@@ -151,11 +151,11 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
-  function addField(fieldtype: string) {
+  function addField(fieldtype: Fieldtype) {
     if (formResource.value?.doc) {
       const newField: FormField = {
         idx: formResource.value.doc.fields.length + 1,
-        fieldtype: fieldtype as Fieldtype,
+        fieldtype,
         label: "",
         fieldname: "",
         options: "",

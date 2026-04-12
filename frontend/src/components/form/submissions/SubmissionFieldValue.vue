@@ -40,6 +40,21 @@ const formattedDateValue = computed(() => {
 const typeDef = computed(() => getFieldTypeDef(props.fieldtype));
 const isDateField = computed(() => typeDef.value?.isDate ?? false);
 
+// Only allow safe attachment URLs (relative Frappe paths or http/https).
+// Rejects javascript: and other unsafe schemes.
+const safeAttachUrl = computed<string | null>(() => {
+    if (!props.value) return null;
+    const url = String(props.value);
+    if (url.startsWith("/")) return url;
+    try {
+        const { protocol } = new URL(url);
+        if (protocol === "https:" || protocol === "http:") return url;
+    } catch {
+        // unparseable — not a valid URL
+    }
+    return null;
+});
+
 const classNames = computed<string>(() =>
     typeDef.value?.isBoolean
         ? "flex gap-1 flex-row-reverse items-start justify-end"
@@ -75,13 +90,17 @@ const classNames = computed<string>(() =>
         <Rating v-else-if="fieldtype === Fieldtype.RATING" :modelValue="value" readonly />
 
         <a
-            v-else-if="fieldtype === Fieldtype.ATTACH && value"
-            :href="value"
+            v-else-if="fieldtype === Fieldtype.ATTACH && safeAttachUrl"
+            :href="safeAttachUrl"
             target="_blank"
+            rel="noopener noreferrer"
             class="text-sm text-blue-600 hover:text-blue-700 underline truncate"
         >
             {{ value }}
         </a>
+        <span v-else-if="fieldtype === Fieldtype.ATTACH && value" class="text-sm text-ink-gray-5">
+            {{ value }}
+        </span>
 
         <span
             v-else-if="fieldtype === Fieldtype.TEXTAREA"

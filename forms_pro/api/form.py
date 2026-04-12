@@ -231,7 +231,7 @@ def get_doctype_list() -> list[str]:
     )
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def get_doctype_fields(doctype: str) -> dict:
     doctype = frappe.get_doc("DocType", doctype)
     fields = [

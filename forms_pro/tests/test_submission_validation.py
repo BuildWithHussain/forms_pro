@@ -43,9 +43,11 @@ class TestCoerceFieldValue(unittest.TestCase):
         self.assertTrue(_coerce_field_value("true", "Checkbox"))
         self.assertFalse(_coerce_field_value(0, "Checkbox"))
 
-    def test_number_coerces_to_int(self):
-        self.assertEqual(_coerce_field_value("42", "Number"), 42)
-        self.assertEqual(_coerce_field_value(7, "Number"), 7)
+    def test_number_coerces_to_float(self):
+        self.assertEqual(_coerce_field_value("42", "Number"), 42.0)
+        self.assertEqual(_coerce_field_value(7, "Number"), 7.0)
+        self.assertEqual(_coerce_field_value("3.14", "Number"), 3.14)
+        self.assertEqual(_coerce_field_value(3.14, "Number"), 3.14)
 
     def test_number_invalid_returns_none(self):
         self.assertIsNone(_coerce_field_value("abc", "Number"))
@@ -97,6 +99,26 @@ class TestEvaluateConditions(unittest.TestCase):
     def test_unknown_field_returns_false(self):
         conditions = [{"fieldname": "nonexistent", "operator": "is", "value": "x"}]
         self.assertFalse(_evaluate_conditions(conditions, {}, {}))
+
+    def test_number_condition_matches_float(self):
+        """float("3.14") must equal float(3.14) — old int() coercion would have failed."""
+        fields = self._field_map(_field("score", "Number"))
+        conditions = [{"fieldname": "score", "operator": "is", "value": 3.14}]
+        self.assertTrue(_evaluate_conditions(conditions, {"score": "3.14"}, fields))
+        self.assertFalse(_evaluate_conditions(conditions, {"score": "3.15"}, fields))
+
+    def test_number_condition_int_vs_float_parity(self):
+        """Condition value stored as int 42 must match submitted value "42"."""
+        fields = self._field_map(_field("age", "Number"))
+        conditions = [{"fieldname": "age", "operator": "is", "value": 42}]
+        self.assertTrue(_evaluate_conditions(conditions, {"age": "42"}, fields))
+
+    def test_boolean_condition_type_aware(self):
+        """True (bool) condition must match truthy submitted value without str() mismatch."""
+        fields = self._field_map(_field("agreed", "Switch"))
+        conditions = [{"fieldname": "agreed", "operator": "is", "value": True}]
+        self.assertTrue(_evaluate_conditions(conditions, {"agreed": 1}, fields))
+        self.assertFalse(_evaluate_conditions(conditions, {"agreed": 0}, fields))
 
 
 class TestValidateFormResponse(unittest.TestCase):

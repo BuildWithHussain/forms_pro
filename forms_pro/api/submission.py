@@ -42,7 +42,7 @@ def _coerce_field_value(value: Any, fieldtype: str) -> Any:
         return bool(value)
     if fieldtype == "Number":
         try:
-            return int(value)
+            return float(value)
         except (TypeError, ValueError):
             return None
     return str(value)
@@ -58,9 +58,13 @@ def _evaluate_conditions(conditions: list[dict], form_data: dict, field_map: dic
         if not field:
             return False
         actual = _coerce_field_value(form_data.get(fieldname), field.fieldtype)
-        if operator == "is" and str(actual) != str(expected):
+        # Coerce the condition's expected value through the same function so
+        # types match — avoids str(True)=="True" vs "true" mismatches and
+        # str(3.0)=="3.0" vs "3" mismatches for Number fields.
+        expected_coerced = _coerce_field_value(expected, field.fieldtype)
+        if operator == "is" and actual != expected_coerced:
             return False
-        if operator == "is_not" and str(actual) == str(expected):
+        if operator == "is_not" and actual == expected_coerced:
             return False
         if operator == "is_empty" and actual is not None and actual != "":
             return False

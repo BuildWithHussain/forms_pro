@@ -9,7 +9,6 @@ export enum Fieldtype {
   "TIME_PICKER" = "Time Picker",
   "PASSWORD" = "Password",
   "SELECT" = "Select",
-  "MULTISELECT" = "Multiselect",
   "SWITCH" = "Switch",
   "TEXTAREA" = "Textarea",
   "TEXT_EDITOR" = "Text Editor",

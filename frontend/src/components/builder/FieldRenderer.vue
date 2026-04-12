@@ -85,8 +85,7 @@ const { options: selectOptions } = useFieldOptions(fieldData);
             @update:label="fieldData.label = $event"
         />
         <RenderField
-            :value="modelValue"
-            @update:value="(value: string) => (modelValue = value)"
+            v-model="modelValue"
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
             :disabled="disabled"

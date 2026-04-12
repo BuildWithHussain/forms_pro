@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Checkbox, Switch, Rating, TextEditor } from "frappe-ui";
-import { FormFieldTypes } from "@/types/formfield";
+import { Fieldtype } from "@/types/formfield";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
 
@@ -8,20 +8,20 @@ const props = defineProps<{
     fieldname: string;
     label: string;
     description?: string;
-    fieldtype: FormFieldTypes;
+    fieldtype: Fieldtype;
     value: any;
 }>();
 
 const formattedDateValue = computed(() => {
     if (!props.value) return "";
     switch (props.fieldtype) {
-        case FormFieldTypes.Date:
+        case Fieldtype.DATE:
             return formatDate(props.value);
-        case FormFieldTypes.DateTime:
+        case Fieldtype.DATE_TIME:
             return formatDateTime(props.value);
-        case FormFieldTypes.TimePicker:
+        case Fieldtype.TIME_PICKER:
             return formatTime(props.value);
-        case FormFieldTypes.DateRange:
+        case Fieldtype.DATE_RANGE:
             try {
                 const dates = JSON.parse(props.value);
                 if (Array.isArray(dates) && dates.length === 2) {
@@ -37,16 +37,13 @@ const formattedDateValue = computed(() => {
 });
 
 const isDateField = computed(() =>
-    [
-        FormFieldTypes.Date,
-        FormFieldTypes.DateTime,
-        FormFieldTypes.DateRange,
-        FormFieldTypes.TimePicker,
-    ].includes(props.fieldtype)
+    [Fieldtype.DATE, Fieldtype.DATE_TIME, Fieldtype.DATE_RANGE, Fieldtype.TIME_PICKER].includes(
+        props.fieldtype
+    )
 );
 
 const classNames = computed<string>(() => {
-    if ([FormFieldTypes.Switch, FormFieldTypes.Checkbox].includes(props.fieldtype)) {
+    if ([Fieldtype.SWITCH, Fieldtype.CHECKBOX].includes(props.fieldtype)) {
         return "flex gap-1 flex-row-reverse items-start justify-end";
     }
     return "flex flex-col gap-1";
@@ -61,20 +58,16 @@ const classNames = computed<string>(() => {
         </div>
 
         <Checkbox
-            v-if="fieldtype === FormFieldTypes.Checkbox"
+            v-if="fieldtype === Fieldtype.CHECKBOX"
             class="mt-1"
             :modelValue="Boolean(value)"
             disabled
         />
 
-        <Switch
-            v-else-if="fieldtype === FormFieldTypes.Switch"
-            :modelValue="Boolean(value)"
-            disabled
-        />
+        <Switch v-else-if="fieldtype === Fieldtype.SWITCH" :modelValue="Boolean(value)" disabled />
 
         <TextEditor
-            v-else-if="fieldtype === FormFieldTypes.TextEditor"
+            v-else-if="fieldtype === Fieldtype.TEXT_EDITOR"
             :content="value"
             :editable="false"
             :bubbleMenu="false"
@@ -82,10 +75,10 @@ const classNames = computed<string>(() => {
             editorClass="prose-sm !border-none !p-0 !shadow-none"
         />
 
-        <Rating v-else-if="fieldtype === FormFieldTypes.Rating" :modelValue="value" readonly />
+        <Rating v-else-if="fieldtype === Fieldtype.RATING" :modelValue="value" readonly />
 
         <a
-            v-else-if="fieldtype === FormFieldTypes.Attach && value"
+            v-else-if="fieldtype === Fieldtype.ATTACH && value"
             :href="value"
             target="_blank"
             class="text-sm text-blue-600 hover:text-blue-700 underline truncate"
@@ -94,7 +87,7 @@ const classNames = computed<string>(() => {
         </a>
 
         <span
-            v-else-if="fieldtype === FormFieldTypes.Textarea"
+            v-else-if="fieldtype === Fieldtype.TEXTAREA"
             class="text-sm text-ink-gray-7 whitespace-pre-wrap"
         >
             {{ value ?? "–" }}

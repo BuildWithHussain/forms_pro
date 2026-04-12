@@ -4,6 +4,32 @@
 # import frappe
 from frappe.model.document import Document
 
+# Maps Forms Pro field types to Frappe CustomField fieldtypes.
+# When adding a new field type:
+#   1. Add the option to form_field.json  →  DF.Literal regenerates automatically
+#   2. Add an entry here
+#   3. Add an entry to FIELD_TYPE_DEFINITIONS in frontend/src/config/fieldTypes.ts
+FORM_TO_FRAPPE_FIELDTYPE: dict[str, dict] = {
+    "Attach": {"fieldtype": "Attach"},
+    "Data": {"fieldtype": "Data"},
+    "Number": {"fieldtype": "Int"},
+    "Email": {"fieldtype": "Data", "options": "Email"},
+    "Date": {"fieldtype": "Date"},
+    "Date Time": {"fieldtype": "Datetime"},
+    "Date Range": {"fieldtype": "Data"},
+    "Time Picker": {"fieldtype": "Time"},
+    "Password": {"fieldtype": "Password"},
+    "Select": {"fieldtype": "Select"},
+    "Phone": {"fieldtype": "Phone"},
+    "Switch": {"fieldtype": "Check"},
+    "Textarea": {"fieldtype": "Text"},
+    "Text Editor": {"fieldtype": "Text Editor"},
+    "Link": {"fieldtype": "Link"},
+    "Checkbox": {"fieldtype": "Check"},
+    "Rating": {"fieldtype": "Rating"},
+    "Table": {"fieldtype": "Table"},
+}
+
 
 class FormField(Document):
     # begin: auto-generated types
@@ -49,30 +75,13 @@ class FormField(Document):
 
     @property
     def to_frappe_field(self) -> dict:
-        _fieldtype = self.fieldtype
-
-        if self.fieldtype == "Email":
-            _fieldtype = "Data"
-            self.options = "Email"
-        elif self.fieldtype == "Number":
-            _fieldtype = "Int"
-        elif self.fieldtype == "Date Time":
-            _fieldtype = "Datetime"
-        elif self.fieldtype == "Date Range":
-            _fieldtype = "Data"
-        elif self.fieldtype == "Time Picker":
-            _fieldtype = "Time"
-        elif self.fieldtype == "Switch" or self.fieldtype == "Checkbox":
-            _fieldtype = "Check"
-        elif self.fieldtype == "Textarea":
-            _fieldtype = "Text"
-
+        mapping = FORM_TO_FRAPPE_FIELDTYPE.get(self.fieldtype, {})
         return {
             "fieldname": self.fieldname,
-            "fieldtype": _fieldtype,
+            "fieldtype": mapping.get("fieldtype", self.fieldtype),
             "label": self.label,
             "reqd": self.reqd,
-            "options": self.options,
+            "options": mapping.get("options", self.options),
             "description": self.description,
             "default": self.default,
         }

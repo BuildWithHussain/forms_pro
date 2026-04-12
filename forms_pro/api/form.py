@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from forms_pro.api.user import get_user
 from forms_pro.forms_pro.doctype.form.form import Form
+from forms_pro.utils.constants import FORMS_PRO_SYSTEM_FIELDNAMES, UNSUPPORTED_FRAPPE_FIELDTYPES
 
 
 class FormSharedWithResponse(BaseModel):
@@ -233,22 +234,10 @@ def get_doctype_list() -> list[str]:
 @frappe.whitelist(allow_guest=True)
 def get_doctype_fields(doctype: str) -> dict:
     doctype = frappe.get_doc("DocType", doctype)
-    fields = doctype.fields
-
-    FIELDTYPES_TO_REMOVE = [
-        "Section Break",
-        "HTML",
-        "Button",
-        "Column Break",
-        "Tab Break",
-        "Barcode",
-        "Dynamic Link",
-        "Fold",
+    fields = [
+        field
+        for field in doctype.fields
+        if field.fieldtype not in UNSUPPORTED_FRAPPE_FIELDTYPES
+        and field.fieldname not in FORMS_PRO_SYSTEM_FIELDNAMES
     ]
-
-    FIELDS_TO_REMOVE = ["fp_submission_status", "fp_linked_form"]
-
-    fields = [field for field in fields if field.fieldtype not in FIELDTYPES_TO_REMOVE]
-    fields = [field for field in fields if field.fieldname not in FIELDS_TO_REMOVE]
-
     return fields

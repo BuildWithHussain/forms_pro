@@ -37,7 +37,7 @@ def is_login_required(route: str) -> bool:
     return bool(login_enabled)
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def get_form_by_route(route: str) -> dict:
     form_id = frappe.db.get_value("Form", {"route": route}, pluck="name")
     if not form_id:

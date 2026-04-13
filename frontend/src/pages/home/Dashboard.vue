@@ -37,29 +37,37 @@
             <p class="text-base">Manage and create forms</p>
         </div>
         <template v-if="user.user?.has_desk_access">
-            <Dropdown
-                class="w-fit"
-                :button="{
-                    label: 'Create',
-                    iconLeft: 'plus',
-                    variant: 'solid',
-                }"
-                :options="[
-                    {
-                        label: 'Create New',
-                        onClick: handleCreateDraftForm,
-                    },
-                    {
-                        label: 'Create from Existing DocType',
-                        onClick: () => {
-                            showSelectDoctypeDialog = true;
+            <div data-testid="btn-new-form" class="w-fit">
+                <Dropdown
+                    class="w-fit"
+                    :button="{
+                        label: 'Create',
+                        iconLeft: 'plus',
+                        variant: 'solid',
+                    }"
+                    :options="[
+                        {
+                            label: 'Create New',
+                            onClick: handleCreateDraftForm,
                         },
-                    },
-                ]"
-            />
+                        {
+                            label: 'Create from Existing DocType',
+                            onClick: () => {
+                                showSelectDoctypeDialog = true;
+                            },
+                        },
+                    ]"
+                />
+            </div>
         </template>
         <template v-else>
-            <Button class="w-fit" variant="solid" iconLeft="plus" @click="handleCreateDraftForm">
+            <Button
+                data-testid="btn-new-form"
+                class="w-fit"
+                variant="solid"
+                iconLeft="plus"
+                @click="handleCreateDraftForm"
+            >
                 Create New
             </Button>
         </template>

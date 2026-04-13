@@ -62,6 +62,7 @@ function handleSubmitForm() {
                     Save as draft
                 </Button>
                 <Button
+                    data-testid="btn-submit-form"
                     variant="solid"
                     @click="handleSubmitForm"
                     :loading="submissionFormStore.isLoading"

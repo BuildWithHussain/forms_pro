@@ -99,6 +99,7 @@ const openFormSubmissionPage = () => {
             <div v-if="editFormStore.isUnsaved">
                 <Button
                     v-if="editFormStore.isPublished"
+                    data-testid="btn-save-form"
                     label="Save and publish"
                     icon-left="globe"
                     variant="solid"
@@ -107,6 +108,7 @@ const openFormSubmissionPage = () => {
                 />
                 <Button
                     v-else
+                    data-testid="btn-save-form"
                     label="Save"
                     variant="solid"
                     @click="editFormStore.save"
@@ -115,6 +117,7 @@ const openFormSubmissionPage = () => {
             </div>
             <Button
                 v-else
+                data-testid="btn-publish"
                 :label="editFormStore.isPublished ? 'Unpublish' : 'Publish'"
                 :icon-left="editFormStore.isPublished ? '' : 'globe'"
                 :variant="editFormStore.isPublished ? 'subtle' : 'solid'"

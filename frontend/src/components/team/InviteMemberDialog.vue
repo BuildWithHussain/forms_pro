@@ -71,17 +71,6 @@ const open = defineModel<boolean>({ required: true, default: false });
         :options="{
             title: 'Invite members to your team',
             size: 'lg',
-            actions: [
-                {
-                    label: 'Send Invitations',
-                    disabled: inviteEmails.length === 0,
-                    variant: 'solid',
-                    iconLeft: 'send',
-                    onClick: () => {
-                        sendInvitationEmails();
-                    },
-                },
-            ],
         }"
     >
         <template #body-content>
@@ -89,6 +78,7 @@ const open = defineModel<boolean>({ required: true, default: false });
                 <div class="flex items-center gap-2">
                     <FormControl
                         v-model="emailInput"
+                        data-testid="input-invite-email"
                         label="Invite by Email"
                         type="email"
                         variant="outline"
@@ -113,6 +103,17 @@ const open = defineModel<boolean>({ required: true, default: false });
                     </li>
                 </ul>
             </div>
+        </template>
+        <template #actions>
+            <Button
+                data-testid="btn-send-invite"
+                :disabled="inviteEmails.length === 0"
+                variant="solid"
+                icon-left="send"
+                @click="sendInvitationEmails"
+            >
+                Send Invitations
+            </Button>
         </template>
     </Dialog>
 </template>

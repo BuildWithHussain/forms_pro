@@ -5,33 +5,49 @@ export class FormBuilderPage {
 
   async goto(formId: string) {
     await this.page.goto(`/forms/edit-form/${formId}`);
-  }
-
-  async addField(fieldType: string) {
-    // The sidebar defaults to "Add Fields" section
-    await this.page.getByTestId(`field-type-${fieldType}`).hover();
-    await this.page
-      .getByTestId(`field-type-${fieldType}`)
-      .getByRole("button")
-      .click();
-  }
-
-  async save() {
-    await this.page.getByTestId("btn-save-form").click();
-    await this.page.waitForResponse(
-      (r) => r.url().includes("/api/") && r.status() === 200
+    // Wait for the sidebar to confirm the builder is mounted
+    await this.page.waitForSelector(
+      '[data-form-builder-component="form-builder-sidebar"]'
     );
   }
 
+  // Scope selectors to the sidebar (which has a stable pre-existing attribute)
+  private sidebar() {
+    return this.page.locator(
+      '[data-form-builder-component="form-builder-sidebar"]'
+    );
+  }
+
+  async addField(fieldType: string) {
+    // Each card shows the field type name as visible text
+    const card = this.sidebar()
+      .getByText(fieldType, { exact: true })
+      .locator("..");
+    await card.hover();
+    await card.getByRole("button").click();
+  }
+
+  // The canvas shows "Click on fields to add them…" when empty
+  canvasEmptyState() {
+    return this.page.getByText(/click on fields to add them/i);
+  }
+
   async publish() {
-    await this.page.getByTestId("btn-publish").click();
+    // Click Publish and wait for the label to flip to "Unpublish"
+    await this.page.getByRole("button", { name: /^publish$/i }).click();
+    await this.page
+      .getByRole("button", { name: /^unpublish$/i })
+      .waitFor({ timeout: 10000 });
+  }
+
+  async unpublish() {
+    await this.page.getByRole("button", { name: /^unpublish$/i }).click();
+    await this.page
+      .getByRole("button", { name: /^publish$/i })
+      .waitFor({ timeout: 10000 });
   }
 
   publishButton() {
-    return this.page.getByTestId("btn-publish");
-  }
-
-  saveButton() {
-    return this.page.getByTestId("btn-save-form");
+    return this.page.getByRole("button", { name: /^publish$/i });
   }
 }

@@ -12,10 +12,11 @@ export class SubmissionPage {
   }
 
   async submit() {
-    await this.page.getByTestId("btn-submit-form").click();
+    await this.page.getByRole("button", { name: "Submit" }).click();
   }
 
-  successSection() {
-    return this.page.getByTestId("submission-success");
+  // After successful submission the SuccessSection renders; detect via its description text
+  successMessage() {
+    return this.page.getByText(/thank you for submitting/i);
   }
 }

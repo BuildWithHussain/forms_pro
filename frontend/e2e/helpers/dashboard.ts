@@ -7,11 +7,8 @@ export class DashboardPage {
     await this.page.goto("/forms");
   }
 
-  async clickNewForm() {
-    await this.page.getByTestId("btn-new-form").click();
-  }
-
-  formCards() {
-    return this.page.getByTestId("form-card");
+  // Form title headings inside FormPreviewCard
+  formTitles() {
+    return this.page.getByRole("heading", { level: 3 });
   }
 }

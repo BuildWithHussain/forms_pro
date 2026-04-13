@@ -13,14 +13,9 @@ export class TeamPage {
 
   async inviteByEmail(email: string) {
     const dialog = this.page.getByRole("dialog");
-    // frappe-ui FormControl renders a wrapper div; target the inner input
-    await dialog.getByTestId("input-invite-email").locator("input").fill(email);
-    // Press Enter to add the email to the list
-    await dialog
-      .getByTestId("input-invite-email")
-      .locator("input")
-      .press("Enter");
-    await dialog.getByTestId("btn-send-invite").click();
+    await dialog.getByLabel("Invite by Email").fill(email);
+    await dialog.getByLabel("Invite by Email").press("Enter");
+    await dialog.getByRole("button", { name: "Send Invitations" }).click();
   }
 
   memberRows() {

@@ -31,7 +31,7 @@ const successDescription = computed(() => {
 });
 </script>
 <template>
-    <div data-testid="submission-success" class="flex flex-col gap-4 items-center">
+    <div class="flex flex-col gap-4 items-center">
         <DotLottieVue
             src="https://lottie.host/b9ba5ce8-d753-497a-946c-76e0da2ec22d/QcoLWNS7AP.lottie"
             autoplay

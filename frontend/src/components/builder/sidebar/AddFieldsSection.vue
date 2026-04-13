@@ -33,7 +33,6 @@ const editFormStore = useEditForm();
             />
             <div v-for="component in filteredComponents" :key="component">
                 <div
-                    :data-testid="`field-type-${component}`"
                     class="p-2 bg-gray-50 w-full rounded flex flex-col gap-2 border border-gray-200 hover:border-gray-400 transition-all relative group"
                 >
                     <div class="text-sm">{{ component }}</div>

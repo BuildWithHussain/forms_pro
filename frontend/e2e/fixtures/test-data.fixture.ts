@@ -9,6 +9,7 @@ type TestDataFixtures = {
   getTeamId: () => Promise<string>;
   createForm: () => Promise<string>;
   createPublishedForm: () => Promise<{ formId: string; route: string }>;
+  submitForm: (formId: string) => Promise<void>;
 };
 
 async function fetchTeamId(apiContext: APIRequestContext): Promise<string> {
@@ -81,6 +82,16 @@ export const test = base.extend<TestDataFixtures>({
     for (const id of created) {
       await apiContext.delete(`/api/resource/Form/${id}`).catch(() => {});
     }
+  },
+
+  // Creates a guest submission against an already-published form
+  submitForm: async ({ apiContext }, use) => {
+    await use(async (formId: string) => {
+      await apiContext.post(
+        "/api/method/forms_pro.api.submission.submit_form_response",
+        { data: { form_id: formId, form_data: [] } }
+      );
+    });
   },
 });
 

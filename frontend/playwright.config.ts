@@ -20,11 +20,12 @@ export default defineConfig({
     },
   ],
 
-  retries: process.env.CI ? 1 : 0,
+  retries: 1,
   workers: process.env.CI ? 2 : undefined,
 
   reporter: [
     ["list"],
     ["html", { outputFolder: "./e2e/playwright-report", open: "never" }],
+    ["github"],
   ],
 });

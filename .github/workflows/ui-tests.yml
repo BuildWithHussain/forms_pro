@@ -97,8 +97,8 @@ jobs:
         working-directory: /home/runner/frappe-bench
         run: |
           bench --site test_site set-config server_script_enabled true
-          bench serve --port 8001 &
-          npx wait-on http://localhost:8001 --timeout 60000
+          bench serve --port 8001 > /tmp/bench-serve.log 2>&1 &
+          npx wait-on http://localhost:8001 --timeout 60000 || (echo "=== bench serve log ===" && cat /tmp/bench-serve.log && exit 1)
         env:
           CI: "Yes"
 

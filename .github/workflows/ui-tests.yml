@@ -112,6 +112,10 @@ jobs:
           bench --site forms.test set-config server_script_enabled true
           bench --site forms.test set-config host_name "http://forms.test:8000"
 
+      - name: Setup E2E test data
+        working-directory: /home/runner/frappe-bench
+        run: bench --site forms.test execute forms_pro.install.before_tests
+
       - name: Start Frappe Server
         working-directory: /home/runner/frappe-bench
         run: |

@@ -22,6 +22,17 @@ def create_user_forms_module():
 def before_tests():
     give_admin_forms_pro_role()
     create_test_user()
+    _ensure_admin_has_default_team()
+
+
+def _ensure_admin_has_default_team():
+    from forms_pro.overrides.roles import create_default_team_for_user
+    from forms_pro.utils.teams import get_user_teams
+
+    if get_user_teams("Administrator"):
+        return
+    admin = frappe.get_doc("User", "Administrator")
+    create_default_team_for_user(admin)
 
 
 def give_admin_forms_pro_role():

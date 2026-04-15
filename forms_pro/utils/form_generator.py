@@ -98,7 +98,7 @@ class FormGenerator:
         self._initialize_doctype()
         self._add_status_field()
         self._initialize_form_document()
-        frappe.clear_cache()
+        frappe.clear_document_cache("DocType", self.doctype.name)
 
     def _initialize_doctype(self) -> None:
         if self.doctype:

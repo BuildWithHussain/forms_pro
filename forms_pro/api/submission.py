@@ -113,7 +113,8 @@ def _validate_form_response(form: "Form", form_data: dict) -> None:
             continue
 
         value = form_data.get(field.fieldname)
-        if is_required and (value is None or value == ""):
+        is_empty = value is None or value == "" or value == []
+        if is_required and is_empty:
             errors.append(_("{0} is required").format(field.label))
 
     if errors:
@@ -167,6 +168,11 @@ def submit_form_response(
 
         submission = frappe.new_doc(linked_doctype)
         for fieldname, value in form_data_dict.items():
+            # JSON fields (e.g. Multiselect) must be stored as a JSON string,
+            # but Frappe deserializes request body arrays into Python lists before
+            # we get here — serialize them back.
+            if isinstance(value, list):
+                value = json.dumps(value)
             submission.set(fieldname, value)
 
         submission.fp_linked_form = form_id

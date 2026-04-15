@@ -40,6 +40,17 @@ const formattedDateValue = computed(() => {
 const typeDef = computed(() => getFieldTypeDef(props.fieldtype));
 const isDateField = computed(() => typeDef.value?.isDate ?? false);
 
+const parsedMultiselectValue = computed(() => {
+    if (!props.value) return "–";
+    try {
+        const parsed = JSON.parse(props.value);
+        if (Array.isArray(parsed)) return parsed.join(", ");
+    } catch {
+        // value might already be a readable string
+    }
+    return String(props.value);
+});
+
 // Only allow safe attachment URLs (relative Frappe paths or http/https).
 // Rejects javascript: and other unsafe schemes.
 const safeAttachUrl = computed<string | null>(() => {
@@ -100,6 +111,10 @@ const classNames = computed<string>(() =>
         </a>
         <span v-else-if="fieldtype === Fieldtype.ATTACH && value" class="text-sm text-ink-gray-5">
             {{ value }}
+        </span>
+
+        <span v-else-if="fieldtype === Fieldtype.MULTISELECT" class="text-sm text-ink-gray-7">
+            {{ parsedMultiselectValue }}
         </span>
 
         <span

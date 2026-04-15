@@ -33,6 +33,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vitest/coverage-v8": "^4.1.4",
     "autoprefixer": "^10.4.2",

@@ -18,8 +18,8 @@ export default async function globalSetup(_config: FullConfig) {
   await page.goto(baseURL);
   await page.request.post(`${baseURL}/api/method/login`, {
     form: {
-      usr: "Administrator",
-      pwd: process.env.TEST_ADMIN_PASSWORD ?? "admin",
+      usr: process.env.TEST_USER_EMAIL ?? "test_forms_pro_user@example.com",
+      pwd: process.env.TEST_USER_PASSWORD ?? "testforms123",
     },
   });
 

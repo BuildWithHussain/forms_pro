@@ -42,6 +42,8 @@ def give_admin_forms_pro_role():
 
 
 def create_test_user():
+    from frappe.utils.password import update_password
+
     if frappe.db.exists("User", FORMS_PRO_TEST_USER):
         return
 
@@ -50,5 +52,10 @@ def create_test_user():
     user.first_name = "Test"
     user.last_name = "Forms Pro User"
     user.insert(ignore_permissions=True)
+
+    # Frappe auto-assigns System User on insert; replace with only Forms Pro User
+    user.roles = []
     user.append("roles", {"role": FORMS_PRO_ROLE})
     user.save(ignore_permissions=True)
+
+    update_password(FORMS_PRO_TEST_USER, "testforms123")

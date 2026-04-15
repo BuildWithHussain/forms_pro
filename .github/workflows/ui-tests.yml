@@ -139,7 +139,8 @@ jobs:
         run: yarn test:e2e
         env:
           BASE_URL: http://forms.test:8000
-          TEST_ADMIN_PASSWORD: admin
+          TEST_USER_EMAIL: test_forms_pro_user@example.com
+          TEST_USER_PASSWORD: testforms123
           CI: "true"
 
       - name: Upload HTML report

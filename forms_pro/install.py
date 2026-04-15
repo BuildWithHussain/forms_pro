@@ -22,6 +22,17 @@ def create_user_forms_module():
 def before_tests():
     give_admin_forms_pro_role()
     create_test_user()
+    _ensure_admin_has_default_team()
+
+
+def _ensure_admin_has_default_team():
+    from forms_pro.overrides.roles import create_default_team_for_user
+    from forms_pro.utils.teams import get_user_teams
+
+    if get_user_teams("Administrator"):
+        return
+    admin = frappe.get_doc("User", "Administrator")
+    create_default_team_for_user(admin)
 
 
 def give_admin_forms_pro_role():
@@ -31,6 +42,8 @@ def give_admin_forms_pro_role():
 
 
 def create_test_user():
+    from frappe.utils.password import update_password
+
     if frappe.db.exists("User", FORMS_PRO_TEST_USER):
         return
 
@@ -39,5 +52,10 @@ def create_test_user():
     user.first_name = "Test"
     user.last_name = "Forms Pro User"
     user.insert(ignore_permissions=True)
+
+    # Frappe auto-assigns System User on insert; replace with only Forms Pro User
+    user.roles = []
     user.append("roles", {"role": FORMS_PRO_ROLE})
     user.save(ignore_permissions=True)
+
+    update_password(FORMS_PRO_TEST_USER, "testforms123")

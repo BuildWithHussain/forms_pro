@@ -1,0 +1,169 @@
+name: UI Tests
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ui-tests-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    name: Playwright E2E
+
+    services:
+      redis-cache:
+        image: redis:alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:alpine
+        ports:
+          - 11000:6379
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+    steps:
+      - name: Clone
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          check-latest: true
+
+      - name: Add to Hosts
+        run: echo "127.0.0.1 forms.test" | sudo tee -a /etc/hosts
+
+      - name: Cache pip
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml', '**/setup.py', '**/setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: 'echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT'
+
+      - uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install MariaDB Client
+        run: |
+          sudo apt update
+          sudo apt-get install mariadb-client
+
+      - name: Setup Frappe bench
+        run: |
+          pip install frappe-bench
+          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
+          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
+
+      - name: Install app
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench get-app frappe_factory_bot https://github.com/harshtandiya/frappe_factory_bot.git --branch main
+          bench get-app forms_pro $GITHUB_WORKSPACE
+          bench setup requirements --dev
+          bench new-site --db-root-password root --admin-password admin forms.test
+          bench --site forms.test install-app forms_pro
+          bench build
+        env:
+          CI: "Yes"
+
+      - name: Configure Site for UI Tests
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench --site forms.test set-config allow_tests true
+          bench --site forms.test set-config server_script_enabled true
+          bench --site forms.test set-config host_name "http://forms.test:8000"
+          bench --site forms.test set-config ignore_csrf 1
+          bench --site forms.test set-config mute_emails 1
+
+      - name: Setup E2E test data
+        working-directory: /home/runner/frappe-bench
+        run: bench --site forms.test execute forms_pro.install.before_tests
+
+      - name: Start Frappe Server
+        working-directory: /home/runner/frappe-bench
+        run: |
+          sed -i 's/^watch:/# watch:/g' Procfile
+          sed -i 's/^schedule:/# schedule:/g' Procfile
+          bench start &> /tmp/bench_start.log &
+          echo "Waiting for Frappe server to start..."
+          timeout 90 bash -c 'until curl -s http://forms.test:8000 > /dev/null; do sleep 2; done' || (echo "=== bench start log ===" && cat /tmp/bench_start.log && exit 1)
+          echo "Frappe server is ready!"
+
+      - name: Install Playwright browsers
+        working-directory: ${{ github.workspace }}/frontend
+        run: |
+          yarn install
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        working-directory: ${{ github.workspace }}/frontend
+        run: yarn test:e2e
+        env:
+          BASE_URL: http://forms.test:8000
+          TEST_USER_EMAIL: test_forms_pro_user@example.com
+          TEST_USER_PASSWORD: testforms123
+          CI: "true"
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/e2e/playwright-report/
+          retention-days: 14
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: frontend/e2e/test-results/
+          retention-days: 7
+
+      - name: Show bench logs on failure
+        if: failure()
+        run: |
+          echo "=== bench start log ==="
+          cat /tmp/bench_start.log || true
+          echo ""
+          echo "=== Frappe logs ==="
+          cat /home/runner/frappe-bench/logs/*.log || true

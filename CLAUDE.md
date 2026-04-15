@@ -105,6 +105,7 @@ When a form is saved, its fields are synced to the linked DocType as `CustomFiel
 | Skill | Description |
 |---|---|
 | `/release [version]` | Draft a new GitHub release. Inspects merged PRs since the last release, categorizes them, and creates a draft on GitHub for review. |
+| `/add-field <FieldtypeName>` | Add a new field type end-to-end: backend doctype + mapping, submission serialization, frontend component, fieldTypes registry, options resolution, and submission display. |
 
 ## Key Conventions
 

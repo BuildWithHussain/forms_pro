@@ -68,6 +68,12 @@ export type FieldTypeDefinition = {
   isBoolean: boolean;
   /** True for Date / DateTime / DateRange / TimePicker — affects display formatting */
   isDate: boolean;
+  /**
+   * Optional component rendered below the input widget when the form builder
+   * is in edit mode. Receives `:field` (the field object) and emits `update:field`.
+   * Use for builder-only controls like "Add Option".
+   */
+  builderExtras?: Component;
 };
 
 export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [

@@ -33,7 +33,18 @@ export class FormBuilderPage {
   }
 
   async publish() {
-    // Click Publish and wait for the label to flip to "Unpublish"
+    // After edits, form is dirty — header shows "Save" instead of "Publish".
+    // Save first so the Publish button becomes available.
+    const saveBtn = this.page.getByRole("button", {
+      name: "Save",
+      exact: true,
+    });
+    if (await saveBtn.isVisible()) {
+      await saveBtn.click();
+      await this.page
+        .getByRole("button", { name: /^publish$/i })
+        .waitFor({ timeout: 10000 });
+    }
     await this.page.getByRole("button", { name: /^publish$/i }).click();
     await this.page
       .getByRole("button", { name: /^unpublish$/i })

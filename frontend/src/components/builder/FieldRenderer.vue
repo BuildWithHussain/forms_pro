@@ -39,6 +39,10 @@ const layout = computed(
     () => getFieldTypeDef(fieldData.value.fieldtype as Fieldtype)?.layout ?? "default"
 );
 
+const builderExtrasComponent = computed(
+    () => getFieldTypeDef(fieldData.value.fieldtype as Fieldtype)?.builderExtras ?? null
+);
+
 const { options: selectOptions } = useFieldOptions(fieldData);
 </script>
 
@@ -116,6 +120,12 @@ const { options: selectOptions } = useFieldOptions(fieldData);
             :class="{ 'pointer-events-none': inEditMode }"
             :disabled="disabled"
             :options="selectOptions"
+        />
+        <component
+            v-if="inEditMode && builderExtrasComponent"
+            :is="builderExtrasComponent"
+            :field="fieldData"
+            @update:field="fieldData = $event"
         />
         <small class="text-gray-500">{{ fieldData.description }}</small>
     </div>

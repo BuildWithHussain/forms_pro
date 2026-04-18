@@ -15,7 +15,7 @@ test.describe("Multiselect field", () => {
 
     // Add Multiselect field from sidebar; wait for it to land on canvas
     await builder.addField("Multiselect");
-    await expect(page.getByText("No options defined")).toBeVisible({
+    await expect(page.getByText("No options defined").first()).toBeVisible({
       timeout: 10000,
     });
 

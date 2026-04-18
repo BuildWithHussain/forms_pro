@@ -34,7 +34,8 @@ import {
   FormControl,
 } from "frappe-ui";
 import Attachment from "@/components/fields/Attachment.vue";
-import Multiselect from "@/components/fields/Multiselect.vue";
+import Multiselect from "@/components/fields/multiselect/Multiselect.vue";
+import MultiselectBuilderExtras from "@/components/fields/multiselect/MultiselectBuilderExtras.vue";
 import Phone from "@/components/fields/Phone.vue";
 import Table from "@/components/fields/Table.vue";
 import { Fieldtype } from "@/types/FormsPro/form_field.types";
@@ -268,6 +269,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
     frappeFieldtype: "JSON",
     isBoolean: false,
     isDate: false,
+    builderExtras: MultiselectBuilderExtras,
   },
 ];
 

@@ -25,6 +25,9 @@ test.describe("Multiselect field", () => {
     // Add three options via the builder extras button
     const options = ["Option A", "Option B", "Option C"];
     for (const option of options) {
+      await expect(
+        page.getByRole("button", { name: "Add Option" })
+      ).toBeVisible({ timeout: 5000 });
       await page.getByRole("button", { name: "Add Option" }).click();
       await page.getByPlaceholder("Type option and press Enter").fill(option);
       await page.keyboard.press("Enter");

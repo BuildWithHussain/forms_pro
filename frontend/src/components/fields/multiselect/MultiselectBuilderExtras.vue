@@ -44,6 +44,7 @@ function addOption() {
         options: [...items].join("\n"),
     });
     newOptionValue.value = "";
+    isAddingOption.value = false;
 }
 </script>
 

@@ -13,8 +13,14 @@ test.describe("Multiselect field", () => {
     const builder = new FormBuilderPage(page);
     await builder.goto(formId);
 
-    // Add Multiselect field from sidebar
+    // Add Multiselect field from sidebar; wait for it to land on canvas
     await builder.addField("Multiselect");
+    await expect(page.getByText("No options defined")).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Set a label
+    await page.getByPlaceholder("Label").fill("Favourite Colors");
 
     // Add three options via the builder extras button
     const options = ["Option A", "Option B", "Option C"];

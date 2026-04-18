@@ -65,7 +65,7 @@ const { options: selectOptions } = useFieldOptions(fieldData);
         </div>
     </div>
 
-    <!-- description-first: Text Editor — description sits above the input -->
+    <!-- description-first: label → description → input (Text Editor, Multiselect) -->
     <div v-else-if="layout === 'description-first'" class="flex flex-col gap-1">
         <FieldLabel
             :field="fieldData"
@@ -78,6 +78,12 @@ const { options: selectOptions } = useFieldOptions(fieldData);
             :field="fieldData"
             :class="{ 'pointer-events-none': inEditMode }"
             :disabled="disabled"
+        />
+        <component
+            v-if="inEditMode && builderExtrasComponent"
+            :is="builderExtrasComponent"
+            :field="fieldData"
+            @update:field="fieldData = $event"
         />
     </div>
 

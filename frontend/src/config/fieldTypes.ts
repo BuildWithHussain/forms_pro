@@ -265,7 +265,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
     name: Fieldtype.MULTISELECT,
     component: Multiselect,
     props: {},
-    layout: "default",
+    layout: "description-first",
     frappeFieldtype: "JSON",
     isBoolean: false,
     isDate: false,

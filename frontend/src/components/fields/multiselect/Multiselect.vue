@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { Checkbox } from "frappe-ui";
 
 const props = defineProps<{
     options?: string[];
@@ -17,34 +18,30 @@ const selected = computed({
     },
 });
 
-function toggle(option: string) {
-    if (props.disabled) return;
-    const current = selected.value;
-    if (current.includes(option)) {
-        selected.value = current.filter((v) => v !== option);
+function toggle(option: string, checked: boolean) {
+    if (checked) {
+        selected.value = [...selected.value, option];
     } else {
-        selected.value = [...current, option];
+        selected.value = selected.value.filter((v) => v !== option);
     }
 }
 </script>
 
 <template>
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1">
         <label
             v-for="option in options"
             :key="option"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 min-h-[32px] rounded px-1 cursor-pointer hover:bg-surface-gray-2 active:bg-surface-gray-3 transition"
             :class="{ 'opacity-50 cursor-not-allowed': disabled }"
         >
-            <input
-                type="checkbox"
-                :value="option"
-                :checked="selected.includes(option)"
+            <Checkbox
+                :modelValue="selected.includes(option)"
                 :disabled="disabled"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                @change="toggle(option)"
+                size="sm"
+                @update:modelValue="toggle(option, $event)"
             />
-            <span class="text-sm text-ink-gray-7">{{ option }}</span>
+            <span class="text-base text-ink-gray-8 select-none">{{ option }}</span>
         </label>
         <span v-if="!options?.length" class="text-sm text-ink-gray-4 italic">
             No options defined

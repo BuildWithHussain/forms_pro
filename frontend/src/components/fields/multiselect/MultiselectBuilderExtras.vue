@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick } from "vue";
-import { FormControl } from "frappe-ui"; // Button is globally registered in main.ts
+import { FormControl, ErrorMessage } from "frappe-ui";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const props = defineProps<{ field: Record<string, any> }>();
@@ -16,20 +16,39 @@ async function startAddingOption() {
     newOptionInput.value?.$el?.querySelector("input")?.focus();
 }
 
+const errorMessage = ref("");
+
+function dismissIfEmpty() {
+    if (!newOptionValue.value.trim()) {
+        isAddingOption.value = false;
+        errorMessage.value = "";
+    }
+}
+
 function addOption() {
+    errorMessage.value = "";
+
     const value = newOptionValue.value.trim();
     if (!value) return;
 
-    const current = props.field.options ?? "";
+    const items = new Set((props.field.options ?? "").split("\n").filter(Boolean));
+
+    if (items.has(value)) {
+        errorMessage.value = "This option already exists in the list";
+        return;
+    }
+
+    items.add(value);
     emit("update:field", {
         ...props.field,
-        options: current ? `${current}\n${value}` : value,
+        options: [...items].join("\n"),
     });
     newOptionValue.value = "";
 }
 </script>
 
 <template>
+    <ErrorMessage class="text-xs" :message="errorMessage" />
     <FormControl
         v-if="isAddingOption"
         ref="newOptionInput"
@@ -40,9 +59,11 @@ function addOption() {
         placeholder="Type option and press Enter"
         @keydown.enter.prevent="addOption"
         @keydown.escape="isAddingOption = false"
+        @blur="dismissIfEmpty"
     />
     <Button
         v-else
+        class="w-fit"
         variant="ghost"
         label="Add Option"
         icon-left="plus"

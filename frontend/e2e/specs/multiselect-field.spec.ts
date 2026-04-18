@@ -13,9 +13,9 @@ test.describe("Multiselect field", () => {
     const builder = new FormBuilderPage(page);
     await builder.goto(formId);
 
-    // Add Multiselect field from sidebar; wait for it to land on canvas
+    // Add Multiselect field from sidebar; wait for canvas extras to confirm render
     await builder.addField("Multiselect");
-    await expect(page.getByText("No options defined").first()).toBeVisible({
+    await expect(page.getByRole("button", { name: "Add Option" })).toBeVisible({
       timeout: 10000,
     });
 

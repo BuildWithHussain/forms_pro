@@ -41,9 +41,8 @@ export class FormBuilderPage {
     });
     if (await saveBtn.isVisible()) {
       await saveBtn.click();
-      await this.page
-        .getByRole("button", { name: /^publish$/i })
-        .waitFor({ timeout: 10000 });
+      // Wait for Save to disappear — same render cycle as Publish appearing
+      await saveBtn.waitFor({ state: "hidden", timeout: 30000 });
     }
     await this.page.getByRole("button", { name: /^publish$/i }).click();
     await this.page

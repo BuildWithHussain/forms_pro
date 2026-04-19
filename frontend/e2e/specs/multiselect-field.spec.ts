@@ -13,6 +13,9 @@ test.describe("Multiselect field", () => {
     const builder = new FormBuilderPage(page);
     await builder.goto(formId);
 
+    // Set a form title so Save doesn't fail with MandatoryError (title is required)
+    await page.getByPlaceholder("Untitled Form").fill("Multiselect Test Form");
+
     // Add Multiselect field from sidebar; wait for canvas extras to confirm render
     await builder.addField("Multiselect");
     await expect(page.getByRole("button", { name: "Add Option" })).toBeVisible({

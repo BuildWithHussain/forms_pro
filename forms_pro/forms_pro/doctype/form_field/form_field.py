@@ -28,6 +28,7 @@ FORM_TO_FRAPPE_FIELDTYPE: dict[str, dict] = {
     "Checkbox": {"fieldtype": "Check"},
     "Rating": {"fieldtype": "Rating"},
     "Table": {"fieldtype": "Table"},
+    "Multiselect": {"fieldtype": "JSON"},
 }
 
 
@@ -63,6 +64,7 @@ class FormField(Document):
             "Rating",
             "Phone",
             "Table",
+            "Multiselect",
         ]
         hidden: DF.Check
         label: DF.Data

@@ -59,6 +59,7 @@ jspm_packages/
 
 # Local AI tooling settings
 .claude/settings.local.json
+.agents/
 
 /forms_pro/public/frontend
 /forms_pro/www/forms.html

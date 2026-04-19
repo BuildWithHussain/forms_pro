@@ -39,84 +39,97 @@ const layout = computed(
     () => getFieldTypeDef(fieldData.value.fieldtype as Fieldtype)?.layout ?? "default"
 );
 
+const builderExtrasComponent = computed(
+    () => getFieldTypeDef(fieldData.value.fieldtype as Fieldtype)?.builderExtras ?? null
+);
+
 const { options: selectOptions } = useFieldOptions(fieldData);
 </script>
 
 <template>
-    <!-- inline: Switch / Checkbox — input precedes label -->
-    <div v-if="layout === 'inline'" class="w-full flex gap-2 my-2">
-        <RenderField
-            v-model="modelValue"
-            :field="fieldData"
-            :class="{ 'pointer-events-none mt-1': inEditMode }"
-            :disabled="disabled"
-        />
-        <div class="flex flex-col gap-1 w-full">
+    <div class="w-full flex flex-col gap-2">
+        <!-- inline: Switch / Checkbox — input precedes label -->
+        <div v-if="layout === 'inline'" class="w-full flex gap-2 my-2">
+            <RenderField
+                v-model="modelValue"
+                :field="fieldData"
+                :class="{ 'pointer-events-none mt-1': inEditMode }"
+                :disabled="disabled"
+            />
+            <div class="flex flex-col gap-1 w-full">
+                <FieldLabel
+                    :field="fieldData"
+                    :in-edit-mode="inEditMode"
+                    @update:label="fieldData.label = $event"
+                />
+                <small class="text-gray-500">{{ fieldData.description }}</small>
+            </div>
+        </div>
+
+        <!-- description-first: label → description → input (Text Editor, Multiselect) -->
+        <div v-else-if="layout === 'description-first'" class="flex flex-col gap-1">
             <FieldLabel
                 :field="fieldData"
                 :in-edit-mode="inEditMode"
                 @update:label="fieldData.label = $event"
             />
             <small class="text-gray-500">{{ fieldData.description }}</small>
+            <RenderField
+                v-model="modelValue"
+                :field="fieldData"
+                :class="{ 'pointer-events-none': inEditMode }"
+                :disabled="disabled"
+            />
         </div>
-    </div>
 
-    <!-- description-first: Text Editor — description sits above the input -->
-    <div v-else-if="layout === 'description-first'" class="flex flex-col gap-1">
-        <FieldLabel
-            :field="fieldData"
-            :in-edit-mode="inEditMode"
-            @update:label="fieldData.label = $event"
-        />
-        <small class="text-gray-500">{{ fieldData.description }}</small>
-        <RenderField
-            v-model="modelValue"
-            :field="fieldData"
-            :class="{ 'pointer-events-none': inEditMode }"
-            :disabled="disabled"
-        />
-    </div>
+        <!-- custom: Attach and Table each need their own binding/widget -->
+        <div v-else-if="layout === 'custom' && fieldData.fieldtype === 'Attach'">
+            <FieldLabel
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
+            />
+            <RenderField
+                v-model="modelValue"
+                :field="fieldData"
+                :class="{ 'pointer-events-none': inEditMode }"
+                :disabled="disabled"
+            />
+            <small class="text-gray-500">{{ fieldData.description }}</small>
+        </div>
 
-    <!-- custom: Attach and Table each need their own binding/widget -->
-    <div v-else-if="layout === 'custom' && fieldData.fieldtype === 'Attach'">
-        <FieldLabel
-            :field="fieldData"
-            :in-edit-mode="inEditMode"
-            @update:label="fieldData.label = $event"
-        />
-        <RenderField
-            v-model="modelValue"
-            :field="fieldData"
-            :class="{ 'pointer-events-none': inEditMode }"
-            :disabled="disabled"
-        />
-        <small class="text-gray-500">{{ fieldData.description }}</small>
-    </div>
+        <div v-else-if="layout === 'custom'" class="w-full space-y-4">
+            <FieldLabel
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
+            />
+            <small class="text-gray-500">{{ fieldData.description }}</small>
+            <Table v-model="modelValue" :in-edit-mode="inEditMode" :doctype="fieldData.options" />
+        </div>
 
-    <div v-else-if="layout === 'custom'" class="w-full space-y-4">
-        <FieldLabel
-            :field="fieldData"
-            :in-edit-mode="inEditMode"
-            @update:label="fieldData.label = $event"
-        />
-        <small class="text-gray-500">{{ fieldData.description }}</small>
-        <Table v-model="modelValue" :in-edit-mode="inEditMode" :doctype="fieldData.options" />
-    </div>
+        <!-- default: label → input → description -->
+        <div v-else class="w-full flex flex-col gap-2">
+            <FieldLabel
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
+            />
+            <RenderField
+                v-model="modelValue"
+                :field="fieldData"
+                :class="{ 'pointer-events-none': inEditMode }"
+                :disabled="disabled"
+                :options="selectOptions"
+            />
+            <small class="text-gray-500">{{ fieldData.description }}</small>
+        </div>
 
-    <!-- default: label → input → description -->
-    <div v-else class="w-full flex flex-col gap-2">
-        <FieldLabel
+        <component
+            v-if="inEditMode && builderExtrasComponent"
+            :is="builderExtrasComponent"
             :field="fieldData"
-            :in-edit-mode="inEditMode"
-            @update:label="fieldData.label = $event"
+            @update:field="fieldData = $event"
         />
-        <RenderField
-            v-model="modelValue"
-            :field="fieldData"
-            :class="{ 'pointer-events-none': inEditMode }"
-            :disabled="disabled"
-            :options="selectOptions"
-        />
-        <small class="text-gray-500">{{ fieldData.description }}</small>
     </div>
 </template>

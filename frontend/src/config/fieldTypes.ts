@@ -34,6 +34,8 @@ import {
   FormControl,
 } from "frappe-ui";
 import Attachment from "@/components/fields/Attachment.vue";
+import Multiselect from "@/components/fields/multiselect/Multiselect.vue";
+import MultiselectBuilderExtras from "@/components/fields/multiselect/MultiselectBuilderExtras.vue";
 import Phone from "@/components/fields/Phone.vue";
 import Table from "@/components/fields/Table.vue";
 import { Fieldtype } from "@/types/FormsPro/form_field.types";
@@ -67,6 +69,12 @@ export type FieldTypeDefinition = {
   isBoolean: boolean;
   /** True for Date / DateTime / DateRange / TimePicker — affects display formatting */
   isDate: boolean;
+  /**
+   * Optional component rendered below the input widget when the form builder
+   * is in edit mode. Receives `:field` (the field object) and emits `update:field`.
+   * Use for builder-only controls like "Add Option".
+   */
+  builderExtras?: Component;
 };
 
 export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
@@ -252,6 +260,16 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
     frappeFieldtype: "Table",
     isBoolean: false,
     isDate: false,
+  },
+  {
+    name: Fieldtype.MULTISELECT,
+    component: Multiselect,
+    props: {},
+    layout: "description-first",
+    frappeFieldtype: "JSON",
+    isBoolean: false,
+    isDate: false,
+    builderExtras: MultiselectBuilderExtras,
   },
 ];
 

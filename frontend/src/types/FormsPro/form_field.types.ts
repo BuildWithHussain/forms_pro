@@ -17,6 +17,7 @@ export enum Fieldtype {
   "RATING" = "Rating",
   "PHONE" = "Phone",
   "TABLE" = "Table",
+  "MULTISELECT" = "Multiselect",
 }
 
 export interface FormField {

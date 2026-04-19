@@ -114,7 +114,7 @@ const classNames = computed<string>(() =>
             {{ value }}
         </a>
 
-        <span v-else-if="fieldtype === Fieldtype.MULTISELECT" class="text-sm text-ink-gray-7">
+        <span v-else-if="fieldtype === FormFieldTypes.Multiselect" class="text-sm text-ink-gray-7">
             {{ parsedMultiselectValue }}
         </span>
 

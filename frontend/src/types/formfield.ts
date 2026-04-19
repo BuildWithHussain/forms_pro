@@ -17,6 +17,7 @@ export enum FormFieldTypes {
   Checkbox = "Checkbox",
   Rating = "Rating",
   Table = "Table",
+  Multiselect = "Multiselect",
 }
 
 export type FormField = {

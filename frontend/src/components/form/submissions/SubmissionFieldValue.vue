@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Checkbox, Switch, Rating, TextEditor } from "frappe-ui";
 import { FormFieldTypes } from "@/types/formfield";
+import { getFieldTypeDef } from "@/config/fieldTypes";
+import { Fieldtype } from "@/types/FormsPro/form_field.types";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
 
@@ -36,21 +38,40 @@ const formattedDateValue = computed(() => {
     }
 });
 
-const isDateField = computed(() =>
-    [
-        FormFieldTypes.Date,
-        FormFieldTypes.DateTime,
-        FormFieldTypes.DateRange,
-        FormFieldTypes.TimePicker,
-    ].includes(props.fieldtype)
-);
+const typeDef = computed(() => getFieldTypeDef(props.fieldtype as unknown as Fieldtype));
+const isDateField = computed(() => typeDef.value?.isDate ?? false);
 
-const classNames = computed<string>(() => {
-    if ([FormFieldTypes.Switch, FormFieldTypes.Checkbox].includes(props.fieldtype)) {
-        return "flex gap-1 flex-row-reverse items-start justify-end";
+const parsedMultiselectValue = computed(() => {
+    if (!props.value) return "–";
+    try {
+        const parsed = JSON.parse(props.value);
+        if (Array.isArray(parsed)) return parsed.join(", ");
+    } catch {
+        // value might already be a readable string
     }
-    return "flex flex-col gap-1";
+    return String(props.value);
 });
+
+// Only allow safe attachment URLs (relative Frappe paths or http/https).
+// Rejects javascript: and other unsafe schemes.
+const safeAttachUrl = computed<string | null>(() => {
+    if (!props.value) return null;
+    const url = String(props.value);
+    if (url.startsWith("/")) return url;
+    try {
+        const { protocol } = new URL(url);
+        if (protocol === "https:" || protocol === "http:") return url;
+    } catch {
+        // unparseable — not a valid URL
+    }
+    return null;
+});
+
+const classNames = computed<string>(() =>
+    typeDef.value?.isBoolean
+        ? "flex gap-1 flex-row-reverse items-start justify-end"
+        : "flex flex-col gap-1"
+);
 </script>
 
 <template>
@@ -85,13 +106,17 @@ const classNames = computed<string>(() => {
         <Rating v-else-if="fieldtype === FormFieldTypes.Rating" :modelValue="value" readonly />
 
         <a
-            v-else-if="fieldtype === FormFieldTypes.Attach && value"
-            :href="value"
+            v-else-if="fieldtype === FormFieldTypes.Attach && safeAttachUrl"
+            :href="safeAttachUrl"
             target="_blank"
             class="text-sm text-blue-600 hover:text-blue-700 underline truncate"
         >
             {{ value }}
         </a>
+
+        <span v-else-if="fieldtype === Fieldtype.MULTISELECT" class="text-sm text-ink-gray-7">
+            {{ parsedMultiselectValue }}
+        </span>
 
         <span
             v-else-if="fieldtype === FormFieldTypes.Textarea"

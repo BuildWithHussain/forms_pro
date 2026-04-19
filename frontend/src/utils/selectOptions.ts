@@ -24,7 +24,7 @@ export async function getFieldOptions(
     return "";
   }
 
-  if (field.fieldtype === "Select") {
+  if (field.fieldtype === "Select" || field.fieldtype === "Multiselect") {
     return field.options.split("\n");
   }
 

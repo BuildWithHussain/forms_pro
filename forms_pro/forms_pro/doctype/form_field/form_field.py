@@ -4,6 +4,33 @@
 # import frappe
 from frappe.model.document import Document
 
+# Maps Forms Pro field types to Frappe CustomField fieldtypes.
+# When adding a new field type:
+#   1. Add the option to form_field.json  →  DF.Literal regenerates automatically
+#   2. Add an entry here
+#   3. Add an entry to FIELD_TYPE_DEFINITIONS in frontend/src/config/fieldTypes.ts
+FORM_TO_FRAPPE_FIELDTYPE: dict[str, dict] = {
+    "Attach": {"fieldtype": "Attach"},
+    "Data": {"fieldtype": "Data"},
+    "Number": {"fieldtype": "Int"},
+    "Email": {"fieldtype": "Data", "options": "Email"},
+    "Date": {"fieldtype": "Date"},
+    "Date Time": {"fieldtype": "Datetime"},
+    "Date Range": {"fieldtype": "Data"},
+    "Time Picker": {"fieldtype": "Time"},
+    "Password": {"fieldtype": "Password"},
+    "Select": {"fieldtype": "Select"},
+    "Phone": {"fieldtype": "Phone"},
+    "Switch": {"fieldtype": "Check"},
+    "Textarea": {"fieldtype": "Text"},
+    "Text Editor": {"fieldtype": "Text Editor"},
+    "Link": {"fieldtype": "Link"},
+    "Checkbox": {"fieldtype": "Check"},
+    "Rating": {"fieldtype": "Rating"},
+    "Table": {"fieldtype": "Table"},
+    "Multiselect": {"fieldtype": "JSON"},
+}
+
 
 class FormField(Document):
     # begin: auto-generated types
@@ -37,6 +64,7 @@ class FormField(Document):
             "Rating",
             "Phone",
             "Table",
+            "Multiselect",
         ]
         hidden: DF.Check
         label: DF.Data
@@ -66,6 +94,8 @@ class FormField(Document):
             _fieldtype = "Check"
         elif self.fieldtype == "Textarea":
             _fieldtype = "Text"
+        elif self.fieldtype == "Multiselect":
+            _fieldtype = "JSON"
 
         return {
             "fieldname": self.fieldname,

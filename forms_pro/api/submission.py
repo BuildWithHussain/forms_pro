@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Any
 
@@ -32,7 +33,95 @@ class UserSubmissionResponse(BaseModel):
         raise ValueError(f"Invalid datetime value: {v}")
 
 
-@frappe.whitelist(allow_guest=True)
+def _coerce_field_value(value: Any, fieldtype: str) -> Any:
+    """Coerce a submitted value to its comparable type, matching frontend conditionals.ts logic."""
+    if value is None or value == "":
+        return None
+    # Matches isBoolean types in the frontend registry (Switch, Checkbox)
+    if fieldtype in ("Switch", "Checkbox"):
+        return bool(value)
+    if fieldtype == "Number":
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    return str(value)
+
+
+def _evaluate_conditions(conditions: list[dict], form_data: dict, field_map: dict) -> bool:
+    """Evaluate AND-joined conditions against submitted form data."""
+    for condition in conditions:
+        fieldname = condition.get("fieldname")
+        operator = condition.get("operator")
+        expected = condition.get("value")
+        field = field_map.get(fieldname)
+        if not field:
+            return False
+        actual = _coerce_field_value(form_data.get(fieldname), field.fieldtype)
+        # Coerce the condition's expected value through the same function so
+        # types match — avoids str(True)=="True" vs "true" mismatches and
+        # str(3.0)=="3.0" vs "3" mismatches for Number fields.
+        expected_coerced = _coerce_field_value(expected, field.fieldtype)
+        if operator == "Is" and actual != expected_coerced:
+            return False
+        if operator == "Is Not" and actual == expected_coerced:
+            return False
+        if operator == "Is Empty" and actual is not None and actual != "":
+            return False
+        if operator == "Is Not Empty" and (actual is None or actual == ""):
+            return False
+    return True
+
+
+def _validate_form_response(form: "Form", form_data: dict) -> None:
+    """
+    Validate required and conditionally-required fields server-side.
+
+    Mirrors the shouldFieldBeVisible / shouldFieldBeRequired logic in
+    frontend/src/utils/conditionals.ts so that direct API calls cannot
+    bypass frontend validation.
+    """
+    field_map = {f.fieldname: f for f in form.fields}
+    errors: list[str] = []
+
+    for field in form.fields:
+        is_visible = not field.hidden
+        is_required = bool(field.reqd)
+
+        for other in form.fields:
+            if not other.conditional_logic:
+                continue
+            try:
+                logic = json.loads(other.conditional_logic)
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+            if logic.get("target_field") != field.fieldname:
+                continue
+
+            conditions_met = _evaluate_conditions(logic.get("conditions", []), form_data, field_map)
+            if conditions_met:
+                action = logic.get("action")
+                if action == "Show Field":
+                    is_visible = True
+                elif action == "Hide Field":
+                    is_visible = False
+                elif action == "Require Answer":
+                    is_required = True
+
+        if not is_visible:
+            continue
+
+        value = form_data.get(field.fieldname)
+        is_empty = value is None or value == "" or value == []
+        if is_required and is_empty:
+            errors.append(_("{0} is required").format(field.label))
+
+    if errors:
+        frappe.throw("\n".join(errors), frappe.ValidationError)
+
+
+@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def submit_form_response(
     form_id: str,
     form_data: list[dict],
@@ -61,7 +150,13 @@ def submit_form_response(
 
         submission = frappe.new_doc(linked_doctype)
         for data in form_data:
-            submission.set(data["fieldname"], data["value"])
+            value = data["value"]
+            # JSON fields (e.g. Multiselect) must be stored as a JSON string,
+            # but Frappe deserializes request body arrays into Python lists before
+            # we get here — serialize them back.
+            if isinstance(value, list):
+                value = json.dumps(value)
+            submission.set(data["fieldname"], value)
 
         submission.fp_linked_form = form_id
         submission.fp_submission_status = submission_status.value

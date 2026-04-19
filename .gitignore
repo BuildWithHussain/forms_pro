@@ -72,3 +72,6 @@ frontend/auto-imports.d.ts
 frontend/e2e/auth/storageState.json
 frontend/e2e/test-results/
 frontend/e2e/playwright-report/
+.playwright-mcp
+
+skills-lock.json

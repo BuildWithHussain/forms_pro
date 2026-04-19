@@ -125,7 +125,7 @@ onClickOutside(fieldContentRef, (event) => {
                 v-model="editFormStore.formData.title"
             />
             <TextEditor
-                :model-value="editFormStore.formData.description"
+                :content="editFormStore.formData.description"
                 editor-class="h-fit !w-full p-2 form-description"
                 placeholder="Write a description for your form"
                 @change="(value: string) => (editFormStore.formData.description = value)"

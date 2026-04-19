@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Dialog, ErrorMessage, FileUploader } from "frappe-ui";
+import { Dialog, ErrorMessage } from "frappe-ui";
 import * as z from "zod";
 import { reactive, ref, watch } from "vue";
 import { useUser } from "@/stores/user";
 import TeamLogo from "@/components/team/TeamLogo.vue";
-import type { FileType } from "@/components/fields/Attachment.vue";
+import ImageUploader from "@/components/ImageUploader/ImageUploader.vue";
+import type { UploadedFile } from "frappe-ui";
 
 const user = useUser();
 const model = defineModel<boolean>({
@@ -53,7 +54,7 @@ function createTeam() {
     model.value = false;
 }
 
-function setTeamLogo(file: FileType) {
+function setTeamLogo(file: UploadedFile) {
     form.logo_url = file.file_url;
 }
 
@@ -84,7 +85,7 @@ function removeTeamLogo() {
                         />
                         <TeamLogo
                             :team-name="form.team_name"
-                            class="size-12"
+                            class="size-14"
                             :logo-url="form.logo_url ?? null"
                         />
                     </div>
@@ -92,25 +93,15 @@ function removeTeamLogo() {
                         <p>The team logo is automatically generated based on the team name.</p>
                         <div class="flex gap-2 items-center justify-center">
                             <p>Don't like it?</p>
-                            <FileUploader
-                                @success="(file: FileType) => setTeamLogo(file)"
-                                :fileTypes="['image/png', 'image/jpeg', 'image/jpg', 'image/gif']"
+                            <ImageUploader
+                                :crop-dimensions="{ width: 400, height: 400 }"
+                                :upload-args="{ folder: 'Home' }"
+                                @success="(file) => setTeamLogo(file)"
                             >
-                                <!-- @vue-ignore -->
                                 <template
-                                    #default="{
-                                        file,
-                                        uploading,
-                                        progress,
-                                        uploaded,
-                                        message,
-                                        error,
-                                        total,
-                                        success,
-                                        openFileSelector,
-                                    }"
+                                    #default="{ uploading, progress, error, openFileSelector }"
                                 >
-                                    <ErrorMessage :message="error" />
+                                    <ErrorMessage :message="error ?? undefined" />
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -118,10 +109,14 @@ function removeTeamLogo() {
                                         @click="openFileSelector"
                                         :loading="uploading"
                                     >
-                                        Upload your own
+                                        {{
+                                            uploading
+                                                ? `Uploading ${progress}%`
+                                                : "Upload your own"
+                                        }}
                                     </Button>
                                 </template>
-                            </FileUploader>
+                            </ImageUploader>
                         </div>
                     </div>
                 </div>

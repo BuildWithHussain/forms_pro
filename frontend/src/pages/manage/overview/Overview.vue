@@ -4,11 +4,17 @@ import DescriptionSection from "@/components/form/manage/DescriptionSection.vue"
 import { useManageForm } from "@/stores/form/manageForm";
 import { FileText, CaseLower, Lock } from "lucide-vue-next";
 import { formatPrettyDate } from "@/utils/date";
-import { TabButtons, LoadingText, Badge } from "frappe-ui";
+import { TabButtons, LoadingText, Badge, Breadcrumbs } from "frappe-ui";
 import Avatar from "@/components/ui/Avatar.vue";
 import { useQueryParam } from "@/composables/useQueryParam";
+import { computed } from "vue";
 
 const manageFormStore = useManageForm();
+
+const breadcrumbItems = computed(() => [
+    { label: "Manage Form", to: `/manage/${manageFormStore.currentFormId}/overview` },
+    { label: "Overview" },
+]);
 
 const tabs = [
     {
@@ -30,11 +36,12 @@ const selectedTab = useQueryParam<TabValue>("tab", "description", validTabValues
 </script>
 
 <template>
-    <div v-if="manageFormStore.formResource.value?.loading">
-        <LoadingText />
-    </div>
-    <div v-if="manageFormStore.formData">
-        <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-4 w-full overflow-y-auto">
+        <Breadcrumbs :items="breadcrumbItems" />
+        <div v-if="manageFormStore.formResource.value?.loading">
+            <LoadingText />
+        </div>
+        <div v-else-if="manageFormStore.formData" class="flex flex-col gap-3">
             <Badge
                 v-if="manageFormStore.formData?.is_published"
                 class="w-fit"

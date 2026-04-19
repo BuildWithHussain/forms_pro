@@ -34,12 +34,11 @@ repos:
         # Ignore any files that might contain jinja / bundles
         exclude: |
           (?x)^(
-              forms_pro/frontend/components.d.ts|
-              forms_pro/public/dist/.*|
+              frontend/components.d.ts|
+              frontend/auto-imports.d.ts|
+              forms_pro/public/frontend/.*|
               .*node_modules.*|
-              .*boilerplate.*|
-              forms_pro/templates/includes/.*|
-              forms_pro/public/js/lib/.*
+              .*boilerplate.*
           )$
 
   - repo: https://github.com/pre-commit/mirrors-eslint
@@ -51,13 +50,12 @@ repos:
         # Ignore any files that might contain jinja / bundles
         exclude: |
           (?x)^(
-              forms_pro/frontend/components.d.ts|
-              forms_pro/public/dist/.*|
+              frontend/components.d.ts|
+              frontend/auto-imports.d.ts|
+              forms_pro/public/frontend/.*|
               cypress/.*|
               .*node_modules.*|
-              .*boilerplate.*|
-              forms_pro/templates/includes/.*|
-              forms_pro/public/js/lib/.*
+              .*boilerplate.*
           )$
 
 ci:

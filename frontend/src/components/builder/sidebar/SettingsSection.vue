@@ -111,9 +111,8 @@ const inExpandedDescription = ref(false);
                 <div class="flex flex-col gap-2">
                     <span class="text-xs text-ink-gray-5">Success Description</span>
                     <TextEditor
-                        label="Success Description"
                         variant="outline"
-                        :model-value="editFormStore.formData.success_description"
+                        :content="editFormStore.formData.success_description"
                         @change="
                             (value: string) => (editFormStore.formData.success_description = value)
                         "
@@ -150,7 +149,7 @@ const inExpandedDescription = ref(false);
                             <div class="mt-6"></div>
                             <TextEditor
                                 variant="outline"
-                                :model-value="editFormStore.formData.success_description"
+                                :content="editFormStore.formData.success_description"
                                 @change="
                                     (value: string) =>
                                         (editFormStore.formData.success_description = value)

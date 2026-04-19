@@ -25,6 +25,9 @@ MANIFEST
 
 # Environments
 .env
+.env.*
+!.env.example
+!.env.sample
 .venv
 env/
 venv/
@@ -54,9 +57,21 @@ jspm_packages/
 # Aider AI Chat
 .aider*
 
+# Local AI tooling settings
+.claude/settings.local.json
+.agents/
+
 /forms_pro/public/frontend
 /forms_pro/www/forms.html
 /forms_pro/www/frontend.html
 /forms_pro/public/node_modules
 frontend/components.d.ts
 frontend/auto-imports.d.ts
+
+# Playwright
+frontend/e2e/auth/storageState.json
+frontend/e2e/test-results/
+frontend/e2e/playwright-report/
+.playwright-mcp
+
+skills-lock.json

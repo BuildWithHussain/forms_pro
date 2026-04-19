@@ -9,11 +9,6 @@ app_license = "agpl-3.0"
 fixtures = [
     {"dt": "Role", "filters": {"role_name": "Forms Pro User"}},
 ]
-# Apps
-# ------------------
-
-# required_apps = []
-
 # Each item in the list will be shown as an app in the apps page
 add_to_apps_screen = [
     {
@@ -30,7 +25,7 @@ add_to_apps_screen = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/forms_pro/css/forms_pro.css"
-# app_include_js = "/assets/forms_pro/js/forms_pro.js"
+app_include_js = "/assets/forms_pro/js/forms_pro_desk.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/forms_pro/css/forms_pro.css"
@@ -139,7 +134,10 @@ after_install = "forms_pro.install.after_install"
 doc_events = {
     "User": {
         "on_update": "forms_pro.overrides.roles.handle_forms_pro_role_change",
-    }
+    },
+    "User Invitation": {
+        "after_insert": "forms_pro.overrides.invitations.after_insert",
+    },
 }
 
 # Scheduled Tasks
@@ -239,6 +237,12 @@ export_python_type_annotations = True
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+user_invitation = {
+    "allowed_roles": {
+        "Forms Pro User": ["Forms Pro User"],
+    },
+    "after_accept": ["forms_pro.overrides.invitations.after_accept"],
+}
 
 website_route_rules = [
     {"from_route": "/forms/<path:app_path>", "to_route": "forms"},

@@ -13,7 +13,7 @@ const submissionFormStore = useSubmissionForm();
             {{ submissionFormStore.formResource.data.title }}
         </h1>
         <TextEditor
-            :model-value="submissionFormStore.formResource.data.description"
+            :content="submissionFormStore.formResource.data?.description"
             editor-class="h-fit !w-full form-description !px-0 max-w-full max-h-full"
             :editable="false"
         />

@@ -148,6 +148,7 @@ const { options: selectOptions } = useFieldOptions(fieldData);
                 :value="modelValue"
                 @update:value="(value: string) => (modelValue = value)"
                 :field="fieldData"
+                :in-edit-mode="inEditMode"
                 :class="{ 'pointer-events-none': inEditMode }"
                 :disabled="disabled"
             />

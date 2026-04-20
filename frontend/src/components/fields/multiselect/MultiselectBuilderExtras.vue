@@ -11,6 +11,8 @@ const newOptionValue = ref("");
 const newOptionInput = ref<InstanceType<typeof FormControl> | null>(null);
 
 async function startAddingOption() {
+    newOptionValue.value = "";
+    errorMessage.value = "";
     isAddingOption.value = true;
     await nextTick();
     newOptionInput.value?.$el?.querySelector("input")?.focus();

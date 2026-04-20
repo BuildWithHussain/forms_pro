@@ -77,6 +77,7 @@ const { options: selectOptions } = useFieldOptions(fieldData);
             <RenderField
                 v-model="modelValue"
                 :field="fieldData"
+                :in-edit-mode="inEditMode"
                 :class="{ 'pointer-events-none': inEditMode }"
                 :disabled="disabled"
             />

@@ -15,7 +15,7 @@
     "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
-    "@lottiefiles/dotlottie-vue": "^0.10.4",
+    "@lottiefiles/dotlottie-vue": "^0.11.11",
     "@vueuse/core": "^14.2.1",
     "dayjs": "^1.11.20",
     "feather-icons": "^4.29.2",

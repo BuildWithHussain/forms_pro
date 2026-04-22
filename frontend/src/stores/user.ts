@@ -53,11 +53,6 @@ export const useUser = defineStore("user", () => {
     userTeamsResource.fetch();
   }
 
-  // @ts-ignore
-  function getCurrentTeamFromAllTeams() {
-    return userTeams.value?.find((team) => team.is_current);
-  }
-
   function setCurrentTeam(team: UserTeam) {
     currentTeam.value = team;
   }

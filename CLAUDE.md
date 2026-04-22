@@ -21,7 +21,7 @@ npm run build
 # TypeScript type check
 cd frontend && yarn typecheck
 
-# Lint & format (BiomeJS)
+# Lint (oxlint) & format (Prettier via pre-commit)
 cd frontend && yarn lint
 ```
 

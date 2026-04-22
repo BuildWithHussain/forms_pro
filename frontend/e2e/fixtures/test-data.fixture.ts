@@ -22,7 +22,7 @@ async function fetchTeamId(apiContext: APIRequestContext): Promise<string> {
 }
 
 export const test = base.extend<TestDataFixtures>({
-  apiContext: async ({}, use) => {
+  apiContext: async (_, use) => {
     const ctx = await request.newContext({
       baseURL: process.env.BASE_URL ?? "http://localhost:8001",
       storageState: "./e2e/auth/storageState.json",

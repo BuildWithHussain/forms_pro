@@ -2,7 +2,7 @@
 import AccessSection from "@/components/form/manage/AccessSection.vue";
 import DescriptionSection from "@/components/form/manage/DescriptionSection.vue";
 import { useManageForm } from "@/stores/form/manageForm";
-import { FileText, CaseLower, Lock } from "lucide-vue-next";
+import { FileText, CaseLower, Lock } from "@lucide/vue";
 import { formatPrettyDate } from "@/utils/date";
 import { TabButtons, LoadingText, Badge, Breadcrumbs } from "frappe-ui";
 import Avatar from "@/components/ui/Avatar.vue";

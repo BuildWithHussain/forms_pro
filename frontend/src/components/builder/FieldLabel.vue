@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Asterisk } from "lucide-vue-next";
+import { Asterisk } from "@lucide/vue";
 
 defineProps<{
     field: {

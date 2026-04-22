@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from "vue";
 import { FormControl } from "frappe-ui";
-import { ChevronDown, ChevronUp } from "lucide-vue-next";
+import { ChevronDown, ChevronUp } from "@lucide/vue";
 import { onClickOutside } from "@vueuse/core";
 
 export type Country = {

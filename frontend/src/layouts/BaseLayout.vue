@@ -55,7 +55,7 @@
 <script setup lang="ts">
 import { session } from "@/data/session";
 import { Popover, Sidebar, type SidebarProps } from "frappe-ui";
-import { EllipsisVertical, LogOut } from "lucide-vue-next";
+import { EllipsisVertical, LogOut } from "@lucide/vue";
 import type { PropType } from "vue";
 import Avatar from "@/components/ui/Avatar.vue";
 import TeamSwitcher from "@/components/team/TeamSwitcher.vue";

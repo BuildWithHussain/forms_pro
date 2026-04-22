@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Unplug } from "lucide-vue-next";
+import { Unplug } from "@lucide/vue";
 </script>
 
 <template>

@@ -23,7 +23,7 @@ def create_form_with_doctype(team_id: str, doctype: str):
     except Exception as e:
         frappe.log_error(f"Error creating form with doctype: {doctype} - {e}")
         frappe.throw(
-            _("Error creating form with doctype: {0} - {1}").format(doctype, e),
+            _("Error creating form with doctype: {0} - {1}").format(doctype, str(e)),
         )
 
     return {
@@ -47,7 +47,7 @@ def create_form(team_id: str):
     except Exception as e:
         frappe.log_error(f"Error creating form: {e}")
         frappe.throw(
-            _("Error creating form: {0}").format(e),
+            _("Error creating form: {0}").format(str(e)),
         )
 
     return {

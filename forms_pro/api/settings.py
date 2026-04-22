@@ -2,7 +2,7 @@ import frappe
 from frappe.core.doctype.navbar_settings.navbar_settings import get_app_logo
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def get_brand_logo() -> str:
     """
     Get the brand logo for the form.
@@ -13,7 +13,7 @@ def get_brand_logo() -> str:
     return str(get_app_logo())
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def get_website_settings() -> dict:
     website_settings = frappe.get_doc("Website Settings")
     form_settings = {

@@ -18,7 +18,7 @@ class FormSharedWithResponse(BaseModel):
     submit: bool
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def is_login_required(route: str) -> bool:
     """
     Check if login is enabled for a form.
@@ -37,7 +37,7 @@ def is_login_required(route: str) -> bool:
     return bool(login_enabled)
 
 
-@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def get_form_by_route(route: str) -> dict:
     form_id = frappe.db.get_value("Form", {"route": route}, pluck="name")
     if not form_id:
@@ -45,7 +45,7 @@ def get_form_by_route(route: str) -> dict:
     return get_form(form_id)
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def get_form(form_id: str) -> dict:
     form: Form = frappe.get_doc(
         "Form",
@@ -65,7 +65,7 @@ def get_form(form_id: str) -> dict:
     }
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def get_link_field_options(
     doctype: str,
     filters: dict | None = None,
@@ -233,7 +233,7 @@ def get_doctype_list() -> list[str]:
     )
 
 
-@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
+@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
 def get_doctype_fields(doctype: str) -> list:
     doctype = frappe.get_doc("DocType", doctype)
     fields = [

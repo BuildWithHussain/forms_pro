@@ -356,6 +356,11 @@
   resolved "https://registry.yarnpkg.com/@lottiefiles/dotlottie-web/-/dotlottie-web-0.71.0.tgz#bf066bd968459d78644bc9385ba776d48b4a7b61"
   integrity sha512-CliQttL0Rk0or/aDQkqUJXnC9Cm5TxzNdOqy/YlzKlU6mu+XgTMwyt5/HpPiltlMeaqBmM9mOzfevpyP4QmudQ==
 
+"@lucide/vue@^1.0.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@lucide/vue/-/vue-1.8.0.tgz#e5baec754a64f79d1a94850dd72a115e597e2d90"
+  integrity sha512-Rgy2rxfOx9yP6fWneE3QO6xwUbF2o7f9+MRbzGLRakee4tzUeVWHdX23uRH4ymwEzoq2+8vqRI9yGsxeZhYlWw==
+
 "@napi-rs/wasm-runtime@^1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@napi-rs/wasm-runtime/-/wasm-runtime-1.1.3.tgz#1eeb8699770481306e5fcd84471f20fcb6177336"
@@ -2194,11 +2199,6 @@ lucide-static@^0.545.0:
   version "0.545.0"
   resolved "https://registry.yarnpkg.com/lucide-static/-/lucide-static-0.545.0.tgz#69dad91d1bbd53b70df6c21f0877c16a1e69cea0"
   integrity sha512-2i81WNw3y+sN17gG75DKZbd43pGJREyoAQRK5IG8djCWhISoK6Ri1ovbKwOjFR+St2LHTQhu+EJygmUIWMotew==
-
-lucide-vue-next@^0.575.0:
-  version "0.575.0"
-  resolved "https://registry.yarnpkg.com/lucide-vue-next/-/lucide-vue-next-0.575.0.tgz#a782e0c00932dbe16ebf82e12030d9223895b62d"
-  integrity sha512-UHzA3cYMCgBLyGay5R9IQaidwV0NLocx7cIBnFt8vJ9Xhl6IM/oKD0fUhoCUuouFta15SX1rLXVoko9s3TzWMA==
 
 magic-string@^0.30.17:
   version "0.30.19"

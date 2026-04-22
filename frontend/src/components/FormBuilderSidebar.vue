@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Settings, Plus, StretchHorizontal } from "lucide-vue-next";
+import { Settings, Plus, StretchHorizontal } from "@lucide/vue";
 import { ref } from "vue";
 import { Tooltip } from "frappe-ui";
 import AddFieldsSection from "@/components/builder/sidebar/AddFieldsSection.vue";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge } from "frappe-ui";
-import { FileText } from "lucide-vue-next";
+import { FileText } from "@lucide/vue";
 import { computed } from "vue";
 
 const props = defineProps({

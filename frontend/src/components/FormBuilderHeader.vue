@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge, Popover, Tooltip } from "frappe-ui";
-import { ChevronDown, CloudCheck, ExternalLink, CloudOff } from "lucide-vue-next";
+import { ChevronDown, CloudCheck, ExternalLink, CloudOff } from "@lucide/vue";
 import { Button } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { useRouter } from "vue-router";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useManageForm } from "@/stores/form/manageForm";
-import { ListChecks } from "lucide-vue-next";
+import { ListChecks } from "@lucide/vue";
 import { Breadcrumbs } from "frappe-ui";
 import { computed } from "vue";
 import SubmissionList from "@/components/form/submissions/SubmissionList.vue";

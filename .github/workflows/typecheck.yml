@@ -14,6 +14,7 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/typecheck.yml"
+  merge_group:
 
 concurrency:
   group: typecheck-version-15-forms_pro-${{ github.event.number || github.sha }}

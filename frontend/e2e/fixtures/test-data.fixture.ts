@@ -69,9 +69,9 @@ export const test = base.extend<TestDataFixtures>({
       const formId = message.form_document as string;
       created.push(formId);
 
-      // Publish the form via Frappe REST API
+      // Publish the form via Frappe REST API (also set title to avoid "Untitled Form" transform)
       const publishRes = await apiContext.put(`/api/resource/Form/${formId}`, {
-        data: { is_published: 1 },
+        data: { is_published: 1, title: `E2E Published Form ${Date.now()}` },
       });
       const publishData = await publishRes.json();
       const route = publishData.data?.route as string;

@@ -41,22 +41,11 @@ repos:
               .*boilerplate.*
           )$
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.44.0
+  - repo: https://github.com/oxc-project/mirrors-oxlint
+    rev: v1.60.0
     hooks:
-      - id: eslint
-        types_or: [javascript, ts]
-        args: ["--quiet"]
-        # Ignore any files that might contain jinja / bundles
-        exclude: |
-          (?x)^(
-              frontend/components.d.ts|
-              frontend/auto-imports.d.ts|
-              forms_pro/public/frontend/.*|
-              cypress/.*|
-              .*node_modules.*|
-              .*boilerplate.*
-          )$
+      - id: oxlint
+        types_or: [javascript, ts, vue]
 
 ci:
   autoupdate_schedule: weekly

@@ -75,3 +75,5 @@ frontend/e2e/playwright-report/
 .playwright-mcp
 
 skills-lock.json
+
+semgrep-rules/

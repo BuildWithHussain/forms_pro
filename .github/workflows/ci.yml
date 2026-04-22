@@ -5,6 +5,7 @@ on:
     branches:
       - develop
   pull_request:
+  merge_group:
 
 concurrency:
   group: develop-forms_pro-${{ github.event.number }}

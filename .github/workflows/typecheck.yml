@@ -8,9 +8,6 @@ on:
       - "frontend/**"
       - ".github/workflows/typecheck.yml"
   pull_request:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/typecheck.yml"
   merge_group:
 
 concurrency:

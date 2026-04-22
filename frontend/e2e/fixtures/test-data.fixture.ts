@@ -22,7 +22,8 @@ async function fetchTeamId(apiContext: APIRequestContext): Promise<string> {
 }
 
 export const test = base.extend<TestDataFixtures>({
-  apiContext: async (_, use) => {
+  // eslint-disable-next-line no-empty-pattern -- Playwright fixture requires destructuring syntax
+  apiContext: async ({}, use) => {
     const ctx = await request.newContext({
       baseURL: process.env.BASE_URL ?? "http://localhost:8001",
       storageState: "./e2e/auth/storageState.json",

@@ -121,7 +121,7 @@ def _validate_form_response(form: "Form", form_data: dict) -> None:
         frappe.throw("\n".join(errors), frappe.ValidationError)
 
 
-@frappe.whitelist(allow_guest=True)  # nosemgrep: semgrep-rules.rules.security.guest-whitelisted-method
+@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def submit_form_response(
     form_id: str,
     form_data: list[dict],

@@ -8,6 +8,7 @@ from frappe.share import add_docshare
 from pydantic import BaseModel, Field, field_validator
 
 from forms_pro.forms_pro.doctype.form.form import Form
+from forms_pro.forms_pro.doctype.form_field.form_field import _DISPLAY_ONLY_FIELDTYPES
 from forms_pro.utils.form_generator import SubmissionStatus
 
 
@@ -85,6 +86,8 @@ def _validate_form_response(form: "Form", form_data: dict) -> None:
     errors: list[str] = []
 
     for field in form.fields:
+        if field.fieldtype in _DISPLAY_ONLY_FIELDTYPES:
+            continue
         is_visible = not field.hidden
         is_required = bool(field.reqd)
 

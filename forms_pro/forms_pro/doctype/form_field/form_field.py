@@ -29,7 +29,13 @@ FORM_TO_FRAPPE_FIELDTYPE: dict[str, dict] = {
     "Rating": {"fieldtype": "Rating"},
     "Table": {"fieldtype": "Table"},
     "Multiselect": {"fieldtype": "JSON"},
+    "Heading 1": {"fieldtype": "HTML"},
+    "Heading 2": {"fieldtype": "HTML"},
+    "Heading 3": {"fieldtype": "HTML"},
 }
+
+
+_DISPLAY_ONLY_FIELDTYPES = {"Heading 1", "Heading 2", "Heading 3"}
 
 
 class FormField(Document):
@@ -65,6 +71,9 @@ class FormField(Document):
             "Phone",
             "Table",
             "Multiselect",
+            "Heading 1",
+            "Heading 2",
+            "Heading 3",
         ]
         hidden: DF.Check
         label: DF.Data
@@ -83,7 +92,19 @@ class FormField(Document):
             "fieldtype": mapping.get("fieldtype", self.fieldtype),
             "label": self.label,
             "reqd": self.reqd,
-            "options": mapping.get("options", self.options),
+            "options": mapping.get("options", self.get_options()),
             "description": self.description,
             "default": self.default,
         }
+
+    def get_options(self) -> str:
+        if self.fieldtype in _DISPLAY_ONLY_FIELDTYPES:
+            HEADING_MAP = {
+                "Heading 1": "h1",
+                "Heading 2": "h2",
+                "Heading 3": "h3",
+            }
+            tag = HEADING_MAP.get(self.fieldtype, "h2")
+            return f"<{tag}>{self.label}</{tag}>"
+
+        return self.options

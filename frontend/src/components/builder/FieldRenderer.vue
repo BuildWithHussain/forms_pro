@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import RenderField from "../RenderField.vue";
 import FieldLabel from "./FieldLabel.vue";
+import Heading from "@/components/fields/Heading.vue";
 import Table from "@/components/fields/Table.vue";
 import { useFieldOptions } from "@/utils/selectOptions";
 import { getFieldTypeDef, Fieldtype } from "@/config/fieldTypes";

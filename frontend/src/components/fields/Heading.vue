@@ -4,8 +4,8 @@ import { computed } from "vue";
 
 const props = defineProps<{
     field: {
-        label: string;
-        fieldtype: Fieldtype;
+        label?: string;
+        fieldtype?: Fieldtype;
     };
     inEditMode: boolean;
 }>();

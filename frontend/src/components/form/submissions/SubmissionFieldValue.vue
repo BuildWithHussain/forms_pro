@@ -5,6 +5,7 @@ import { getFieldTypeDef } from "@/config/fieldTypes";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
 import { isHeading } from "@/utils/form_fields";
+import Heading from "@/components/fields/Heading.vue";
 
 const props = defineProps<{
     fieldname: string;

@@ -6,6 +6,7 @@ import unittest
 from types import SimpleNamespace
 
 from forms_pro.api.submission import _coerce_field_value, _evaluate_conditions, _validate_form_response
+from forms_pro.forms_pro.doctype.form_field.form_field import _DISPLAY_ONLY_FIELDTYPES
 from forms_pro.utils.constants import FORMS_PRO_SYSTEM_FIELDNAMES, UNSUPPORTED_FRAPPE_FIELDTYPES
 from forms_pro.utils.form_generator import LINKED_FORM_FIELDOPTIONS, SUBMISSION_STATUS_FIELDOPTIONS
 
@@ -213,3 +214,28 @@ class TestConstants(unittest.TestCase):
     def test_unsupported_fieldtypes_contains_non_input_types(self):
         for fieldtype in ("HTML", "Button", "Barcode", "Dynamic Link"):
             self.assertIn(fieldtype, UNSUPPORTED_FRAPPE_FIELDTYPES)
+
+
+class TestHeadingFieldValidation(unittest.TestCase):
+    def test_all_heading_levels_skipped_even_when_required(self):
+        """reqd=1 heading fields must never trigger a validation error."""
+        for fieldtype in ("Heading 1", "Heading 2", "Heading 3"):
+            with self.subTest(fieldtype=fieldtype):
+                form = _form(_field("h", fieldtype=fieldtype, reqd=1))
+                _validate_form_response(form, {})  # must not raise
+
+    def test_required_data_field_still_validated_when_heading_present(self):
+        """Heading fields being skipped must not suppress validation of adjacent required fields."""
+        import frappe
+
+        form = _form(
+            _field("section_title", fieldtype="Heading 1", reqd=1),
+            _field("full_name", fieldtype="Data", reqd=1),
+        )
+        with self.assertRaises(frappe.ValidationError) as ctx:
+            _validate_form_response(form, {})
+        self.assertIn("Full Name", str(ctx.exception))
+
+    def test_display_only_fieldtypes_contains_all_heading_levels(self):
+        for fieldtype in ("Heading 1", "Heading 2", "Heading 3"):
+            self.assertIn(fieldtype, _DISPLAY_ONLY_FIELDTYPES)

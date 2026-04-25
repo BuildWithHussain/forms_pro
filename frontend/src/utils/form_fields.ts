@@ -55,3 +55,11 @@ export const mapDoctypeFieldForForm = (
 
   return FRAPPE_TO_FORM_TYPE[fieldtype];
 };
+
+export const isHeading = (fieldtype: Fieldtype): boolean => {
+  return [
+    Fieldtype.HEADING_1,
+    Fieldtype.HEADING_2,
+    Fieldtype.HEADING_3,
+  ].includes(fieldtype);
+};

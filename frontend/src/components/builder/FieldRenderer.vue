@@ -83,6 +83,15 @@ const { options: selectOptions } = useFieldOptions(fieldData);
             />
         </div>
 
+        <!-- heading: renders field label as h1/h2/h3; no input -->
+        <div v-else-if="layout === 'heading'" class="w-full py-1">
+            <Heading
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
+            />
+        </div>
+
         <!-- custom: Attach and Table each need their own binding/widget -->
         <div v-else-if="layout === 'custom' && fieldData.fieldtype === 'Attach'">
             <FieldLabel

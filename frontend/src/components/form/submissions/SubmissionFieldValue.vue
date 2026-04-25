@@ -4,6 +4,7 @@ import { Fieldtype } from "@/types/formfield";
 import { getFieldTypeDef } from "@/config/fieldTypes";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
+import { isHeading } from "@/utils/form_fields";
 
 const props = defineProps<{
     fieldname: string;
@@ -75,7 +76,7 @@ const classNames = computed<string>(() =>
 
 <template>
     <div :class="classNames">
-        <div>
+        <div v-if="!isHeading(fieldtype)">
             <span class="text-sm text-ink-gray-5">{{ label }}</span>
             <p v-if="description" class="text-xs text-ink-gray-4">{{ description }}</p>
         </div>
@@ -127,6 +128,12 @@ const classNames = computed<string>(() =>
         <span v-else-if="isDateField" class="text-sm text-ink-gray-7">
             {{ formattedDateValue }}
         </span>
+
+        <Heading
+            v-else-if="isHeading(fieldtype)"
+            :field="{ label, fieldtype }"
+            :in-edit-mode="false"
+        />
 
         <span v-else class="text-sm text-ink-gray-7">
             {{ value ?? "–" }}

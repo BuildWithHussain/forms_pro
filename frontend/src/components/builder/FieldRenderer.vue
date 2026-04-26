@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { Asterisk } from "lucide-vue-next";
 import RenderField from "../RenderField.vue";
+import Heading from "@/components/fields/Heading.vue";
 import Table from "@/components/fields/Table.vue";
 import { useFieldOptions } from "@/utils/selectOptions";
 import { getFieldTypeDef, type Fieldtype } from "@/config/fieldTypes";
@@ -175,6 +176,17 @@ const { options: selectOptions } = useFieldOptions(fieldData);
                 v-model="modelValue as undefined"
                 :in-edit-mode="inEditMode"
                 :doctype="fieldData.options"
+            />
+        </div>
+        <!-- heading: renders field label as h1/h2/h3; no input -->
+        <div
+            v-else-if="['Heading 1', 'Heading 2', 'Heading 3'].includes(fieldData.fieldtype)"
+            class="w-full py-1"
+        >
+            <Heading
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
             />
         </div>
         <div v-else :class="getClasses">

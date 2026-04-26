@@ -39,19 +39,19 @@ const headingClass = computed(
 </script>
 
 <template>
-    <div v-if="inEditMode">
-        <input
-            type="text"
-            :value="field.label"
-            @input="emit('update:label', ($event.target as HTMLInputElement).value)"
-            :class="[
-                headingClass,
-                'bg-transparent border-none outline-none text-base focus:ring-0 w-full px-0 py-1',
-            ]"
-            placeholder="Heading Text"
-        />
-    </div>
-    <component v-else :is="headingTag" :class="headingClass">
+    <input
+        v-if="inEditMode"
+        type="text"
+        :value="field.label"
+        @input="emit('update:label', ($event.target as HTMLInputElement).value)"
+        :class="[
+            headingClass,
+            'bg-transparent border-none outline-none text-base focus:ring-0 w-full px-0 py-2 text-balance',
+        ]"
+        placeholder="Heading Text"
+        aria-label="Heading text"
+    />
+    <component v-else :is="headingTag" :class="[headingClass, 'text-balance']">
         {{ field.label }}
     </component>
 </template>

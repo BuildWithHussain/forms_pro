@@ -6,10 +6,11 @@ on:
 
 jobs:
   backport:
-    if: github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'backport/version-15')
+    if: github.event.pull_request.merged && contains(join(github.event.pull_request.labels.*.name, ','), 'backport/')
     runs-on: ubuntu-latest
     steps:
       - uses: korthout/backport-action@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_title: "[backport] ${pull_title}"
+          label_pattern: "^backport/([^ ]+)$"

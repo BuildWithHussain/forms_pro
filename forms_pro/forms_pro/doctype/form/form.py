@@ -51,7 +51,7 @@ class Form(Document):
         return users_shared_with
 
     def generate_initial_route(self) -> str:
-        return "s/forms_pro_" + frappe.utils.random_string(8)
+        return "forms_pro_" + frappe.utils.random_string(8)
 
     def before_insert(self) -> None:
         self.status = "Draft"

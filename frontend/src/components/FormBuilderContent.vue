@@ -7,12 +7,13 @@ import { ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
 import FieldRenderer from "@/components/builder/FieldRenderer.vue";
-import FieldActions from "./FieldActions.vue";
+import FieldActions from "@/components/builder/FieldActions.vue";
 
 const editFormStore = useEditForm();
 
 // Ref for the entire FormBuilderContent component
 const fieldContentRef = ref<HTMLElement | null>(null);
+const isDraggingField = ref(false);
 
 // Function to check if an element is a dropdown/popover (including portals)
 const isDropdownOrPopover = (element: Element | null): boolean => {
@@ -145,7 +146,14 @@ onClickOutside(fieldContentRef, (event) => {
             </div>
         </div>
         <div>
-            <draggableComponent :list="editFormStore.fields" item-key="idx" tag="div">
+            <draggableComponent
+                :list="editFormStore.fields"
+                item-key="idx"
+                tag="div"
+                handle=".handle"
+                @start="isDraggingField = true"
+                @end="isDraggingField = false"
+            >
                 <template #item="{ element }">
                     <div
                         @click="editFormStore.selectField(element)"
@@ -153,6 +161,7 @@ onClickOutside(fieldContentRef, (event) => {
                     >
                         <FieldActions
                             :isSelected="editFormStore.selectedField === element"
+                            :isDraggingAnyField="isDraggingField"
                             @remove="editFormStore.removeField(element)"
                         />
                         <FieldRenderer

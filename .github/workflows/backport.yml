@@ -6,7 +6,7 @@ on:
 
 jobs:
   backport:
-    if: github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'backport/')
+    if: github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'backport/version-15')
     runs-on: ubuntu-latest
     steps:
       - uses: korthout/backport-action@v3

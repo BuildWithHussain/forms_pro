@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import RenderField from "../RenderField.vue";
 import FieldLabel from "./FieldLabel.vue";
+import Heading from "@/components/fields/Heading.vue";
 import Table from "@/components/fields/Table.vue";
 import { useFieldOptions } from "@/utils/selectOptions";
 import { getFieldTypeDef, Fieldtype } from "@/config/fieldTypes";
@@ -80,6 +81,15 @@ const { options: selectOptions } = useFieldOptions(fieldData);
                 :in-edit-mode="inEditMode"
                 :class="{ 'pointer-events-none': inEditMode }"
                 :disabled="disabled"
+            />
+        </div>
+
+        <!-- heading: renders field label as h1/h2/h3; no input -->
+        <div v-else-if="layout === 'heading'" class="w-full py-1">
+            <Heading
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
             />
         </div>
 

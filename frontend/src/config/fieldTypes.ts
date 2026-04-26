@@ -34,6 +34,7 @@ import {
   FormControl,
 } from "frappe-ui";
 import Attachment from "@/components/fields/Attachment.vue";
+import Heading from "@/components/fields/Heading.vue";
 import Multiselect from "@/components/fields/multiselect/Multiselect.vue";
 import MultiselectBuilderExtras from "@/components/fields/multiselect/MultiselectBuilderExtras.vue";
 import Phone from "@/components/fields/Phone.vue";
@@ -50,7 +51,12 @@ export { Fieldtype };
  * - "description-first" label on top, description below label, input at the bottom (Text Editor)
  * - "custom"            the component handles its own full layout (Table)
  */
-export type FieldLayout = "default" | "inline" | "description-first" | "custom";
+export type FieldLayout =
+  | "default"
+  | "inline"
+  | "description-first"
+  | "custom"
+  | "heading";
 
 export type FieldTypeDefinition = {
   /** Canonical name — must match a Fieldtype enum value */
@@ -270,6 +276,33 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
     isBoolean: false,
     isDate: false,
     builderExtras: MultiselectBuilderExtras,
+  },
+  {
+    name: Fieldtype.HEADING_1,
+    component: Heading,
+    props: {},
+    layout: "heading",
+    frappeFieldtype: "HTML",
+    isBoolean: false,
+    isDate: false,
+  },
+  {
+    name: Fieldtype.HEADING_2,
+    component: Heading,
+    props: {},
+    layout: "heading",
+    frappeFieldtype: "HTML",
+    isBoolean: false,
+    isDate: false,
+  },
+  {
+    name: Fieldtype.HEADING_3,
+    component: Heading,
+    props: {},
+    layout: "heading",
+    frappeFieldtype: "HTML",
+    isBoolean: false,
+    isDate: false,
   },
 ];
 

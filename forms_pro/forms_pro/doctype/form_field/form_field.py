@@ -3,6 +3,7 @@
 
 # import frappe
 from frappe.model.document import Document
+from frappe.utils import escape_html
 
 # Maps Forms Pro field types to Frappe CustomField fieldtypes.
 # When adding a new field type:
@@ -97,7 +98,7 @@ class FormField(Document):
             "default": self.default,
         }
 
-    def get_options(self) -> str:
+    def get_options(self) -> str | None:
         if self.fieldtype in _DISPLAY_ONLY_FIELDTYPES:
             HEADING_MAP = {
                 "Heading 1": "h1",
@@ -105,6 +106,6 @@ class FormField(Document):
                 "Heading 3": "h3",
             }
             tag = HEADING_MAP.get(self.fieldtype, "h2")
-            return f"<{tag}>{self.label}</{tag}>"
+            return f"<{tag}>{escape_html(self.label or '')}</{tag}>"
 
         return self.options

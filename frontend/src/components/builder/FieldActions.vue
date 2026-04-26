@@ -22,8 +22,20 @@ defineEmits<{
                 : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100',
         ]"
     >
-        <Button size="sm" :icon="Trash2" variant="ghost" @click.stop="$emit('remove')" />
-        <Button class="handle" size="sm" :icon="GripVertical" variant="ghost" />
+        <Button
+            size="sm"
+            :icon="Trash2"
+            variant="ghost"
+            @click.stop="$emit('remove')"
+            tooltip="Remove this field"
+        />
+        <Button
+            class="handle"
+            size="sm"
+            :icon="GripVertical"
+            variant="ghost"
+            tooltip="Drag to move"
+        />
     </div>
 </template>
 

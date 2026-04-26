@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import draggableComponent from "vuedraggable";
-import { LoadingIndicator, TextEditor, Button } from "frappe-ui";
+import { LoadingIndicator, TextEditor } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
-import { GripVertical } from "lucide-vue-next";
 import { FormField } from "@/types/formfield";
 import { ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
 import FieldRenderer from "@/components/builder/FieldRenderer.vue";
+import FieldActions from "@/components/builder/FieldActions.vue";
 
 const editFormStore = useEditForm();
 
 // Ref for the entire FormBuilderContent component
 const fieldContentRef = ref<HTMLElement | null>(null);
+const isDraggingField = ref(false);
 
 // Function to check if an element is a dropdown/popover (including portals)
 const isDropdownOrPopover = (element: Element | null): boolean => {
@@ -145,14 +146,24 @@ onClickOutside(fieldContentRef, (event) => {
             </div>
         </div>
         <div>
-            <draggableComponent :list="editFormStore.fields" item-key="idx" tag="div">
+            <draggableComponent
+                :list="editFormStore.fields"
+                item-key="idx"
+                tag="div"
+                handle=".handle"
+                @start="isDraggingField = true"
+                @end="isDraggingField = false"
+            >
                 <template #item="{ element }">
                     <div
                         @click="editFormStore.selectField(element)"
-                        :class="{ 'border-gray-400': editFormStore.selectedField === element }"
-                        class="p-2 my-3 bg-gray-50 rounded border flex gap-2 relative transition-colors"
+                        class="my-3 relative transition-colors group"
                     >
-                        <GripVertical class="w-4 h-4 handle" />
+                        <FieldActions
+                            :isSelected="editFormStore.selectedField === element"
+                            :isDraggingAnyField="isDraggingField"
+                            @remove="editFormStore.removeField(element)"
+                        />
                         <FieldRenderer
                             :field="element"
                             @update:field="
@@ -161,21 +172,9 @@ onClickOutside(fieldContentRef, (event) => {
                             "
                             :inEditMode="true"
                         />
-                        <Button
-                            icon="x"
-                            variant="outline"
-                            class="absolute -top-2 -right-2"
-                            @click="editFormStore.removeField(element)"
-                        />
                     </div>
                 </template>
             </draggableComponent>
         </div>
     </div>
 </template>
-
-<style scoped>
-.handle {
-    cursor: grab;
-}
-</style>

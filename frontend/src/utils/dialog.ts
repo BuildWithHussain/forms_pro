@@ -10,6 +10,7 @@ export interface DialogAction {
 export interface DialogOptions {
   title: string;
   message: string;
+  html?: boolean;
   actions?: DialogAction[];
 }
 
@@ -17,6 +18,7 @@ export interface DialogState {
   open: boolean;
   title: string;
   message: string;
+  html: boolean;
   actions: DialogAction[];
   resolve: ((value: boolean) => void) | null;
 }
@@ -25,6 +27,7 @@ export const dialogState = reactive<DialogState>({
   open: false,
   title: "",
   message: "",
+  html: false,
   actions: [],
   resolve: null,
 });
@@ -42,6 +45,7 @@ export const dialog = {
     return new Promise((resolve) => {
       dialogState.title = options.title;
       dialogState.message = options.message;
+      dialogState.html = options.html || false;
       dialogState.actions = options.actions || [
         { label: "OK", variant: "solid" },
       ];

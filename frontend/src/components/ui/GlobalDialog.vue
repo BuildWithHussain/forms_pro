@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Dialog, Button } from "frappe-ui";
-import { dialogState, dialog } from "@/utils/dialog";
+import { Dialog } from "frappe-ui";
+import { dialogState } from "@/utils/dialog";
 </script>
 
 <template>
@@ -12,7 +12,14 @@ import { dialogState, dialog } from "@/utils/dialog";
         }"
     >
         <template #body-content>
-            <p class="text-p-base text-gray-700">{{ dialogState.message }}</p>
+            <p
+                v-if="dialogState.html"
+                class="text-p-base text-gray-700"
+                v-html="dialogState.message"
+            ></p>
+            <p v-else class="text-p-base text-gray-700">
+                {{ dialogState.message }}
+            </p>
         </template>
     </Dialog>
 </template>

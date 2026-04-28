@@ -302,10 +302,10 @@
   resolved "https://registry.yarnpkg.com/@lottiefiles/dotlottie-web/-/dotlottie-web-0.71.0.tgz#bf066bd968459d78644bc9385ba776d48b4a7b61"
   integrity sha512-CliQttL0Rk0or/aDQkqUJXnC9Cm5TxzNdOqy/YlzKlU6mu+XgTMwyt5/HpPiltlMeaqBmM9mOzfevpyP4QmudQ==
 
-"@lucide/vue@^1.0.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@lucide/vue/-/vue-1.8.0.tgz#e5baec754a64f79d1a94850dd72a115e597e2d90"
-  integrity sha512-Rgy2rxfOx9yP6fWneE3QO6xwUbF2o7f9+MRbzGLRakee4tzUeVWHdX23uRH4ymwEzoq2+8vqRI9yGsxeZhYlWw==
+"@lucide/vue@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@lucide/vue/-/vue-1.11.0.tgz#8d3f749bf93cc13b5aa6e21205e1e60d0bfa0231"
+  integrity sha512-ISNBw5Xm7cwfwMQ/sEYelzBCpBnpIcAJUUfIBV62Q6fL10WIEZBrVho1tjragziFTVImDupJYzWozxRn55Fc1g==
 
 "@napi-rs/wasm-runtime@^1.1.3":
   version "1.1.3"

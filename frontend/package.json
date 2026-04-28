@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@lottiefiles/dotlottie-vue": "^0.11.11",
-    "@lucide/vue": "^1.0.0",
+    "@lucide/vue": "^1.11.0",
     "@vueuse/core": "^14.2.1",
     "dayjs": "^1.11.20",
     "feather-icons": "^4.29.2",

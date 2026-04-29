@@ -41,11 +41,9 @@ class IntegrationTestForm(FrappeTestCase):
         if frappe.db.exists("Form", self.test_form.name):
             self.test_form.delete()
 
-        # Clean up test doctype
+        # Clean up test doctype - delete_doc on DocType triggers DDL which auto-commits
         if frappe.db.exists("DocType", self.test_doctype_name):
             frappe.delete_doc("DocType", self.test_doctype_name, force=True)
-
-        frappe.db.commit()
 
     def create_test_doctype(self):
         """Create a test DocType with some initial fields."""

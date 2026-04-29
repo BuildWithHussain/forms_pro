@@ -58,7 +58,8 @@ test.describe("Form Creation", () => {
   }) => {
     const { formId } = await createPublishedForm();
     const builder = new FormBuilderPage(page);
-    await builder.goto(formId);
+    // skipTitleFill: createPublishedForm already set title, don't make form dirty
+    await builder.goto(formId, { skipTitleFill: true });
 
     // Published form → Unpublish button visible
     await expect(

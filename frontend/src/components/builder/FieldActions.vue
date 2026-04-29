@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GripVertical, Trash2 } from "@lucide/vue";
+import { GripVertical, Trash2 } from "lucide-vue-next";
 import { Button } from "frappe-ui";
 
 defineProps<{

@@ -78,7 +78,7 @@ const classNames = computed<string>(() =>
 
 <template>
     <div :class="classNames">
-        <div v-if="!isHeading(fieldtype)">
+        <div v-if="!isHeading(fieldtype as unknown as Fieldtype)">
             <span class="text-sm text-ink-gray-5">{{ label }}</span>
             <p v-if="description" class="text-xs text-ink-gray-4">{{ description }}</p>
         </div>
@@ -132,8 +132,8 @@ const classNames = computed<string>(() =>
         </span>
 
         <Heading
-            v-else-if="isHeading(fieldtype)"
-            :field="{ label, fieldtype }"
+            v-else-if="isHeading(fieldtype as unknown as Fieldtype)"
+            :field="{ label, fieldtype: fieldtype as unknown as Fieldtype }"
             :in-edit-mode="false"
         />
 

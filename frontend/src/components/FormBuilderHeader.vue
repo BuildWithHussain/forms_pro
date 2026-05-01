@@ -161,6 +161,7 @@ const openFormSubmissionPage = () => {
         </div>
         <div class="flex items-center gap-2">
             <Button
+                :aria-label="buttonConfig.label"
                 :icon-left="buttonConfig.iconLeft"
                 :variant="buttonConfig.variant"
                 :theme="buttonConfig.theme"

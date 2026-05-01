@@ -21,6 +21,9 @@ export const useEditForm = defineStore("editForm", () => {
   const selectedField = ref<FormField | null>(null);
   const isUnsaved = computed(() => formResource.value?.isDirty || false);
   const isLoading = computed(() => formResource.value?.loading || false);
+  const isSaving = computed(
+    () => formResource.value?.setValue?.loading || false
+  );
   const isPublished = computed(
     () => formResource.value?.doc?.is_published || false
   );
@@ -165,25 +168,24 @@ export const useEditForm = defineStore("editForm", () => {
   }
 
   function togglePublish() {
-    if (formResource.value?.doc) {
-      formResource.value.setValue.submit(
-        {
-          is_published: !formResource.value.doc.is_published,
+    if (!formResource.value?.doc) return Promise.resolve();
+    return formResource.value.setValue.submit(
+      {
+        is_published: !formResource.value.doc.is_published,
+      },
+      {
+        onSuccess: () => {
+          if (formResource.value.doc.is_published) {
+            toast.success("Form published successfully");
+          } else {
+            toast.info("Form unpublished successfully");
+          }
         },
-        {
-          onSuccess: () => {
-            if (formResource.value.doc.is_published) {
-              toast.success("Form published successfully");
-            } else {
-              toast.info("Form unpublished successfully");
-            }
-          },
-          onError: () => {
-            toast.error("Failed to publish form");
-          },
-        }
-      );
-    }
+        onError: () => {
+          toast.error("Failed to publish form");
+        },
+      }
+    );
   }
 
   function updateFormData(data: Partial<Form>) {
@@ -254,6 +256,7 @@ export const useEditForm = defineStore("editForm", () => {
     // Computed
     originalFormData,
     isLoading,
+    isSaving,
     isError,
     formData,
     fields,

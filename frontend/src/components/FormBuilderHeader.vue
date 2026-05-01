@@ -1,13 +1,81 @@
 <script setup lang="ts">
-import { Badge, Popover, Tooltip } from "frappe-ui";
+import { Badge, Button, Popover, Tooltip, type ButtonProps } from "frappe-ui";
+import { TextMorph } from "torph/vue";
 import { ChevronDown, CloudCheck, ExternalLink, CloudOff } from "@lucide/vue";
-import { Button } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { useRouter } from "vue-router";
+import { computed, nextTick, ref, watch } from "vue";
 import Logo from "@/assets/Logo.vue";
 
 const router = useRouter();
 const editFormStore = useEditForm();
+
+const SUBMISSION_ROUTE_NAME = "Form Submission Page";
+
+type ActionConfig = {
+    label: string;
+    iconLeft: string;
+    variant: ButtonProps["variant"];
+    theme: ButtonProps["theme"];
+    handler: () => unknown;
+};
+
+function computeConfig(): ActionConfig {
+    if (editFormStore.isUnsaved && editFormStore.isPublished)
+        return {
+            label: "Save and publish",
+            iconLeft: "globe",
+            variant: "solid",
+            theme: "gray",
+            handler: editFormStore.saveAndPublish,
+        };
+    if (editFormStore.isUnsaved)
+        return {
+            label: "Save",
+            iconLeft: "",
+            variant: "solid",
+            theme: "gray",
+            handler: editFormStore.save,
+        };
+    if (editFormStore.isPublished)
+        return {
+            label: "Unpublish",
+            iconLeft: "",
+            variant: "subtle",
+            theme: "red",
+            handler: editFormStore.togglePublish,
+        };
+    return {
+        label: "Publish",
+        iconLeft: "globe",
+        variant: "solid",
+        theme: "gray",
+        handler: editFormStore.togglePublish,
+    };
+}
+
+const frozenConfig = ref<ActionConfig | null>(null);
+const buttonConfig = computed<ActionConfig>(() => frozenConfig.value ?? computeConfig());
+
+watch(
+    () => editFormStore.formResource,
+    (r) => {
+        if (!r) frozenConfig.value = null;
+    }
+);
+
+async function onAction() {
+    if (frozenConfig.value) return;
+    frozenConfig.value = computeConfig();
+    try {
+        await frozenConfig.value.handler();
+        await nextTick();
+    } catch {
+        // save() rejects on duplicate fieldnames / no-changes; togglePublish surfaces errors via toast
+    } finally {
+        frozenConfig.value = null;
+    }
+}
 
 const openFormSubmissionPage = () => {
     const route = editFormStore.originalFormData?.route;
@@ -20,10 +88,10 @@ const openFormSubmissionPage = () => {
     // Solution: Get the route definition and construct the path manually,
     // then use router.resolve() with the path string (which doesn't get encoded).
     // This way, if the path changes in router.ts, this code still works.
-    const routeRecord = router.getRoutes().find((r) => r.name === "Form Submission Page");
+    const routeRecord = router.getRoutes().find((r) => r.name === SUBMISSION_ROUTE_NAME);
     if (!routeRecord) return;
 
-    const path = routeRecord.path.replace(":route(.*)", route);
+    const path = routeRecord.path.replace(/:\w+\(.*?\)/, route);
     const routeData = router.resolve(path);
 
     window.open(routeData.href, "_blank");
@@ -31,7 +99,7 @@ const openFormSubmissionPage = () => {
 </script>
 <template>
     <header
-        class="form-builder-header flex justify-between items-center py-2 px-4 border-b h-[3rem] transition-all duration-300"
+        class="form-builder-header flex justify-between items-center py-2 px-4 border-b h-[3rem]"
         data-form-builder-component="form-builder-header"
     >
         <Popover>
@@ -59,7 +127,7 @@ const openFormSubmissionPage = () => {
                 </div>
             </template>
         </Popover>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 m-auto">
             <Badge
                 v-if="editFormStore.isUnsaved"
                 variant="subtle"
@@ -74,11 +142,7 @@ const openFormSubmissionPage = () => {
             >
                 <CloudCheck class="w-4 h-4 text-gray-500" />
             </Tooltip>
-            <Tooltip
-                v-else-if="!editFormStore.isPublished"
-                text="Form is not published"
-                placement="bottom"
-            >
+            <Tooltip v-else text="Form is not published" placement="bottom">
                 <CloudOff class="w-4 h-4 text-gray-500" />
             </Tooltip>
             <h3 class="text-base font-medium text-gray-600 text-center">
@@ -96,32 +160,16 @@ const openFormSubmissionPage = () => {
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <div v-if="editFormStore.isUnsaved">
-                <Button
-                    v-if="editFormStore.isPublished"
-                    label="Save and publish"
-                    icon-left="globe"
-                    variant="solid"
-                    @click="editFormStore.saveAndPublish"
-                    :loading="editFormStore.formResource?.loading"
-                />
-                <Button
-                    v-else
-                    label="Save"
-                    variant="solid"
-                    @click="editFormStore.save"
-                    :loading="editFormStore.formResource?.loading"
-                />
-            </div>
             <Button
-                v-else
-                :label="editFormStore.isPublished ? 'Unpublish' : 'Publish'"
-                :icon-left="editFormStore.isPublished ? '' : 'globe'"
-                :variant="editFormStore.isPublished ? 'subtle' : 'solid'"
-                :theme="editFormStore.isPublished ? 'red' : 'gray'"
-                :loading="editFormStore.formResource?.loading"
-                @click="editFormStore.togglePublish"
-            />
+                :aria-label="buttonConfig.label"
+                :icon-left="buttonConfig.iconLeft"
+                :variant="buttonConfig.variant"
+                :theme="buttonConfig.theme"
+                :loading="editFormStore.isSaving || editFormStore.isLoading"
+                @click="onAction"
+            >
+                <TextMorph :text="buttonConfig.label" />
+            </Button>
         </div>
     </header>
 </template>

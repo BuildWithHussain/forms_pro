@@ -4,7 +4,7 @@ import { LoadingIndicator, TextEditor } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { FormField } from "@/types/formfield";
 import { ref } from "vue";
-import { onClickOutside } from "@vueuse/core";
+import { onClickOutside, useEventListener } from "@vueuse/core";
 
 import FieldRenderer from "@/components/builder/FieldRenderer.vue";
 import FieldActions from "@/components/builder/FieldActions.vue";
@@ -62,6 +62,13 @@ const isDropdownOrPopover = (element: Element | null): boolean => {
 
     return false;
 };
+
+useEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.metaKey && event.key === "s") {
+        event.preventDefault();
+        editFormStore.save();
+    }
+});
 
 // Set up outside click detection for the entire FormBuilderContent component
 onClickOutside(fieldContentRef, (event) => {

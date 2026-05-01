@@ -115,6 +115,11 @@ export const useEditForm = defineStore("editForm", () => {
   }
 
   async function save() {
+    if (!isUnsaved.value) {
+      toast.info("No changes to save");
+      return;
+    }
+
     if (!formResource.value) {
       toast.error("No form resource available");
       return Promise.reject(new Error("No form resource available"));

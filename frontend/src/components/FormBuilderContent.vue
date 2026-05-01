@@ -151,6 +151,7 @@ onClickOutside(fieldContentRef, (event) => {
                 item-key="idx"
                 tag="div"
                 handle=".handle"
+                ghost-class="opacity-50"
                 @start="isDraggingField = true"
                 @end="isDraggingField = false"
             >

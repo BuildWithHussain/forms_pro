@@ -3290,6 +3290,11 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
+torph@^0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/torph/-/torph-0.0.9.tgz#00026fa3f14685b5a380e87202674bb2aa84d38e"
+  integrity sha512-WrFMtJwqXCfIXbLNuTOwHWff0XVm/Ewctb+71bFis3HykPvCXl1CHXapU0r67pQhAI323fsA1L2pGPeqxXeRRA==
+
 tough-cookie@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-6.0.1.tgz#a495f833836609ed983c19bc65639cfbceb54c76"

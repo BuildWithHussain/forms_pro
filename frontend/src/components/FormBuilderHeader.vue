@@ -4,7 +4,7 @@ import { TextMorph } from "torph/vue";
 import { ChevronDown, CloudCheck, ExternalLink, CloudOff } from "@lucide/vue";
 import { useEditForm } from "@/stores/editForm";
 import { useRouter } from "vue-router";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import Logo from "@/assets/Logo.vue";
 
 const router = useRouter();
@@ -61,6 +61,21 @@ watch(
     () => editFormStore.formResource,
     (r) => {
         if (!r) frozenConfig.value = null;
+    }
+);
+
+// torph@0.0.9 TextMorph skips render when mounted with static text:
+// MorphController.attach() only calls update() if lastText is set, and the
+// text-prop watcher has no `immediate: true`. Mount with empty string, then
+// assign post-mount so the watcher fires and populates the DOM.
+const morphLabel = ref("");
+onMounted(() => {
+    morphLabel.value = buttonConfig.value.label;
+});
+watch(
+    () => buttonConfig.value.label,
+    (l) => {
+        morphLabel.value = l;
     }
 );
 
@@ -168,7 +183,7 @@ const openFormSubmissionPage = () => {
                 :loading="editFormStore.isSaving || editFormStore.isLoading"
                 @click="onAction"
             >
-                <TextMorph :text="buttonConfig.label" />
+                <TextMorph :text="morphLabel" />
             </Button>
         </div>
     </header>

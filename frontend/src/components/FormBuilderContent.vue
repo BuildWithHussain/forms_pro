@@ -9,6 +9,7 @@ import { useGroupedRows } from "@/composables/useGroupedRows";
 import type { FormField } from "@/types/formfield";
 import FieldCard from "@/components/builder/FieldCard.vue";
 import RowDropZone from "@/components/builder/RowDropZone.vue";
+import ColumnDropZone from "@/components/builder/ColumnDropZone.vue";
 
 const editFormStore = useEditForm();
 
@@ -19,32 +20,43 @@ const draggingFromRow = ref<number | null>(null);
 const groupedRows = useGroupedRows(computed(() => editFormStore.fields));
 
 function fieldKey(field: FormField): string {
-    return `${field.row_index ?? 0}-${field.column_index ?? 0}`;
+    return `${field.row_index ?? 0}-${field.column_index ?? 0}-${field.cell_index ?? 0}`;
 }
 
-function rowIndexOf(row: FormField[], rIdx: number): number {
-    return row[0]?.row_index ?? rIdx;
+function rowIndexOf(row: FormField[][], rIdx: number): number {
+    return row[0]?.[0]?.row_index ?? rIdx;
 }
 
-function onFieldChange(evt: any, rowIndex: number) {
+function colIndexOf(col: FormField[], cIdx: number): number {
+    return col[0]?.column_index ?? cIdx;
+}
+
+function onCellChange(evt: any, rowIndex: number, colIndex: number) {
     if (evt.moved) {
-        // Reorder within the same row: renumber column_index based on new position
+        // Reorder cells within same column: renumber cell_index by new position
         const { element, newIndex } = evt.moved;
-        const rowFields: FormField[] = editFormStore.fields
-            .filter((f: FormField) => (f.row_index ?? 0) === rowIndex)
-            .sort((a: FormField, b: FormField) => (a.column_index ?? 0) - (b.column_index ?? 0));
-        const oldIdx = rowFields.indexOf(element);
+        const cells: FormField[] = editFormStore.fields
+            .filter(
+                (f: FormField) =>
+                    (f.row_index ?? 0) === rowIndex && (f.column_index ?? 0) === colIndex
+            )
+            .sort((a: FormField, b: FormField) => (a.cell_index ?? 0) - (b.cell_index ?? 0));
+        const oldIdx = cells.indexOf(element);
         if (oldIdx === -1) return;
-        rowFields.splice(oldIdx, 1);
-        rowFields.splice(newIndex, 0, element);
-        rowFields.forEach((f: FormField, i: number) => {
-            f.column_index = i;
+        cells.splice(oldIdx, 1);
+        cells.splice(newIndex, 0, element);
+        cells.forEach((f: FormField, i: number) => {
+            f.cell_index = i;
         });
     } else if (evt.added) {
-        // Field dropped from another row — move it here at the given column
-        editFormStore.moveField(evt.added.element, rowIndex, evt.added.newIndex);
+        // Field dropped into this column from elsewhere — stack into column at cell index
+        editFormStore.insertCell(evt.added.element, rowIndex, colIndex, evt.added.newIndex);
     }
-    // evt.removed: no-op — the target row's evt.added owns the move
+    // evt.removed: no-op — target column's evt.added owns the move
+}
+
+function onColumnZoneDrop(field: FormField, atRow: number, atCol: number) {
+    editFormStore.moveField(field, atRow, atCol);
 }
 
 function onRowZoneDrop(field: FormField, atRow: number) {
@@ -181,32 +193,58 @@ onClickOutside(fieldContentRef, (event) => {
                     :isDragging="isDraggingField"
                     @drop="onRowZoneDrop"
                 />
-                <draggableComponent
-                    :list="[...row]"
-                    :group="{ name: 'fields' }"
-                    :item-key="fieldKey"
-                    handle=".handle"
-                    ghost-class="opacity-50"
-                    tag="div"
-                    class="flex flex-row gap-2 items-stretch"
-                    @change="(evt: any) => onFieldChange(evt, rowIndexOf(row, rIdx))"
-                    @start="
-                        () => {
-                            isDraggingField = true;
-                            draggingFromRow = rowIndexOf(row, rIdx);
-                        }
-                    "
-                    @end="
-                        () => {
-                            isDraggingField = false;
-                            draggingFromRow = null;
-                        }
-                    "
-                >
-                    <template #item="{ element: field }">
-                        <FieldCard :field="field" :isDraggingAnyField="isDraggingField" />
+                <div class="flex flex-row gap-2 items-stretch">
+                    <template
+                        v-for="(col, cIdx) in row"
+                        :key="`${rowIndexOf(row, rIdx)}-${colIndexOf(col, cIdx)}`"
+                    >
+                        <ColumnDropZone
+                            :atRow="rowIndexOf(row, rIdx)"
+                            :atCol="colIndexOf(col, cIdx)"
+                            :isDragging="isDraggingField"
+                            @drop="onColumnZoneDrop"
+                        />
+                        <draggableComponent
+                            :list="[...col]"
+                            :group="{ name: 'fields' }"
+                            :item-key="fieldKey"
+                            handle=".handle"
+                            ghost-class="opacity-50"
+                            tag="div"
+                            class="flex flex-col gap-2 flex-1 min-w-0"
+                            @change="
+                                (evt: any) =>
+                                    onCellChange(
+                                        evt,
+                                        rowIndexOf(row, rIdx),
+                                        colIndexOf(col, cIdx)
+                                    )
+                            "
+                            @start="
+                                () => {
+                                    isDraggingField = true;
+                                    draggingFromRow = rowIndexOf(row, rIdx);
+                                }
+                            "
+                            @end="
+                                () => {
+                                    isDraggingField = false;
+                                    draggingFromRow = null;
+                                }
+                            "
+                        >
+                            <template #item="{ element: field }">
+                                <FieldCard :field="field" :isDraggingAnyField="isDraggingField" />
+                            </template>
+                        </draggableComponent>
                     </template>
-                </draggableComponent>
+                    <ColumnDropZone
+                        :atRow="rowIndexOf(row, rIdx)"
+                        :atCol="row.length"
+                        :isDragging="isDraggingField"
+                        @drop="onColumnZoneDrop"
+                    />
+                </div>
                 <RowDropZone
                     v-if="
                         rIdx === groupedRows.length - 1 &&

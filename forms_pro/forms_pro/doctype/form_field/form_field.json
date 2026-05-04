@@ -8,6 +8,7 @@
  "field_order": [
   "row_index",
   "column_index",
+  "cell_index",
   "reqd",
   "hidden",
   "label",
@@ -89,6 +90,13 @@
    "fieldname": "column_index",
    "fieldtype": "Int",
    "label": "Column Index",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cell_index",
+   "fieldtype": "Int",
+   "label": "Cell Index",
    "non_negative": 1,
    "read_only": 1
   }

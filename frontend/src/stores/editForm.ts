@@ -207,18 +207,36 @@ export const useEditForm = defineStore("editForm", () => {
       f.row_index = rowRemap.get(f.row_index ?? 0) ?? 0;
     }
 
-    // Renumber column_index within each row to 0..M-1
-    const rowMap = new Map<number, FormField[]>();
+    // Remap distinct column_index values within each row to 0..M-1
+    // (cells sharing a column_index stay grouped — multi-cell columns preserved)
+    const rowColsMap = new Map<number, Set<number>>();
     for (const f of fs) {
       const r = f.row_index!;
-      if (!rowMap.has(r)) rowMap.set(r, []);
-      rowMap.get(r)!.push(f);
+      if (!rowColsMap.has(r)) rowColsMap.set(r, new Set());
+      rowColsMap.get(r)!.add(f.column_index ?? 0);
     }
-    for (const row of rowMap.values()) {
-      row
-        .sort((a, b) => (a.column_index ?? 0) - (b.column_index ?? 0))
+    const colRemapByRow = new Map<number, Map<number, number>>();
+    for (const [r, cols] of rowColsMap) {
+      const sorted = [...cols].sort((a, b) => a - b);
+      colRemapByRow.set(r, new Map(sorted.map((c, i) => [c, i])));
+    }
+    for (const f of fs) {
+      f.column_index =
+        colRemapByRow.get(f.row_index!)!.get(f.column_index ?? 0) ?? 0;
+    }
+
+    // Renumber cell_index within each (row, column) to 0..K-1
+    const cellMap = new Map<string, FormField[]>();
+    for (const f of fs) {
+      const key = `${f.row_index}-${f.column_index}`;
+      if (!cellMap.has(key)) cellMap.set(key, []);
+      cellMap.get(key)!.push(f);
+    }
+    for (const cells of cellMap.values()) {
+      cells
+        .sort((a, b) => (a.cell_index ?? 0) - (b.cell_index ?? 0))
         .forEach((f, i) => {
-          f.column_index = i;
+          f.cell_index = i;
         });
     }
   }
@@ -241,6 +259,7 @@ export const useEditForm = defineStore("editForm", () => {
         description: "",
         row_index: lastRowIndex(fs) + 1,
         column_index: 0,
+        cell_index: 0,
       };
 
       fs.push(newField);
@@ -261,6 +280,7 @@ export const useEditForm = defineStore("editForm", () => {
       description: field.description,
       row_index: lastRowIndex(fs) + 1,
       column_index: 0,
+      cell_index: 0,
     };
 
     fs.push(_newField);
@@ -270,7 +290,8 @@ export const useEditForm = defineStore("editForm", () => {
     const fs: FormField[] = formResource.value?.doc?.fields ?? [];
     if (!fs.includes(field)) return;
 
-    // Shift existing columns in target row to open a slot
+    // Shift existing columns in target row to open a slot (whole columns shift,
+    // multi-cell columns stay grouped because all their cells share column_index)
     for (const f of fs) {
       if (
         f !== field &&
@@ -283,6 +304,35 @@ export const useEditForm = defineStore("editForm", () => {
 
     field.row_index = targetRow;
     field.column_index = targetCol;
+    field.cell_index = 0;
+
+    compact();
+  }
+
+  function insertCell(
+    field: FormField,
+    targetRow: number,
+    targetCol: number,
+    atCell: number
+  ) {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.includes(field)) return;
+
+    // Shift cells at or below atCell within (targetRow, targetCol) down by 1
+    for (const f of fs) {
+      if (
+        f !== field &&
+        (f.row_index ?? 0) === targetRow &&
+        (f.column_index ?? 0) === targetCol &&
+        (f.cell_index ?? 0) >= atCell
+      ) {
+        f.cell_index = (f.cell_index ?? 0) + 1;
+      }
+    }
+
+    field.row_index = targetRow;
+    field.column_index = targetCol;
+    field.cell_index = atCell;
 
     compact();
   }
@@ -300,6 +350,7 @@ export const useEditForm = defineStore("editForm", () => {
 
     field.row_index = atRow;
     field.column_index = 0;
+    field.cell_index = 0;
 
     compact();
   }
@@ -359,6 +410,7 @@ export const useEditForm = defineStore("editForm", () => {
     updateField,
     removeField,
     moveField,
+    insertCell,
     insertNewRow,
   };
 });

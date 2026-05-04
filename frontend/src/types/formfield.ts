@@ -14,4 +14,5 @@ export type FormField = {
   conditional_logic?: string;
   row_index?: number;
   column_index?: number;
+  cell_index?: number;
 };

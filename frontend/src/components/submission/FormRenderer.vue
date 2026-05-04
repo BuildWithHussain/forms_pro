@@ -26,6 +26,14 @@ function isFieldVisible(field: FormField) {
     return shouldFieldBeVisible(field, submissionFormStore.fields, allFields.value);
 }
 
+function rowKey(row: FormField[][], rIdx: number) {
+    return `r-${row[0]?.[0]?.row_index ?? rIdx}`;
+}
+
+function colKey(col: FormField[], cIdx: number) {
+    return `c-${col[0]?.column_index ?? cIdx}`;
+}
+
 function handleSubmitForm() {
     submissionFormStore.submitForm();
 }
@@ -35,23 +43,33 @@ function handleSubmitForm() {
         <LoadingIndicator class="mx-auto my-auto w-5 h-5" />
     </div>
     <div v-if="submissionFormStore.inFormFillingState" class="flex flex-col gap-4">
-        <template v-for="(row, rIdx) in groupedRows" :key="`r-${row[0]?.row_index ?? rIdx}`">
-            <div v-if="row.some(isFieldVisible)" class="flex flex-col md:flex-row gap-4">
-                <template v-for="field in row" :key="field.fieldname">
-                    <div v-if="isFieldVisible(field)" class="flex-1 min-w-0">
-                        <FieldRenderer
-                            :disabled="disabled"
-                            v-model="submissionFormStore.fields[field.fieldname]"
-                            :field="{
-                                ...field,
-                                reqd: shouldFieldBeRequired(
-                                    field,
-                                    submissionFormStore.fields,
-                                    allFields
-                                ),
-                            }"
-                            :inEditMode="false"
-                        />
+        <template v-for="(row, rIdx) in groupedRows" :key="rowKey(row, rIdx)">
+            <div
+                v-if="row.some((col) => col.some(isFieldVisible))"
+                class="flex flex-col md:flex-row gap-4"
+            >
+                <template v-for="(col, cIdx) in row" :key="colKey(col, cIdx)">
+                    <div
+                        v-if="col.some(isFieldVisible)"
+                        class="flex flex-col gap-4 flex-1 min-w-0"
+                    >
+                        <template v-for="field in col" :key="field.fieldname">
+                            <div v-if="isFieldVisible(field)">
+                                <FieldRenderer
+                                    :disabled="disabled"
+                                    v-model="submissionFormStore.fields[field.fieldname]"
+                                    :field="{
+                                        ...field,
+                                        reqd: shouldFieldBeRequired(
+                                            field,
+                                            submissionFormStore.fields,
+                                            allFields
+                                        ),
+                                    }"
+                                    :inEditMode="false"
+                                />
+                            </div>
+                        </template>
                     </div>
                 </template>
             </div>

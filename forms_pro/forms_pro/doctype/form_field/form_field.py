@@ -48,6 +48,7 @@ class FormField(Document):
     if TYPE_CHECKING:
         from frappe.types import DF
 
+        cell_index: DF.Int
         column_index: DF.Int
         conditional_logic: DF.Code | None
         default: DF.SmallText | None

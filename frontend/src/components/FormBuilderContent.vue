@@ -137,15 +137,15 @@ onClickOutside(fieldContentRef, (event) => {
                 <p class="text-base">Click on fields to add them to the form.</p>
             </div>
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-3">
             <div
                 v-for="(row, rIdx) in groupedRows"
-                :key="rIdx"
+                :key="row[0]?.row_index ?? rIdx"
                 class="flex flex-row gap-2 items-stretch"
             >
                 <FieldCard
                     v-for="field in row"
-                    :key="field.idx"
+                    :key="`${field.row_index}-${field.column_index}`"
                     :field="field"
                     :isDraggingAnyField="isDraggingField"
                 />

@@ -1,28 +1,25 @@
 <script setup lang="ts">
-import draggableComponent from "vuedraggable";
+import { computed, ref } from "vue";
 import { LoadingIndicator, TextEditor } from "frappe-ui";
-import { useEditForm } from "@/stores/editForm";
-import { FormField } from "@/types/formfield";
-import { ref } from "vue";
 import { onClickOutside, useEventListener } from "@vueuse/core";
 
-import FieldRenderer from "@/components/builder/FieldRenderer.vue";
-import FieldActions from "@/components/builder/FieldActions.vue";
+import { useEditForm } from "@/stores/editForm";
+import { useGroupedRows } from "@/composables/useGroupedRows";
+import FieldCard from "@/components/builder/FieldCard.vue";
 
 const editFormStore = useEditForm();
 
-// Ref for the entire FormBuilderContent component
 const fieldContentRef = ref<HTMLElement | null>(null);
 const isDraggingField = ref(false);
+
+const groupedRows = useGroupedRows(computed(() => editFormStore.fields));
 
 // Function to check if an element is a dropdown/popover (including portals)
 const isDropdownOrPopover = (element: Element | null): boolean => {
     if (!element) return false;
 
-    // Walk up the DOM tree to check for dropdown indicators
     let current: Element | null = element;
     while (current && current !== document.body) {
-        // Check for Headless UI patterns
         if (
             current.hasAttribute("role") &&
             (current.getAttribute("role") === "listbox" ||
@@ -32,12 +29,10 @@ const isDropdownOrPopover = (element: Element | null): boolean => {
             return true;
         }
 
-        // Check for Headless UI data attributes
         if (current.hasAttribute("data-headlessui-state") || current.id?.includes("headlessui")) {
             return true;
         }
 
-        // Check for Radix UI patterns
         if (
             current.hasAttribute("data-radix-popper-content-wrapper") ||
             current.id?.startsWith("radix") ||
@@ -46,7 +41,6 @@ const isDropdownOrPopover = (element: Element | null): boolean => {
             return true;
         }
 
-        // Check for common dropdown classes
         const classList = current.classList;
         if (
             classList.contains("dropdown-menu") ||
@@ -70,9 +64,7 @@ useEventListener("keydown", (event: KeyboardEvent) => {
     }
 });
 
-// Set up outside click detection for the entire FormBuilderContent component
 onClickOutside(fieldContentRef, (event) => {
-    // Check if the click is on any other form builder components
     const target = event.target as Element;
     const isFormBuilderComponent =
         target.closest("[data-form-builder-component]") ||
@@ -80,12 +72,8 @@ onClickOutside(fieldContentRef, (event) => {
         target.closest(".form-builder-sidebar") ||
         target.closest(".form-builder-header");
 
-    // Check if the click is on a dropdown menu (which may be rendered in a portal)
-    // This handles Headless UI, Radix UI, and other common dropdown patterns
     const isDropdownElement = isDropdownOrPopover(target);
 
-    // Also check if there are any visible/open dropdowns in the DOM
-    // This catches dropdowns that might be open but the click target isn't directly on them
     const hasOpenDropdown = !!(
         document.querySelector('[role="listbox"]:not([hidden]):not([style*="display: none"])') ||
         document.querySelector('[role="combobox"][aria-expanded="true"]') ||
@@ -93,8 +81,6 @@ onClickOutside(fieldContentRef, (event) => {
         document.querySelector('[aria-expanded="true"][role="combobox"]')
     );
 
-    // Check if the active element (focused element) is within the sidebar
-    // This helps catch cases where a dropdown is open and the user is interacting with it
     const activeElement = document.activeElement;
     const isActiveElementInSidebar = activeElement
         ? !!(
@@ -104,8 +90,6 @@ onClickOutside(fieldContentRef, (event) => {
           )
         : false;
 
-    // Only deselect if NOT clicking on other form builder components or dropdowns
-    // Also don't deselect if there's an open dropdown or if the active element is in the sidebar
     if (
         !isFormBuilderComponent &&
         !isDropdownElement &&
@@ -116,6 +100,7 @@ onClickOutside(fieldContentRef, (event) => {
     }
 });
 </script>
+
 <template>
     <div v-if="editFormStore.isLoading">
         <LoadingIndicator />
@@ -152,37 +137,19 @@ onClickOutside(fieldContentRef, (event) => {
                 <p class="text-base">Click on fields to add them to the form.</p>
             </div>
         </div>
-        <div>
-            <draggableComponent
-                :list="editFormStore.fields"
-                item-key="idx"
-                tag="div"
-                handle=".handle"
-                ghost-class="opacity-50"
-                @start="isDraggingField = true"
-                @end="isDraggingField = false"
+        <div class="flex flex-col gap-2">
+            <div
+                v-for="(row, rIdx) in groupedRows"
+                :key="rIdx"
+                class="flex flex-row gap-2 items-stretch"
             >
-                <template #item="{ element }">
-                    <div
-                        @click="editFormStore.selectField(element)"
-                        class="my-3 relative transition-colors group"
-                    >
-                        <FieldActions
-                            :isSelected="editFormStore.selectedField === element"
-                            :isDraggingAnyField="isDraggingField"
-                            @remove="editFormStore.removeField(element)"
-                        />
-                        <FieldRenderer
-                            :field="element"
-                            @update:field="
-                                (updatedField: FormField) =>
-                                    editFormStore.updateField(element, updatedField)
-                            "
-                            :inEditMode="true"
-                        />
-                    </div>
-                </template>
-            </draggableComponent>
+                <FieldCard
+                    v-for="field in row"
+                    :key="field.idx"
+                    :field="field"
+                    :isDraggingAnyField="isDraggingField"
+                />
+            </div>
         </div>
     </div>
 </template>

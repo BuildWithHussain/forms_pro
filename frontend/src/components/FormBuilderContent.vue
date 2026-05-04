@@ -8,6 +8,7 @@ import { useEditForm } from "@/stores/editForm";
 import { useGroupedRows } from "@/composables/useGroupedRows";
 import type { FormField } from "@/types/formfield";
 import FieldCard from "@/components/builder/FieldCard.vue";
+import RowDropZone from "@/components/builder/RowDropZone.vue";
 
 const editFormStore = useEditForm();
 
@@ -20,6 +21,10 @@ function fieldKey(field: FormField): string {
     return `${field.row_index ?? 0}-${field.column_index ?? 0}`;
 }
 
+function rowIndexOf(row: FormField[], rIdx: number): number {
+    return row[0]?.row_index ?? rIdx;
+}
+
 function onFieldChange(evt: any, rowIndex: number) {
     if (evt.moved) {
         // Reorder within the same row: renumber column_index based on new position
@@ -28,7 +33,8 @@ function onFieldChange(evt: any, rowIndex: number) {
             .filter((f: FormField) => (f.row_index ?? 0) === rowIndex)
             .sort((a: FormField, b: FormField) => (a.column_index ?? 0) - (b.column_index ?? 0));
         const oldIdx = rowFields.indexOf(element);
-        if (oldIdx !== -1) rowFields.splice(oldIdx, 1);
+        if (oldIdx === -1) return;
+        rowFields.splice(oldIdx, 1);
         rowFields.splice(newIndex, 0, element);
         rowFields.forEach((f: FormField, i: number) => {
             f.column_index = i;
@@ -38,6 +44,10 @@ function onFieldChange(evt: any, rowIndex: number) {
         editFormStore.moveField(evt.added.element, rowIndex, evt.added.newIndex);
     }
     // evt.removed: no-op — the target row's evt.added owns the move
+}
+
+function onRowZoneDrop(field: FormField, atRow: number) {
+    editFormStore.insertNewRow(field, atRow);
 }
 
 // Function to check if an element is a dropdown/popover (including portals)
@@ -164,11 +174,13 @@ onClickOutside(fieldContentRef, (event) => {
             </div>
         </div>
         <div class="flex flex-col gap-3">
-            <div
-                v-for="(row, rIdx) in groupedRows"
-                :key="row[0]?.row_index ?? rIdx"
-                class="flex flex-row gap-2 items-stretch"
-            >
+            <template v-for="(row, rIdx) in groupedRows" :key="rowIndexOf(row, rIdx)">
+                <RowDropZone
+                    v-if="rIdx > 0"
+                    :atRow="rowIndexOf(row, rIdx)"
+                    :isDragging="isDraggingField"
+                    @drop="onRowZoneDrop"
+                />
                 <draggableComponent
                     :list="[...row]"
                     :group="{ name: 'fields' }"
@@ -176,8 +188,8 @@ onClickOutside(fieldContentRef, (event) => {
                     handle=".handle"
                     ghost-class="opacity-50"
                     tag="div"
-                    class="flex flex-row gap-2 items-stretch flex-1 min-w-0"
-                    @change="(evt: any) => onFieldChange(evt, row[0]?.row_index ?? rIdx)"
+                    class="flex flex-row gap-2 items-stretch"
+                    @change="(evt: any) => onFieldChange(evt, rowIndexOf(row, rIdx))"
                     @start="isDraggingField = true"
                     @end="isDraggingField = false"
                 >
@@ -185,7 +197,7 @@ onClickOutside(fieldContentRef, (event) => {
                         <FieldCard :field="field" :isDraggingAnyField="isDraggingField" />
                     </template>
                 </draggableComponent>
-            </div>
+            </template>
         </div>
     </div>
 </template>

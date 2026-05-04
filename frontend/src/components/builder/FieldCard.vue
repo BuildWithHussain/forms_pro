@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { FormField } from "@/types/formfield";
 import { useEditForm } from "@/stores/editForm";
 import FieldActions from "@/components/builder/FieldActions.vue";
@@ -10,6 +11,17 @@ const props = defineProps<{
 }>();
 
 const editFormStore = useEditForm();
+
+const isMultiColumn = computed(
+    () =>
+        editFormStore.fields.filter(
+            (f: FormField) => (f.row_index ?? 0) === (props.field.row_index ?? 0)
+        ).length > 1
+);
+
+function ejectToOwnRow() {
+    editFormStore.insertNewRow(props.field, (props.field.row_index ?? 0) + 1);
+}
 </script>
 
 <template>
@@ -20,7 +32,9 @@ const editFormStore = useEditForm();
         <FieldActions
             :isSelected="editFormStore.selectedField === props.field"
             :isDraggingAnyField="props.isDraggingAnyField"
+            :isMultiColumn="isMultiColumn"
             @remove="editFormStore.removeField(props.field)"
+            @eject="ejectToOwnRow"
         />
         <FieldRenderer
             :field="props.field"

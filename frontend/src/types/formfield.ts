@@ -12,4 +12,6 @@ export type FormField = {
   default?: string;
   idx?: number;
   conditional_logic?: string;
+  row_index?: number;
+  column_index?: number;
 };

@@ -194,34 +194,111 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
+  function compact() {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.length) return;
+
+    // Remap row_index values to 0..N-1 (closes gaps left by deletions/moves)
+    const distinctRows = [...new Set(fs.map((f) => f.row_index ?? 0))].sort(
+      (a, b) => a - b
+    );
+    const rowRemap = new Map(distinctRows.map((r, i) => [r, i]));
+    for (const f of fs) {
+      f.row_index = rowRemap.get(f.row_index ?? 0) ?? 0;
+    }
+
+    // Renumber column_index within each row to 0..M-1
+    const rowMap = new Map<number, FormField[]>();
+    for (const f of fs) {
+      const r = f.row_index!;
+      if (!rowMap.has(r)) rowMap.set(r, []);
+      rowMap.get(r)!.push(f);
+    }
+    for (const row of rowMap.values()) {
+      row
+        .sort((a, b) => (a.column_index ?? 0) - (b.column_index ?? 0))
+        .forEach((f, i) => {
+          f.column_index = i;
+        });
+    }
+  }
+
   function addField(fieldtype: Fieldtype) {
     if (formResource.value?.doc) {
+      const fs: FormField[] = formResource.value.doc.fields;
+      const lastRow =
+        fs.length > 0 ? Math.max(...fs.map((f) => f.row_index ?? 0)) : -1;
+
       const newField: FormField = {
-        idx: formResource.value.doc.fields.length + 1,
+        idx: fs.length + 1,
         fieldtype,
         label: "",
         fieldname: "",
         options: "",
         default: "",
         description: "",
+        row_index: lastRow + 1,
+        column_index: 0,
       };
 
-      formResource.value.doc.fields.push(newField);
+      fs.push(newField);
     }
   }
 
   function addFieldFromDoctype(field: any) {
+    const fs: FormField[] = formResource.value.doc.fields;
+    const lastRow =
+      fs.length > 0 ? Math.max(...fs.map((f) => f.row_index ?? 0)) : -1;
+
     const _newField: FormField = {
-      idx: formResource.value.doc.fields.length + 1,
+      idx: fs.length + 1,
       fieldtype: field.fieldtype,
       label: field.label,
       fieldname: field.fieldname,
       options: field.options,
       default: field.default,
       description: field.description,
+      row_index: lastRow + 1,
+      column_index: 0,
     };
 
-    formResource.value.doc.fields.push(_newField);
+    fs.push(_newField);
+  }
+
+  function moveField(field: FormField, targetRow: number, targetCol: number) {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+
+    // Shift existing columns in target row to open a slot
+    for (const f of fs) {
+      if (
+        f !== field &&
+        (f.row_index ?? 0) === targetRow &&
+        (f.column_index ?? 0) >= targetCol
+      ) {
+        f.column_index = (f.column_index ?? 0) + 1;
+      }
+    }
+
+    field.row_index = targetRow;
+    field.column_index = targetCol;
+
+    compact();
+  }
+
+  function insertNewRow(field: FormField, atRow: number) {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+
+    // Push all rows at or below atRow down by 1
+    for (const f of fs) {
+      if (f !== field && (f.row_index ?? 0) >= atRow) {
+        f.row_index = (f.row_index ?? 0) + 1;
+      }
+    }
+
+    field.row_index = atRow;
+    field.column_index = 0;
+
+    compact();
   }
 
   function removeField(field: FormField) {
@@ -229,6 +306,7 @@ export const useEditForm = defineStore("editForm", () => {
       formResource.value.doc.fields = formResource.value.doc.fields.filter(
         (f: FormField) => f !== field
       );
+      compact();
     }
   }
 
@@ -277,5 +355,7 @@ export const useEditForm = defineStore("editForm", () => {
     selectField,
     updateField,
     removeField,
+    moveField,
+    insertNewRow,
   };
 });

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import draggableComponent from "vuedraggable";
 import type { FormField } from "@/types/formfield";
-import { ref, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 
 const props = defineProps<{
     atRow: number;
@@ -13,6 +13,26 @@ const emit = defineEmits<{
 }>();
 
 const buffer = ref<FormField[]>([]);
+const draggableRef = ref<any>(null);
+const isOver = ref(false);
+let observer: MutationObserver | null = null;
+
+// SortableJS inserts a placeholder child into the target list while hovering.
+// Watching for that insertion is more reliable than pointer events during drag.
+onMounted(() => {
+    const el = draggableRef.value?.$el;
+    if (!el) return;
+    observer = new MutationObserver(() => {
+        isOver.value = el.children.length > 0;
+    });
+    observer.observe(el, { childList: true });
+});
+
+onUnmounted(() => {
+    observer?.disconnect();
+});
+
+const isHighlighted = computed(() => props.isDragging && isOver.value);
 
 async function onZoneChange(evt: any) {
     if (evt.added) {
@@ -25,13 +45,18 @@ async function onZoneChange(evt: any) {
 
 <template>
     <draggableComponent
+        ref="draggableRef"
         :list="buffer"
         :group="{ name: 'fields', put: true, pull: false }"
         item-key="fieldname"
         tag="div"
         :class="[
-            'rounded transition-all duration-150',
-            isDragging ? 'h-6 border-2 border-dashed border-gray-300 bg-gray-50' : 'h-1',
+            'transition-all duration-150 h-px w-full',
+            isHighlighted
+                ? 'border-2 border-dashed border-blue-400 bg-blue-50'
+                : isDragging
+                ? 'border border-dashed border-gray-200'
+                : 'bg-transparent',
         ]"
         @change="onZoneChange"
     >

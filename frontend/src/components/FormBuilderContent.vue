@@ -14,6 +14,7 @@ const editFormStore = useEditForm();
 
 const fieldContentRef = ref<HTMLElement | null>(null);
 const isDraggingField = ref(false);
+const draggingFromRow = ref<number | null>(null);
 
 const groupedRows = useGroupedRows(computed(() => editFormStore.fields));
 
@@ -176,7 +177,6 @@ onClickOutside(fieldContentRef, (event) => {
         <div class="flex flex-col gap-3">
             <template v-for="(row, rIdx) in groupedRows" :key="rowIndexOf(row, rIdx)">
                 <RowDropZone
-                    v-if="rIdx > 0"
                     :atRow="rowIndexOf(row, rIdx)"
                     :isDragging="isDraggingField"
                     @drop="onRowZoneDrop"
@@ -190,13 +190,32 @@ onClickOutside(fieldContentRef, (event) => {
                     tag="div"
                     class="flex flex-row gap-2 items-stretch"
                     @change="(evt: any) => onFieldChange(evt, rowIndexOf(row, rIdx))"
-                    @start="isDraggingField = true"
-                    @end="isDraggingField = false"
+                    @start="
+                        () => {
+                            isDraggingField = true;
+                            draggingFromRow = rowIndexOf(row, rIdx);
+                        }
+                    "
+                    @end="
+                        () => {
+                            isDraggingField = false;
+                            draggingFromRow = null;
+                        }
+                    "
                 >
                     <template #item="{ element: field }">
                         <FieldCard :field="field" :isDraggingAnyField="isDraggingField" />
                     </template>
                 </draggableComponent>
+                <RowDropZone
+                    v-if="
+                        rIdx === groupedRows.length - 1 &&
+                        draggingFromRow !== rowIndexOf(row, rIdx)
+                    "
+                    :atRow="rowIndexOf(row, rIdx) + 1"
+                    :isDragging="isDraggingField"
+                    @drop="onRowZoneDrop"
+                />
             </template>
         </div>
     </div>

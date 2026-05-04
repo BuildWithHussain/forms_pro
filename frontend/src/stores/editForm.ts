@@ -223,11 +223,13 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
+  function lastRowIndex(fs: FormField[]): number {
+    return fs.reduce((m, f) => Math.max(m, f.row_index ?? 0), -1);
+  }
+
   function addField(fieldtype: Fieldtype) {
     if (formResource.value?.doc) {
       const fs: FormField[] = formResource.value.doc.fields;
-      const lastRow =
-        fs.length > 0 ? Math.max(...fs.map((f) => f.row_index ?? 0)) : -1;
 
       const newField: FormField = {
         idx: fs.length + 1,
@@ -237,7 +239,7 @@ export const useEditForm = defineStore("editForm", () => {
         options: "",
         default: "",
         description: "",
-        row_index: lastRow + 1,
+        row_index: lastRowIndex(fs) + 1,
         column_index: 0,
       };
 
@@ -246,9 +248,8 @@ export const useEditForm = defineStore("editForm", () => {
   }
 
   function addFieldFromDoctype(field: any) {
+    if (!formResource.value?.doc) return;
     const fs: FormField[] = formResource.value.doc.fields;
-    const lastRow =
-      fs.length > 0 ? Math.max(...fs.map((f) => f.row_index ?? 0)) : -1;
 
     const _newField: FormField = {
       idx: fs.length + 1,
@@ -258,7 +259,7 @@ export const useEditForm = defineStore("editForm", () => {
       options: field.options,
       default: field.default,
       description: field.description,
-      row_index: lastRow + 1,
+      row_index: lastRowIndex(fs) + 1,
       column_index: 0,
     };
 
@@ -267,6 +268,7 @@ export const useEditForm = defineStore("editForm", () => {
 
   function moveField(field: FormField, targetRow: number, targetCol: number) {
     const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.includes(field)) return;
 
     // Shift existing columns in target row to open a slot
     for (const f of fs) {
@@ -287,6 +289,7 @@ export const useEditForm = defineStore("editForm", () => {
 
   function insertNewRow(field: FormField, atRow: number) {
     const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.includes(field)) return;
 
     // Push all rows at or below atRow down by 1
     for (const f of fs) {

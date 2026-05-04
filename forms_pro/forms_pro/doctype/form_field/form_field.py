@@ -48,6 +48,7 @@ class FormField(Document):
     if TYPE_CHECKING:
         from frappe.types import DF
 
+        column_index: DF.Int
         conditional_logic: DF.Code | None
         default: DF.SmallText | None
         description: DF.SmallText | None
@@ -83,6 +84,7 @@ class FormField(Document):
         parentfield: DF.Data
         parenttype: DF.Data
         reqd: DF.Check
+        row_index: DF.Int
     # end: auto-generated types
 
     @property

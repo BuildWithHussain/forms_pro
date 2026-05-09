@@ -50,12 +50,13 @@ async function onZoneChange(evt: any) {
         item-key="fieldname"
         tag="div"
         :class="[
-            'transition-all duration-150 self-stretch',
+            'relative w-4 self-stretch',
+            'before:content-[\'\'] before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:rounded-full before:transition-all before:duration-150',
             isHighlighted
-                ? 'bg-surface-blue-3 w-1'
+                ? 'before:w-1 before:bg-surface-blue-3'
                 : isDragging
-                ? 'bg-surface-blue-1 w-1'
-                : 'bg-transparent w-px',
+                ? 'before:w-px before:bg-surface-blue-1'
+                : 'before:w-0 before:bg-transparent',
         ]"
         @change="onZoneChange"
     >

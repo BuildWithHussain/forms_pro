@@ -201,14 +201,14 @@ onClickOutside(fieldContentRef, (event) => {
                 <p class="text-base">Click on fields to add them to the form.</p>
             </div>
         </div>
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col">
             <template v-for="(row, rIdx) in groupedRows" :key="rowIndexOf(row, rIdx)">
                 <RowDropZone
                     :atRow="rowIndexOf(row, rIdx)"
                     :isDragging="isDraggingField"
                     @drop="onRowZoneDrop"
                 />
-                <div class="flex flex-row gap-2 items-stretch">
+                <div class="flex flex-row items-stretch">
                     <template
                         v-for="(col, cIdx) in row"
                         :key="`${rowIndexOf(row, rIdx)}-${colIndexOf(col, cIdx)}`"

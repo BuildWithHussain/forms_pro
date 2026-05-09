@@ -290,17 +290,17 @@
   resolved "https://registry.yarnpkg.com/@juggle/resize-observer/-/resize-observer-3.4.0.tgz#08d6c5e20cf7e4cc02fd181c4b0c225cd31dbb60"
   integrity sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==
 
-"@lottiefiles/dotlottie-vue@^0.11.11":
-  version "0.11.11"
-  resolved "https://registry.yarnpkg.com/@lottiefiles/dotlottie-vue/-/dotlottie-vue-0.11.11.tgz#cd3e80e32f9d698f5d7853240e807929aa5bdeda"
-  integrity sha512-rYjN1PdDVyy8iMbKIqBTKNfg7DoFu/MrG9ARuSjqGIf/daNEIpygOVwfrcN21TFatDvDc7MxFvWu8OBTzGVwNw==
+"@lottiefiles/dotlottie-vue@^0.11.12":
+  version "0.11.12"
+  resolved "https://registry.yarnpkg.com/@lottiefiles/dotlottie-vue/-/dotlottie-vue-0.11.12.tgz#0bc0e4e411664658eb00fb68fb8666a23cefe174"
+  integrity sha512-P40XlAEUJSi2/Suc+xzWzIQwW7nryTC+IRd4+eaWl7WlIKovw1w0n/xOBOnn2tAns51dqwik4mMmxeD9ANYPlg==
   dependencies:
-    "@lottiefiles/dotlottie-web" "0.71.0"
+    "@lottiefiles/dotlottie-web" "0.72.0"
 
-"@lottiefiles/dotlottie-web@0.71.0":
-  version "0.71.0"
-  resolved "https://registry.yarnpkg.com/@lottiefiles/dotlottie-web/-/dotlottie-web-0.71.0.tgz#bf066bd968459d78644bc9385ba776d48b4a7b61"
-  integrity sha512-CliQttL0Rk0or/aDQkqUJXnC9Cm5TxzNdOqy/YlzKlU6mu+XgTMwyt5/HpPiltlMeaqBmM9mOzfevpyP4QmudQ==
+"@lottiefiles/dotlottie-web@0.72.0":
+  version "0.72.0"
+  resolved "https://registry.yarnpkg.com/@lottiefiles/dotlottie-web/-/dotlottie-web-0.72.0.tgz#10224106babac004933a1013bb5c97db7e69ff6f"
+  integrity sha512-CllhCIWWcCrUN71RCwyj9vbSQGE8H465m2Efudizfe5CIitQly7TO7DS2f6juBr5VZVy/r5AqQPUcbvz2uoxtQ==
 
 "@lucide/vue@^1.11.0":
   version "1.11.0"

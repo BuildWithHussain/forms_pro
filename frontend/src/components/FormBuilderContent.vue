@@ -223,6 +223,7 @@ onClickOutside(fieldContentRef, (event) => {
                             :list="[...col]"
                             :group="{ name: 'fields' }"
                             :item-key="fieldKey"
+                            :animation="150"
                             handle=".handle"
                             ghost-class="opacity-50"
                             tag="div"

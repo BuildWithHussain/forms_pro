@@ -31,6 +31,7 @@ defineEmits<{
             variant="ghost"
             @click.stop="$emit('eject')"
             tooltip="Move to own row"
+            data-form-builder-component="eject-button"
         />
         <Button
             size="sm"

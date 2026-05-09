@@ -208,7 +208,11 @@ onClickOutside(fieldContentRef, (event) => {
                     :isDragging="isDraggingField"
                     @drop="onRowZoneDrop"
                 />
-                <div class="flex flex-row items-stretch">
+                <div
+                    class="flex flex-row items-stretch"
+                    data-form-builder-component="form-row"
+                    :data-row-index="rowIndexOf(row, rIdx)"
+                >
                     <template
                         v-for="(col, cIdx) in row"
                         :key="`${rowIndexOf(row, rIdx)}-${colIndexOf(col, cIdx)}`"
@@ -227,6 +231,10 @@ onClickOutside(fieldContentRef, (event) => {
                             handle=".handle"
                             ghost-class="opacity-50"
                             tag="div"
+                            :force-fallback="true"
+                            data-form-builder-component="cell-column"
+                            :data-row-index="rowIndexOf(row, rIdx)"
+                            :data-col-index="colIndexOf(col, cIdx)"
                             class="flex flex-col gap-4 flex-1 min-w-0"
                             @change="
                                 (evt: any) =>

@@ -47,11 +47,13 @@ function handleSubmitForm() {
             <div
                 v-if="row.some((col) => col.some(isFieldVisible))"
                 class="flex flex-col md:flex-row gap-4"
+                data-form-renderer-component="form-row"
             >
                 <template v-for="(col, cIdx) in row" :key="colKey(col, cIdx)">
                     <div
                         v-if="col.some(isFieldVisible)"
                         class="flex flex-col gap-4 flex-1 min-w-0"
+                        data-form-renderer-component="form-column"
                     >
                         <template v-for="field in col" :key="field.fieldname">
                             <div v-if="isFieldVisible(field)">

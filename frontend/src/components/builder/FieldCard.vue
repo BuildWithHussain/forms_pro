@@ -27,6 +27,12 @@ function ejectToOwnRow() {
 <template>
     <div
         class="relative flex-1 min-w-0 transition-colors group"
+        data-form-builder-component="field-card"
+        :data-field-label="props.field.label ?? ''"
+        :data-field-name="props.field.fieldname ?? ''"
+        :data-row-index="props.field.row_index ?? 0"
+        :data-col-index="props.field.column_index ?? 0"
+        :data-cell-index="props.field.cell_index ?? 0"
         @click="editFormStore.selectField(props.field)"
     >
         <FieldActions

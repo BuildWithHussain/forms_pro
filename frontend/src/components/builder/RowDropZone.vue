@@ -50,6 +50,9 @@ async function onZoneChange(evt: any) {
         :group="{ name: 'fields', put: true, pull: false }"
         item-key="fieldname"
         tag="div"
+        :force-fallback="true"
+        data-form-builder-component="row-drop-zone"
+        :data-at-row="props.atRow"
         :class="[
             'relative h-6 w-full',
             'before:content-[\'\'] before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:rounded-full before:transition-[height,background-color] before:duration-150 before:ease-out motion-reduce:before:transition-none',

@@ -52,7 +52,7 @@ async function onZoneChange(evt: any) {
         tag="div"
         :class="[
             'relative h-6 w-full',
-            'before:content-[\'\'] before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:rounded-full before:transition-all before:duration-150',
+            'before:content-[\'\'] before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:rounded-full before:transition-[height,background-color] before:duration-150 before:ease-out motion-reduce:before:transition-none',
             isHighlighted
                 ? 'before:h-1 before:bg-surface-blue-3'
                 : isDragging

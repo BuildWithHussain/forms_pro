@@ -51,7 +51,7 @@ async function onZoneChange(evt: any) {
         tag="div"
         :class="[
             'relative w-4 self-stretch',
-            'before:content-[\'\'] before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:rounded-full before:transition-all before:duration-150',
+            'before:content-[\'\'] before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:rounded-full before:transition-[width,background-color] before:duration-150 before:ease-out motion-reduce:before:transition-none',
             isHighlighted
                 ? 'before:w-1 before:bg-surface-blue-3'
                 : isDragging

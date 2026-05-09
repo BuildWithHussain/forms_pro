@@ -17,6 +17,18 @@ const fieldContentRef = ref<HTMLElement | null>(null);
 const isDraggingField = ref(false);
 const draggingFromRow = ref<number | null>(null);
 
+function resetDragState() {
+    isDraggingField.value = false;
+    draggingFromRow.value = null;
+}
+
+useEventListener(document, "pointerup", () => {
+    if (isDraggingField.value) resetDragState();
+});
+useEventListener(document, "dragend", () => {
+    if (isDraggingField.value) resetDragState();
+});
+
 const groupedRows = useGroupedRows(computed(() => editFormStore.fields));
 
 function fieldKey(field: FormField): string {
@@ -51,16 +63,19 @@ function onCellChange(evt: any, rowIndex: number, colIndex: number) {
     } else if (evt.added) {
         // Field dropped into this column from elsewhere — stack into column at cell index
         editFormStore.insertCell(evt.added.element, rowIndex, colIndex, evt.added.newIndex);
+        resetDragState();
     }
     // evt.removed: no-op — target column's evt.added owns the move
 }
 
 function onColumnZoneDrop(field: FormField, atRow: number, atCol: number) {
     editFormStore.moveField(field, atRow, atCol);
+    resetDragState();
 }
 
 function onRowZoneDrop(field: FormField, atRow: number) {
     editFormStore.insertNewRow(field, atRow);
+    resetDragState();
 }
 
 // Function to check if an element is a dropdown/popover (including portals)
@@ -211,7 +226,7 @@ onClickOutside(fieldContentRef, (event) => {
                             handle=".handle"
                             ghost-class="opacity-50"
                             tag="div"
-                            class="flex flex-col gap-2 flex-1 min-w-0"
+                            class="flex flex-col gap-4 flex-1 min-w-0"
                             @change="
                                 (evt: any) =>
                                     onCellChange(
@@ -246,7 +261,7 @@ onClickOutside(fieldContentRef, (event) => {
                     />
                 </div>
                 <RowDropZone
-                    v-if="
+                    v-show="
                         rIdx === groupedRows.length - 1 &&
                         draggingFromRow !== rowIndexOf(row, rIdx)
                     "

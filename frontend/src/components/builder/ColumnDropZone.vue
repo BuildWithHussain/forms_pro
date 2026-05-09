@@ -52,9 +52,9 @@ async function onZoneChange(evt: any) {
         :class="[
             'transition-all duration-150 self-stretch',
             isHighlighted
-                ? 'border-2 border-dashed border-blue-400 bg-blue-50 w-3'
+                ? 'bg-surface-blue-3 w-1'
                 : isDragging
-                ? 'border border-dashed border-gray-200 w-px'
+                ? 'bg-surface-blue-1 w-1'
                 : 'bg-transparent w-px',
         ]"
         @change="onZoneChange"

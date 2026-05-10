@@ -1,28 +1,87 @@
 <script setup lang="ts">
-import draggableComponent from "vuedraggable";
+import { computed, ref } from "vue";
 import { LoadingIndicator, TextEditor } from "frappe-ui";
-import { useEditForm } from "@/stores/editForm";
-import { FormField } from "@/types/formfield";
-import { ref } from "vue";
 import { onClickOutside, useEventListener } from "@vueuse/core";
+import draggableComponent from "vuedraggable";
 
-import FieldRenderer from "@/components/builder/FieldRenderer.vue";
-import FieldActions from "@/components/builder/FieldActions.vue";
+import { useEditForm } from "@/stores/editForm";
+import { useGroupedRows } from "@/composables/useGroupedRows";
+import type { FormField } from "@/types/formfield";
+import FieldCard from "@/components/builder/FieldCard.vue";
+import RowDropZone from "@/components/builder/RowDropZone.vue";
+import ColumnDropZone from "@/components/builder/ColumnDropZone.vue";
 
 const editFormStore = useEditForm();
 
-// Ref for the entire FormBuilderContent component
 const fieldContentRef = ref<HTMLElement | null>(null);
 const isDraggingField = ref(false);
+
+function resetDragState() {
+    isDraggingField.value = false;
+}
+
+useEventListener(document, "pointerup", () => {
+    if (isDraggingField.value) resetDragState();
+});
+useEventListener(document, "dragend", () => {
+    if (isDraggingField.value) resetDragState();
+});
+
+const groupedRows = useGroupedRows(computed(() => editFormStore.fields));
+
+function fieldKey(field: FormField): string {
+    return `${field.row_index ?? 0}-${field.column_index ?? 0}-${field.cell_index ?? 0}`;
+}
+
+function rowIndexOf(row: FormField[][], rIdx: number): number {
+    return row[0]?.[0]?.row_index ?? rIdx;
+}
+
+function colIndexOf(col: FormField[], cIdx: number): number {
+    return col[0]?.column_index ?? cIdx;
+}
+
+function onCellChange(evt: any, rowIndex: number, colIndex: number) {
+    if (evt.moved) {
+        // Reorder cells within same column: renumber cell_index by new position
+        const { element, newIndex } = evt.moved;
+        const cells: FormField[] = editFormStore.fields
+            .filter(
+                (f: FormField) =>
+                    (f.row_index ?? 0) === rowIndex && (f.column_index ?? 0) === colIndex
+            )
+            .sort((a: FormField, b: FormField) => (a.cell_index ?? 0) - (b.cell_index ?? 0));
+        const oldIdx = cells.indexOf(element);
+        if (oldIdx === -1) return;
+        cells.splice(oldIdx, 1);
+        cells.splice(newIndex, 0, element);
+        cells.forEach((f: FormField, i: number) => {
+            f.cell_index = i;
+        });
+    } else if (evt.added) {
+        // Field dropped into this column from elsewhere — stack into column at cell index
+        editFormStore.insertCell(evt.added.element, rowIndex, colIndex, evt.added.newIndex);
+        resetDragState();
+    }
+    // evt.removed: no-op — target column's evt.added owns the move
+}
+
+function onColumnZoneDrop(field: FormField, atRow: number, atCol: number) {
+    editFormStore.moveField(field, atRow, atCol);
+    resetDragState();
+}
+
+function onRowZoneDrop(field: FormField, atRow: number) {
+    editFormStore.insertNewRow(field, atRow);
+    resetDragState();
+}
 
 // Function to check if an element is a dropdown/popover (including portals)
 const isDropdownOrPopover = (element: Element | null): boolean => {
     if (!element) return false;
 
-    // Walk up the DOM tree to check for dropdown indicators
     let current: Element | null = element;
     while (current && current !== document.body) {
-        // Check for Headless UI patterns
         if (
             current.hasAttribute("role") &&
             (current.getAttribute("role") === "listbox" ||
@@ -32,12 +91,10 @@ const isDropdownOrPopover = (element: Element | null): boolean => {
             return true;
         }
 
-        // Check for Headless UI data attributes
         if (current.hasAttribute("data-headlessui-state") || current.id?.includes("headlessui")) {
             return true;
         }
 
-        // Check for Radix UI patterns
         if (
             current.hasAttribute("data-radix-popper-content-wrapper") ||
             current.id?.startsWith("radix") ||
@@ -46,7 +103,6 @@ const isDropdownOrPopover = (element: Element | null): boolean => {
             return true;
         }
 
-        // Check for common dropdown classes
         const classList = current.classList;
         if (
             classList.contains("dropdown-menu") ||
@@ -70,9 +126,7 @@ useEventListener("keydown", (event: KeyboardEvent) => {
     }
 });
 
-// Set up outside click detection for the entire FormBuilderContent component
 onClickOutside(fieldContentRef, (event) => {
-    // Check if the click is on any other form builder components
     const target = event.target as Element;
     const isFormBuilderComponent =
         target.closest("[data-form-builder-component]") ||
@@ -80,12 +134,8 @@ onClickOutside(fieldContentRef, (event) => {
         target.closest(".form-builder-sidebar") ||
         target.closest(".form-builder-header");
 
-    // Check if the click is on a dropdown menu (which may be rendered in a portal)
-    // This handles Headless UI, Radix UI, and other common dropdown patterns
     const isDropdownElement = isDropdownOrPopover(target);
 
-    // Also check if there are any visible/open dropdowns in the DOM
-    // This catches dropdowns that might be open but the click target isn't directly on them
     const hasOpenDropdown = !!(
         document.querySelector('[role="listbox"]:not([hidden]):not([style*="display: none"])') ||
         document.querySelector('[role="combobox"][aria-expanded="true"]') ||
@@ -93,8 +143,6 @@ onClickOutside(fieldContentRef, (event) => {
         document.querySelector('[aria-expanded="true"][role="combobox"]')
     );
 
-    // Check if the active element (focused element) is within the sidebar
-    // This helps catch cases where a dropdown is open and the user is interacting with it
     const activeElement = document.activeElement;
     const isActiveElementInSidebar = activeElement
         ? !!(
@@ -104,8 +152,6 @@ onClickOutside(fieldContentRef, (event) => {
           )
         : false;
 
-    // Only deselect if NOT clicking on other form builder components or dropdowns
-    // Also don't deselect if there's an open dropdown or if the active element is in the sidebar
     if (
         !isFormBuilderComponent &&
         !isDropdownElement &&
@@ -116,6 +162,7 @@ onClickOutside(fieldContentRef, (event) => {
     }
 });
 </script>
+
 <template>
     <div v-if="editFormStore.isLoading">
         <LoadingIndicator />
@@ -152,37 +199,71 @@ onClickOutside(fieldContentRef, (event) => {
                 <p class="text-base">Click on fields to add them to the form.</p>
             </div>
         </div>
-        <div>
-            <draggableComponent
-                :list="editFormStore.fields"
-                item-key="idx"
-                tag="div"
-                handle=".handle"
-                ghost-class="opacity-50"
-                @start="isDraggingField = true"
-                @end="isDraggingField = false"
-            >
-                <template #item="{ element }">
-                    <div
-                        @click="editFormStore.selectField(element)"
-                        class="my-3 relative transition-colors group"
+        <div class="flex flex-col">
+            <template v-for="(row, rIdx) in groupedRows" :key="rowIndexOf(row, rIdx)">
+                <RowDropZone
+                    :atRow="rowIndexOf(row, rIdx)"
+                    :isDragging="isDraggingField"
+                    @drop="onRowZoneDrop"
+                />
+                <div
+                    class="flex flex-row items-stretch"
+                    data-form-builder-component="form-row"
+                    :data-row-index="rowIndexOf(row, rIdx)"
+                >
+                    <template
+                        v-for="(col, cIdx) in row"
+                        :key="`${rowIndexOf(row, rIdx)}-${colIndexOf(col, cIdx)}`"
                     >
-                        <FieldActions
-                            :isSelected="editFormStore.selectedField === element"
-                            :isDraggingAnyField="isDraggingField"
-                            @remove="editFormStore.removeField(element)"
+                        <ColumnDropZone
+                            :atRow="rowIndexOf(row, rIdx)"
+                            :atCol="colIndexOf(col, cIdx)"
+                            :isDragging="isDraggingField"
+                            @drop="onColumnZoneDrop"
                         />
-                        <FieldRenderer
-                            :field="element"
-                            @update:field="
-                                (updatedField: FormField) =>
-                                    editFormStore.updateField(element, updatedField)
+                        <draggableComponent
+                            :list="[...col]"
+                            :group="{ name: 'fields' }"
+                            :item-key="fieldKey"
+                            :animation="150"
+                            handle=".handle"
+                            ghost-class="opacity-50"
+                            tag="div"
+                            :force-fallback="true"
+                            data-form-builder-component="cell-column"
+                            :data-row-index="rowIndexOf(row, rIdx)"
+                            :data-col-index="colIndexOf(col, cIdx)"
+                            class="flex flex-col gap-4 flex-1 min-w-0"
+                            @change="
+                                (evt: any) =>
+                                    onCellChange(
+                                        evt,
+                                        rowIndexOf(row, rIdx),
+                                        colIndexOf(col, cIdx)
+                                    )
                             "
-                            :inEditMode="true"
-                        />
-                    </div>
-                </template>
-            </draggableComponent>
+                            @start="isDraggingField = true"
+                            @end="isDraggingField = false"
+                        >
+                            <template #item="{ element: field }">
+                                <FieldCard :field="field" :isDraggingAnyField="isDraggingField" />
+                            </template>
+                        </draggableComponent>
+                    </template>
+                    <ColumnDropZone
+                        :atRow="rowIndexOf(row, rIdx)"
+                        :atCol="row.length"
+                        :isDragging="isDraggingField"
+                        @drop="onColumnZoneDrop"
+                    />
+                </div>
+                <RowDropZone
+                    v-show="rIdx === groupedRows.length - 1"
+                    :atRow="rowIndexOf(row, rIdx) + 1"
+                    :isDragging="isDraggingField"
+                    @drop="onRowZoneDrop"
+                />
+            </template>
         </div>
     </div>
 </template>

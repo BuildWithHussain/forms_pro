@@ -4,6 +4,7 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from forms_pro.patches.v0_x.backfill_field_layout import execute as backfill_execute
 from forms_pro.utils.teams import get_user_teams
 
 # On IntegrationTestCase, the doctype test records and all
@@ -202,3 +203,104 @@ class IntegrationTestForm(IntegrationTestCase):
         self.assertEqual(status_field.fieldtype, "Select")
         self.assertEqual(status_field.options, "Active\nInactive\nPending")
         self.assertEqual(status_field.default, "Active")
+
+    def test_layout_fields_do_not_affect_doctype_sync(self):
+        """Changing row_index/column_index on FormField must not modify the linked DocType."""
+        self.test_form.append(
+            "fields",
+            {"label": "Full Name", "fieldname": "full_name", "fieldtype": "Data"},
+        )
+        self.test_form.save()
+
+        doctype_doc = frappe.get_doc("DocType", self.test_doctype_name)
+        fields_before = [(f.fieldname, f.fieldtype, f.label) for f in doctype_doc.fields]
+
+        # Mutate only layout fields and save
+        self.test_form.fields[0].row_index = 5
+        self.test_form.fields[0].column_index = 3
+        self.test_form.save()
+
+        doctype_doc = frappe.get_doc("DocType", self.test_doctype_name)
+        fields_after = [(f.fieldname, f.fieldtype, f.label) for f in doctype_doc.fields]
+
+        self.assertEqual(fields_before, fields_after)
+
+
+class TestBackfillFieldLayoutPatch(IntegrationTestCase):
+    """Backfill patch sets row_index = idx-1, column_index = 0 for all FormField rows."""
+
+    _test_doctype_name = "Backfill Patch Test DocType"
+
+    def setUp(self):
+        from forms_pro.tests import FORMS_PRO_TEST_USER
+        from forms_pro.utils.teams import get_user_teams
+
+        if not frappe.db.exists("DocType", self._test_doctype_name):
+            frappe.get_doc(
+                {
+                    "doctype": "DocType",
+                    "name": self._test_doctype_name,
+                    "module": "Custom",
+                    "custom": 1,
+                    "fields": [{"fieldname": "title", "fieldtype": "Data", "label": "Title"}],
+                }
+            ).insert()
+
+        self.test_team = get_user_teams(FORMS_PRO_TEST_USER)[0]["name"]
+
+    def tearDown(self):
+        for name in frappe.get_all("Form", filters={"linked_doctype": self._test_doctype_name}, pluck="name"):
+            frappe.delete_doc("Form", name, force=True, ignore_permissions=True)
+        if frappe.db.exists("DocType", self._test_doctype_name):
+            frappe.delete_doc("DocType", self._test_doctype_name, force=True)
+
+    def _make_form(self) -> str:
+        form = frappe.get_doc(
+            {
+                "doctype": "Form",
+                "title": "Patch Test Form",
+                "linked_doctype": self._test_doctype_name,
+                "linked_team_id": self.test_team,
+                "fields": [
+                    {"label": "Field A", "fieldname": "field_a", "fieldtype": "Data"},
+                    {"label": "Field B", "fieldname": "field_b", "fieldtype": "Data"},
+                    {"label": "Field C", "fieldname": "field_c", "fieldtype": "Data"},
+                ],
+            }
+        )
+        form.insert(ignore_permissions=True)
+        return form.name
+
+    def test_patch_sets_row_index_from_idx(self):
+        form_name = self._make_form()
+        frappe.db.sql(
+            "UPDATE `tabForm Field` SET row_index = 99, column_index = 99 WHERE parent = %s",
+            form_name,
+        )
+
+        backfill_execute()
+
+        fields = frappe.get_all(
+            "Form Field",
+            filters={"parent": form_name},
+            fields=["fieldname", "idx", "row_index", "column_index"],
+            order_by="idx asc",
+        )
+        for f in fields:
+            self.assertEqual(f.row_index, f.idx - 1, f"row_index wrong for {f.fieldname}")
+            self.assertEqual(f.column_index, 0, f"column_index wrong for {f.fieldname}")
+
+    def test_patch_is_idempotent(self):
+        form_name = self._make_form()
+        backfill_execute()
+        backfill_execute()
+
+        fields = frappe.get_all(
+            "Form Field",
+            filters={"parent": form_name},
+            fields=["idx", "row_index", "column_index"],
+            order_by="idx asc",
+        )
+        for f in fields:
+            self.assertEqual(f.row_index, f.idx - 1)
+            self.assertEqual(f.column_index, 0)

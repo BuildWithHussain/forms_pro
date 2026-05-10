@@ -194,34 +194,165 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
+  function compact() {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.length) return;
+
+    // Remap row_index values to 0..N-1 (closes gaps left by deletions/moves)
+    const distinctRows = [...new Set(fs.map((f) => f.row_index ?? 0))].sort(
+      (a, b) => a - b
+    );
+    const rowRemap = new Map(distinctRows.map((r, i) => [r, i]));
+    for (const f of fs) {
+      f.row_index = rowRemap.get(f.row_index ?? 0) ?? 0;
+    }
+
+    // Remap distinct column_index values within each row to 0..M-1
+    // (cells sharing a column_index stay grouped — multi-cell columns preserved)
+    const rowColsMap = new Map<number, Set<number>>();
+    for (const f of fs) {
+      const r = f.row_index!;
+      if (!rowColsMap.has(r)) rowColsMap.set(r, new Set());
+      rowColsMap.get(r)!.add(f.column_index ?? 0);
+    }
+    const colRemapByRow = new Map<number, Map<number, number>>();
+    for (const [r, cols] of rowColsMap) {
+      const sorted = [...cols].sort((a, b) => a - b);
+      colRemapByRow.set(r, new Map(sorted.map((c, i) => [c, i])));
+    }
+    for (const f of fs) {
+      f.column_index =
+        colRemapByRow.get(f.row_index!)!.get(f.column_index ?? 0) ?? 0;
+    }
+
+    // Renumber cell_index within each (row, column) to 0..K-1
+    const cellMap = new Map<string, FormField[]>();
+    for (const f of fs) {
+      const key = `${f.row_index}-${f.column_index}`;
+      if (!cellMap.has(key)) cellMap.set(key, []);
+      cellMap.get(key)!.push(f);
+    }
+    for (const cells of cellMap.values()) {
+      cells
+        .sort((a, b) => (a.cell_index ?? 0) - (b.cell_index ?? 0))
+        .forEach((f, i) => {
+          f.cell_index = i;
+        });
+    }
+  }
+
+  function lastRowIndex(fs: FormField[]): number {
+    return fs.reduce((m, f) => Math.max(m, f.row_index ?? 0), -1);
+  }
+
   function addField(fieldtype: Fieldtype) {
     if (formResource.value?.doc) {
+      const fs: FormField[] = formResource.value.doc.fields;
+
       const newField: FormField = {
-        idx: formResource.value.doc.fields.length + 1,
+        idx: fs.length + 1,
         fieldtype,
         label: "",
         fieldname: "",
         options: "",
         default: "",
         description: "",
+        row_index: lastRowIndex(fs) + 1,
+        column_index: 0,
+        cell_index: 0,
       };
 
-      formResource.value.doc.fields.push(newField);
+      fs.push(newField);
     }
   }
 
   function addFieldFromDoctype(field: any) {
+    if (!formResource.value?.doc) return;
+    const fs: FormField[] = formResource.value.doc.fields;
+
     const _newField: FormField = {
-      idx: formResource.value.doc.fields.length + 1,
+      idx: fs.length + 1,
       fieldtype: field.fieldtype,
       label: field.label,
       fieldname: field.fieldname,
       options: field.options,
       default: field.default,
       description: field.description,
+      row_index: lastRowIndex(fs) + 1,
+      column_index: 0,
+      cell_index: 0,
     };
 
-    formResource.value.doc.fields.push(_newField);
+    fs.push(_newField);
+  }
+
+  function moveField(field: FormField, targetRow: number, targetCol: number) {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.includes(field)) return;
+
+    // Shift existing columns in target row to open a slot (whole columns shift,
+    // multi-cell columns stay grouped because all their cells share column_index)
+    for (const f of fs) {
+      if (
+        f !== field &&
+        (f.row_index ?? 0) === targetRow &&
+        (f.column_index ?? 0) >= targetCol
+      ) {
+        f.column_index = (f.column_index ?? 0) + 1;
+      }
+    }
+
+    field.row_index = targetRow;
+    field.column_index = targetCol;
+    field.cell_index = 0;
+
+    compact();
+  }
+
+  function insertCell(
+    field: FormField,
+    targetRow: number,
+    targetCol: number,
+    atCell: number
+  ) {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.includes(field)) return;
+
+    // Shift cells at or below atCell within (targetRow, targetCol) down by 1
+    for (const f of fs) {
+      if (
+        f !== field &&
+        (f.row_index ?? 0) === targetRow &&
+        (f.column_index ?? 0) === targetCol &&
+        (f.cell_index ?? 0) >= atCell
+      ) {
+        f.cell_index = (f.cell_index ?? 0) + 1;
+      }
+    }
+
+    field.row_index = targetRow;
+    field.column_index = targetCol;
+    field.cell_index = atCell;
+
+    compact();
+  }
+
+  function insertNewRow(field: FormField, atRow: number) {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!fs.includes(field)) return;
+
+    // Push all rows at or below atRow down by 1
+    for (const f of fs) {
+      if (f !== field && (f.row_index ?? 0) >= atRow) {
+        f.row_index = (f.row_index ?? 0) + 1;
+      }
+    }
+
+    field.row_index = atRow;
+    field.column_index = 0;
+    field.cell_index = 0;
+
+    compact();
   }
 
   function removeField(field: FormField) {
@@ -229,6 +360,7 @@ export const useEditForm = defineStore("editForm", () => {
       formResource.value.doc.fields = formResource.value.doc.fields.filter(
         (f: FormField) => f !== field
       );
+      compact();
     }
   }
 
@@ -277,5 +409,8 @@ export const useEditForm = defineStore("editForm", () => {
     selectField,
     updateField,
     removeField,
+    moveField,
+    insertCell,
+    insertNewRow,
   };
 });

@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { GripVertical, Trash2 } from "@lucide/vue";
+import { GripVertical, SquareSplitVertical, Trash2 } from "@lucide/vue";
 import { Button } from "frappe-ui";
 
 defineProps<{
     isSelected: boolean;
     isDraggingAnyField: boolean;
+    canEject: boolean;
 }>();
 
 defineEmits<{
     (e: "remove"): void;
+    (e: "eject"): void;
 }>();
 </script>
 <template>
@@ -22,6 +24,15 @@ defineEmits<{
                 : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100',
         ]"
     >
+        <Button
+            v-if="canEject"
+            size="sm"
+            :icon="SquareSplitVertical"
+            variant="ghost"
+            @click.stop="$emit('eject')"
+            tooltip="Move to own row"
+            data-form-builder-component="eject-button"
+        />
         <Button
             size="sm"
             :icon="Trash2"

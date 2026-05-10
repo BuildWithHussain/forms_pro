@@ -54,7 +54,7 @@ async function onZoneChange(evt: any) {
         :data-at-row="props.atRow"
         :data-at-col="props.atCol"
         :class="[
-            'relative w-4 self-stretch',
+            'relative w-3 self-stretch',
             'before:content-[\'\'] before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:rounded-full before:transition-[width,background-color] before:duration-150 before:ease-out motion-reduce:before:transition-none',
             isHighlighted
                 ? 'before:w-1 before:bg-surface-blue-3'

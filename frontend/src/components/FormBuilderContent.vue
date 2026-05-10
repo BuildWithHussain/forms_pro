@@ -15,11 +15,9 @@ const editFormStore = useEditForm();
 
 const fieldContentRef = ref<HTMLElement | null>(null);
 const isDraggingField = ref(false);
-const draggingFromRow = ref<number | null>(null);
 
 function resetDragState() {
     isDraggingField.value = false;
-    draggingFromRow.value = null;
 }
 
 useEventListener(document, "pointerup", () => {
@@ -244,18 +242,8 @@ onClickOutside(fieldContentRef, (event) => {
                                         colIndexOf(col, cIdx)
                                     )
                             "
-                            @start="
-                                () => {
-                                    isDraggingField = true;
-                                    draggingFromRow = rowIndexOf(row, rIdx);
-                                }
-                            "
-                            @end="
-                                () => {
-                                    isDraggingField = false;
-                                    draggingFromRow = null;
-                                }
-                            "
+                            @start="isDraggingField = true"
+                            @end="isDraggingField = false"
                         >
                             <template #item="{ element: field }">
                                 <FieldCard :field="field" :isDraggingAnyField="isDraggingField" />
@@ -270,10 +258,7 @@ onClickOutside(fieldContentRef, (event) => {
                     />
                 </div>
                 <RowDropZone
-                    v-show="
-                        rIdx === groupedRows.length - 1 &&
-                        draggingFromRow !== rowIndexOf(row, rIdx)
-                    "
+                    v-show="rIdx === groupedRows.length - 1"
                     :atRow="rowIndexOf(row, rIdx) + 1"
                     :isDragging="isDraggingField"
                     @drop="onRowZoneDrop"

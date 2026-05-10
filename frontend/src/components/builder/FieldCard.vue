@@ -12,7 +12,11 @@ const props = defineProps<{
 
 const editFormStore = useEditForm();
 
-const isMultiColumn = computed(
+// Eject = "Move to own row". Available whenever the row holds more than one
+// cell — that is, more than one column OR more than one stacked cell within
+// a single column. (Variable was previously named `isMultiColumn`, which
+// understated the stacked-cell case.)
+const canEject = computed(
     () =>
         editFormStore.fields.filter(
             (f: FormField) => (f.row_index ?? 0) === (props.field.row_index ?? 0)
@@ -38,7 +42,7 @@ function ejectToOwnRow() {
         <FieldActions
             :isSelected="editFormStore.selectedField === props.field"
             :isDraggingAnyField="props.isDraggingAnyField"
-            :isMultiColumn="isMultiColumn"
+            :canEject="canEject"
             @remove="editFormStore.removeField(props.field)"
             @eject="ejectToOwnRow"
         />

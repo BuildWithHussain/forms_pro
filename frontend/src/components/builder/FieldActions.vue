@@ -5,7 +5,7 @@ import { Button } from "frappe-ui";
 defineProps<{
     isSelected: boolean;
     isDraggingAnyField: boolean;
-    isMultiColumn: boolean;
+    canEject: boolean;
 }>();
 
 defineEmits<{
@@ -25,7 +25,7 @@ defineEmits<{
         ]"
     >
         <Button
-            v-if="isMultiColumn"
+            v-if="canEject"
             size="sm"
             :icon="SquareSplitVertical"
             variant="ghost"

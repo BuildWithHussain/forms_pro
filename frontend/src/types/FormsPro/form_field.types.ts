@@ -38,6 +38,8 @@ export interface FormField {
   row_index?: number;
   /**	Column Index : Int	*/
   column_index?: number;
+  /**	Cell Index : Int	*/
+  cell_index?: number;
   /**	Mandatory : Check	*/
   reqd?: 0 | 1;
   /**	Hidden : Check	*/

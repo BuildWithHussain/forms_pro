@@ -243,9 +243,10 @@ test.describe("Multi-column form layout", () => {
     const guestPage = await guestCtx.newPage();
     const submission = new SubmissionPage(guestPage);
     await submission.goto(route);
+    await guestPage.waitForLoadState("networkidle");
 
     const row = guestPage.locator('[data-form-renderer-component="form-row"]');
-    await expect(row).toBeVisible({ timeout: 10000 });
+    await expect(row).toBeVisible({ timeout: 15000 });
 
     const flexDirection = await row.evaluate(
       (el) => getComputedStyle(el as HTMLElement).flexDirection

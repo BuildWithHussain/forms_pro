@@ -127,19 +127,38 @@ export class FormBuilderPage {
     // waypoint that lives in the row drop zone between rows. This avoids
     // accidentally swapping into another sortable instance (e.g. the
     // neighbouring column in the source row) while passing through.
+    // Anchor the waypoint to the actual RowDropZone bounding box so the
+    // helper stays robust if the zone's visual size changes.
     const waypoints: { x: number; y: number }[] = [];
     const sourceMidY = sourceBox.y + sourceBox.height / 2;
-    const verticalGapMidpoint = (sourceMidY + targetCenter.y) / 2;
     const isCrossRow = Math.abs(targetCenter.y - sourceMidY) > sourceBox.height;
     if (isCrossRow) {
+      // Pick the row-drop-zone whose centre lies in the vertical band
+      // between source and target — robust to duplicate data-at-row values
+      // and to changes in the zone's visual height.
+      const lo = Math.min(sourceMidY, targetCenter.y);
+      const hi = Math.max(sourceMidY, targetCenter.y);
+      let transitY = (sourceMidY + targetCenter.y) / 2;
+      const zones = await this.page
+        .locator('[data-form-builder-component="row-drop-zone"]')
+        .all();
+      for (const z of zones) {
+        const zb = await z.boundingBox();
+        if (!zb) continue;
+        const zMid = zb.y + zb.height / 2;
+        if (zMid > lo && zMid < hi) {
+          transitY = zMid;
+          break;
+        }
+      }
       // Drop straight down (or up) along the source's x first so we leave
       // the source's row through the row drop zone, then slide horizontally
       // toward the target before approaching.
       waypoints.push({
         x: sourceBox.x + sourceBox.width / 2,
-        y: verticalGapMidpoint,
+        y: transitY,
       });
-      waypoints.push({ x: targetCenter.x, y: verticalGapMidpoint });
+      waypoints.push({ x: targetCenter.x, y: transitY });
     }
 
     await this.dragWithRealMouse(handle, targetCenter, waypoints);

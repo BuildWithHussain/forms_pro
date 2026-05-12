@@ -57,52 +57,33 @@ def export_submissions(form_id: str, file_type: Literal["CSV", "Excel"] = "CSV")
         method="forms_pro.api.export.export_submissions",
     )
 
-    # `frappe.set_user` is built for background jobs, not web requests: it
-    # overwrites `local.session.sid` with the username AND wipes
-    # `local.session.data` (which holds `last_updated`, `lang`, csrf token).
-    # After the response, `Session.update()` persists that empty data into
-    # the DB row + cache; the next request then sees `last_updated=None`,
-    # the expiry check treats the session as expired, the row is deleted,
-    # and the user is logged out. Snapshot user / sid / data and restore
-    # all three after the privilege swap.
+    # `frappe.set_user` is built for background jobs, not web requests: it overwrites `local.session.sid` with the username AND wipes `local.session.data` (which holds `last_updated`, `lang`, csrf token). After the response, `Session.update()` persists that empty data into the DB row + cache; the next request then sees `last_updated=None`, the expiry check treats the session as expired, the row is deleted, and the user is logged out. Snapshot user / sid / data and restore all three after the privilege swap.
     saved_user = frappe.session.user
     saved_sid = frappe.session.sid
     saved_data = frappe.session.data
     try:
-        # Authorization is already enforced via `has_permission("Form", "write", ...)`
-        # above. The swap bypasses `can_export` on the linked DocType (intentionally
-        # not granted at the role level in Forms Pro). Session state is snapshotted
-        # immediately above and fully restored in `finally`. Audited 2026-05-13.
+        # Authorization is already enforced via `has_permission("Form", "write", ...)` above. The swap bypasses `can_export` on the linked DocType (intentionally not granted at the role level in Forms Pro). Session state is snapshotted immediately above and fully restored in `finally`. Audited 2026-05-13.
         frappe.set_user("Administrator")  # nosemgrep: frappe-semgrep-rules.rules.security.frappe-setuser
         exporter = DataExporter(
             doctype=linked_doctype,
             all_doctypes=False,
             with_data=True,
             select_columns=frappe.as_json(select_columns),
-            # Scope strictly to this form. Without a filter `DataExporter`
-            # pulls every row of `linked_doctype`, leaking submissions of
-            # other forms that share the same DocType.
             filters=frappe.as_json({"fp_linked_form": form_id}),
             file_type=file_type,
             export_without_column_meta=True,
         )
         exporter.build_response()
-        # Override filename so the download reads as form-specific, not the
-        # underlying DocType name. Title may contain chars that are illegal
-        # on Windows/macOS filesystems (e.g. `! / : ? *`); `secure_filename`
-        # strips them. Falls back to form_id when title sanitizes to empty.
-        # CSV reads `frappe.response["doctype"]` (via `as_csv`); Excel reads
-        # `frappe.response["filename"]` (via `provide_binary_file`). Set both.
         safe_title = secure_filename(form.title or "") or form_id
         timestamp = frappe.utils.now_datetime().strftime("%Y-%m-%d_%H%M%S")
         base_name = f"Submissions_{safe_title}_{timestamp}"
         frappe.response["doctype"] = base_name
         if file_type == "Excel":
             frappe.response["filename"] = f"{base_name}.xlsx"
+    except Exception as e:
+        frappe.log_error(title="export_submissions: failed to export submissions", message=str(e))
+        raise e
     finally:
-        try:
-            frappe.set_user(saved_user)  # nosemgrep: frappe-semgrep-rules.rules.security.frappe-setuser
-        except Exception:
-            frappe.log_error(title="export_submissions: failed to restore user")
+        frappe.set_user(saved_user)  # nosemgrep: frappe-semgrep-rules.rules.security.frappe-setuser
         frappe.local.session.sid = saved_sid
         frappe.local.session.data = saved_data

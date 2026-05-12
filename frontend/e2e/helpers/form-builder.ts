@@ -123,15 +123,23 @@ export class FormBuilderPage {
       y: box.y + yOffset,
     };
 
-    // If the drag crosses rows (different y bands), route through a
-    // waypoint that lives in the row drop zone between rows. This avoids
-    // accidentally swapping into another sortable instance (e.g. the
-    // neighbouring column in the source row) while passing through.
-    // Anchor the waypoint to the actual RowDropZone bounding box so the
-    // helper stays robust if the zone's visual size changes.
+    // If the drag crosses rows, route through a waypoint that lives in the
+    // row drop zone between rows. This avoids accidentally swapping into
+    // another sortable instance (e.g. the neighbouring column in the source
+    // row) while passing through. Detect cross-row by comparing the cards'
+    // data-row-index attributes, which is robust to drop-zone size changes
+    // (a y-distance heuristic broke once RowDropZone shrank from h-6 to
+    // h-3, because adjacent rows became close enough that the vertical gap
+    // was smaller than a card's height).
     const waypoints: { x: number; y: number }[] = [];
     const sourceMidY = sourceBox.y + sourceBox.height / 2;
-    const isCrossRow = Math.abs(targetCenter.y - sourceMidY) > sourceBox.height;
+    const sourceRow = Number(
+      (await source.getAttribute("data-row-index")) ?? 0
+    );
+    const targetRow = Number(
+      (await target.getAttribute("data-row-index")) ?? 0
+    );
+    const isCrossRow = sourceRow !== targetRow;
     if (isCrossRow) {
       // Pick the row-drop-zone whose centre lies in the vertical band
       // between source and target — robust to duplicate data-at-row values

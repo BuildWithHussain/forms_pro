@@ -107,6 +107,7 @@ When a form is saved, its fields are synced to the linked DocType as `CustomFiel
 | `/release [version]` | Draft a new GitHub release. Inspects merged PRs since the last release, categorizes them, and creates a draft on GitHub for review. |
 | `/add-field <FieldtypeName>` | Add a new field type end-to-end: backend doctype + mapping, submission serialization, frontend component, fieldTypes registry, options resolution, and submission display. |
 | `/userinterface-wiki` | Review UI/UX against best practices — animations, CSS, typography, UX patterns, prefetching, icons. Outputs file:line findings. |
+| `/writing-tests` | Use `frappe_factory_bot` factories under `forms_pro/tests/factories/` for backend test fixtures (never `frappe.new_doc` / `frappe.get_doc`). Covers authoring a typed factory, traits, overrides, and consumption patterns. Auto-applies when writing/modifying tests. |
 
 > **Adding skills via `npx skills`:** Always use `--copy` and target `.claude/skills/` explicitly so Claude Code can discover them:
 > ```bash
@@ -121,3 +122,4 @@ When a form is saved, its fields are synced to the linked DocType as `CustomFiel
 - **Frappe patterns**: use `frappe.get_doc`, `frappe.get_all`, `frappe.db.*`; avoid raw SQL unless necessary
 - **PR titles**: validated by CI workflow (conventional commit format expected)
 - **Tests**: use Frappe's `IntegrationTestCase`; test infrastructure set up in `install.py:before_tests()`
+- **Test fixtures**: build documents via factories in `forms_pro/tests/factories/` (powered by `frappe_factory_bot`, repo `harshtandiya/frappe_factory_bot`). Do **not** use `frappe.new_doc` / `frappe.get_doc(...).insert()` in tests. See the `/writing-tests` skill.

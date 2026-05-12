@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 # import frappe
+from frappe.model import no_value_fields
 from frappe.model.document import Document
 from frappe.utils import escape_html
 
@@ -89,11 +90,22 @@ class FormField(Document):
     # end: auto-generated types
 
     @property
+    def frappe_fieldtype(self) -> str:
+        """Resolved underlying Frappe fieldtype (post-mapping)."""
+        mapping = FORM_TO_FRAPPE_FIELDTYPE.get(self.fieldtype, {})
+        return mapping.get("fieldtype", self.fieldtype)
+
+    @property
+    def stores_value(self) -> bool:
+        """False for display-only field types (Heading, etc.) that have no DB column."""
+        return self.frappe_fieldtype not in no_value_fields
+
+    @property
     def to_frappe_field(self) -> dict:
         mapping = FORM_TO_FRAPPE_FIELDTYPE.get(self.fieldtype, {})
         return {
             "fieldname": self.fieldname,
-            "fieldtype": mapping.get("fieldtype", self.fieldtype),
+            "fieldtype": self.frappe_fieldtype,
             "label": self.label,
             "reqd": self.reqd,
             "options": mapping.get("options", self.get_options()),

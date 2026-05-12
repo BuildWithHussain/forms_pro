@@ -1,6 +1,7 @@
 from typing import Any
 
 from faker import Faker
+from frappe.core.doctype.user_invitation.user_invitation import UserInvitation
 from frappe_factory_bot.frappe_factory_bot.base_factory import BaseFactory
 
 from forms_pro.roles import FORMS_PRO_ROLE
@@ -8,7 +9,7 @@ from forms_pro.roles import FORMS_PRO_ROLE
 _fake = Faker()
 
 
-class UserInvitationFactory(BaseFactory):
+class UserInvitationFactory(BaseFactory[UserInvitation]):
     doctype = "User Invitation"
 
     @property

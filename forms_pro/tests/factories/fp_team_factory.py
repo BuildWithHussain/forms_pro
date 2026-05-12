@@ -3,10 +3,12 @@ from typing import Any
 from faker import Faker
 from frappe_factory_bot.frappe_factory_bot.base_factory import BaseFactory
 
+from forms_pro.forms_pro.doctype.fp_team.fp_team import FPTeam
+
 _fake = Faker()
 
 
-class FPTeamFactory(BaseFactory):
+class FPTeamFactory(BaseFactory[FPTeam]):
     doctype = "FP Team"
 
     @property

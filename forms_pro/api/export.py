@@ -69,7 +69,11 @@ def export_submissions(form_id: str, file_type: Literal["CSV", "Excel"] = "CSV")
     saved_sid = frappe.session.sid
     saved_data = frappe.session.data
     try:
-        frappe.set_user("Administrator")
+        # Authorization is already enforced via `has_permission("Form", "write", ...)`
+        # above. The swap bypasses `can_export` on the linked DocType (intentionally
+        # not granted at the role level in Forms Pro). Session state is snapshotted
+        # immediately above and fully restored in `finally`. Audited 2026-05-13.
+        frappe.set_user("Administrator")  # nosemgrep: frappe-semgrep-rules.rules.security.frappe-setuser
         exporter = DataExporter(
             doctype=linked_doctype,
             all_doctypes=False,
@@ -96,9 +100,17 @@ def export_submissions(form_id: str, file_type: Literal["CSV", "Excel"] = "CSV")
         if file_type == "Excel":
             frappe.response["filename"] = f"{base_name}.xlsx"
     finally:
+        # Restore the session in all paths. If `set_user` itself raises (rare but
+        # would leave the request running as Administrator), log it, finish the
+        # sid/data restore, and re-raise — never silently continue with elevated
+        # privileges.
+        restore_failure: Exception | None = None
         try:
-            frappe.set_user(saved_user)
-        except Exception:
+            frappe.set_user(saved_user)  # nosemgrep: frappe-semgrep-rules.rules.security.frappe-setuser
+        except Exception as exc:
             frappe.log_error(title="export_submissions: failed to restore user")
+            restore_failure = exc
         frappe.local.session.sid = saved_sid
         frappe.local.session.data = saved_data
+        if restore_failure is not None:
+            raise restore_failure

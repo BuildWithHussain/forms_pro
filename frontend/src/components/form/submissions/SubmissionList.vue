@@ -67,10 +67,12 @@ const columns = computed(() => [
 ]);
 
 const onExport = (fileType: "CSV" | "Excel") => {
-    const params = new URLSearchParams({
-        form_id: manageFormStore.currentFormId ?? "",
-        file_type: fileType,
-    });
+    const formId = manageFormStore.currentFormId;
+    if (!formId) {
+        toast.error("Unable to export", { description: "No form selected." });
+        return;
+    }
+    const params = new URLSearchParams({ form_id: formId, file_type: fileType });
     window.location.href = `/api/method/forms_pro.api.export.export_submissions?${params}`;
 };
 

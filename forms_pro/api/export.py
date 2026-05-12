@@ -100,17 +100,9 @@ def export_submissions(form_id: str, file_type: Literal["CSV", "Excel"] = "CSV")
         if file_type == "Excel":
             frappe.response["filename"] = f"{base_name}.xlsx"
     finally:
-        # Restore the session in all paths. If `set_user` itself raises (rare but
-        # would leave the request running as Administrator), log it, finish the
-        # sid/data restore, and re-raise — never silently continue with elevated
-        # privileges.
-        restore_failure: Exception | None = None
         try:
             frappe.set_user(saved_user)  # nosemgrep: frappe-semgrep-rules.rules.security.frappe-setuser
-        except Exception as exc:
+        except Exception:
             frappe.log_error(title="export_submissions: failed to restore user")
-            restore_failure = exc
         frappe.local.session.sid = saved_sid
         frappe.local.session.data = saved_data
-        if restore_failure is not None:
-            raise restore_failure

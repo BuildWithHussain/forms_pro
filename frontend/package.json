@@ -20,7 +20,7 @@
     "@vueuse/core": "^14.2.1",
     "dayjs": "^1.11.20",
     "feather-icons": "^4.29.2",
-    "frappe-ui": "^0.1.272",
+    "frappe-ui": "^0.1.278",
     "pinia": "^3.0.4",
     "socket.io-client": "^4.8.3",
     "torph": "^0.0.9",

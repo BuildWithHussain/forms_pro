@@ -2,21 +2,14 @@
 import { ref, computed } from "vue";
 import { formFields, FormFields } from "@/utils/form_fields";
 import { Fieldtype } from "@/types/formfield";
-import { FormControl, Button } from "frappe-ui";
+import { FormControl } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
-import RenderField from "@/components/RenderField.vue";
-import type { Component } from "vue";
 
 const search = ref("");
-const componentMap = formFields.reduce((acc: Record<string, Component>, field: FormFields) => {
-    acc[field.name] = field.component;
-    return acc;
-}, {});
 
-const filteredComponents = computed(() => {
-    return Object.keys(componentMap).filter((component) =>
-        component.toLowerCase().includes(search.value.toLowerCase())
-    );
+const filteredFields = computed(() => {
+    const q = search.value.toLowerCase();
+    return formFields.filter((field: FormFields) => field.name.toLowerCase().includes(q));
 });
 
 const editFormStore = useEditForm();
@@ -31,19 +24,17 @@ const editFormStore = useEditForm();
                 variant="outline"
                 placeholder="Search Fields"
             />
-            <div v-for="component in filteredComponents" :key="component">
-                <div
-                    class="p-2 bg-gray-50 w-full rounded flex flex-col gap-2 border border-gray-200 hover:border-gray-400 transition-all relative group"
+            <div class="flex flex-col gap-2">
+                <button
+                    v-for="field in filteredFields"
+                    :key="field.name"
+                    type="button"
+                    class="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200 hover:border-gray-400 hover:bg-gray-100 transition-all text-left"
+                    @click="editFormStore.addField(field.name as Fieldtype)"
                 >
-                    <div class="text-sm">{{ component }}</div>
-                    <RenderField class="pointer-events-none" :field="{ fieldtype: component }" />
-                    <Button
-                        class="absolute top-4 -right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                        variant="outline"
-                        icon="plus"
-                        @click="editFormStore.addField(component as Fieldtype)"
-                    />
-                </div>
+                    <component :is="field.icon" class="w-4 h-4 text-gray-600 shrink-0" />
+                    <span class="text-sm truncate">{{ field.name }}</span>
+                </button>
             </div>
         </div>
     </div>

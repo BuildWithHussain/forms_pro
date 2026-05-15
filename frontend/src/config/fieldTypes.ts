@@ -33,6 +33,30 @@ import {
   TimePicker,
   FormControl,
 } from "frappe-ui";
+import {
+  AlignLeft,
+  AtSign,
+  Calendar,
+  CalendarClock,
+  CalendarRange,
+  Clock,
+  Hash,
+  Heading1,
+  Heading2,
+  Heading3,
+  KeyRound,
+  Link2,
+  List,
+  ListChecks,
+  Paperclip,
+  Phone as PhoneIcon,
+  Pilcrow,
+  SquareCheck,
+  Star,
+  Table as TableIcon,
+  ToggleRight,
+  Type,
+} from "@lucide/vue";
 import Attachment from "@/components/fields/Attachment.vue";
 import Heading from "@/components/fields/Heading.vue";
 import Multiselect from "@/components/fields/multiselect/Multiselect.vue";
@@ -63,6 +87,8 @@ export type FieldTypeDefinition = {
   name: Fieldtype;
   /** Vue component used to render this field in input mode */
   component: Component;
+  /** Lucide icon used in the Add Fields palette */
+  icon: Component;
   /** Default props forwarded to the component */
   props: Record<string, unknown>;
   /** How FieldRenderer lays out the label relative to the input */
@@ -87,6 +113,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.ATTACH,
     component: Attachment,
+    icon: Paperclip,
     props: {
       variant: "outline",
       filetypes: ["image/*", ".jpg", ".gif", ".pdf"],
@@ -99,6 +126,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.DATA,
     component: FormControl,
+    icon: Type,
     props: { type: "text", variant: "outline" },
     layout: "default",
     frappeFieldtype: "Data",
@@ -108,6 +136,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.NUMBER,
     component: FormControl,
+    icon: Hash,
     props: { type: "number", variant: "outline" },
     layout: "default",
     frappeFieldtype: "Int",
@@ -117,6 +146,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.EMAIL,
     component: FormControl,
+    icon: AtSign,
     props: { type: "email", variant: "outline" },
     layout: "default",
     frappeFieldtype: "Data",
@@ -127,6 +157,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.DATE,
     component: DatePicker,
+    icon: Calendar,
     props: { variant: "outline", clearable: true, format: "D MMM YYYY" },
     layout: "default",
     frappeFieldtype: "Date",
@@ -136,6 +167,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.DATE_TIME,
     component: DateTimePicker,
+    icon: CalendarClock,
     props: {
       format: "DD MMM YYYY, hh:mm A",
       clearable: true,
@@ -149,6 +181,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.DATE_RANGE,
     component: DateRangePicker,
+    icon: CalendarRange,
     props: { clearable: true, variant: "outline", format: "DD MMM 'YY" },
     layout: "default",
     frappeFieldtype: "Data",
@@ -158,6 +191,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.TIME_PICKER,
     component: TimePicker,
+    icon: Clock,
     props: { variant: "outline", use12Hour: true, clearable: true },
     layout: "default",
     frappeFieldtype: "Time",
@@ -167,6 +201,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.PASSWORD,
     component: Password,
+    icon: KeyRound,
     props: { variant: "outline" },
     layout: "default",
     frappeFieldtype: "Password",
@@ -176,6 +211,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.SELECT,
     component: Select,
+    icon: List,
     props: { variant: "outline" },
     layout: "default",
     frappeFieldtype: "Select",
@@ -185,6 +221,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.PHONE,
     component: Phone,
+    icon: PhoneIcon,
     props: { variant: "outline" },
     layout: "default",
     frappeFieldtype: "Phone",
@@ -194,6 +231,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.SWITCH,
     component: Switch,
+    icon: ToggleRight,
     props: {},
     layout: "inline",
     frappeFieldtype: "Check",
@@ -203,6 +241,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.TEXTAREA,
     component: Textarea,
+    icon: AlignLeft,
     props: { variant: "outline" },
     layout: "default",
     frappeFieldtype: "Text",
@@ -212,6 +251,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.TEXT_EDITOR,
     component: TextEditor,
+    icon: Pilcrow,
     props: {
       editorClass:
         "bg-surface-white w-full rounded-b form-description border rounded-b min-h-24",
@@ -227,6 +267,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.LINK,
     component: Select,
+    icon: Link2,
     props: { variant: "outline" },
     layout: "default",
     frappeFieldtype: "Link",
@@ -236,6 +277,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.CHECKBOX,
     component: Checkbox,
+    icon: SquareCheck,
     props: {},
     layout: "inline",
     frappeFieldtype: "Check",
@@ -245,6 +287,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.RATING,
     component: Rating,
+    icon: Star,
     props: {},
     layout: "default",
     frappeFieldtype: "Rating",
@@ -254,6 +297,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.TABLE,
     component: Table,
+    icon: TableIcon,
     props: {
       options: {
         emptyState: {
@@ -270,6 +314,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.MULTISELECT,
     component: Multiselect,
+    icon: ListChecks,
     props: {},
     layout: "description-first",
     frappeFieldtype: "JSON",
@@ -280,6 +325,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.HEADING_1,
     component: Heading,
+    icon: Heading1,
     props: {},
     layout: "heading",
     frappeFieldtype: "HTML",
@@ -289,6 +335,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.HEADING_2,
     component: Heading,
+    icon: Heading2,
     props: {},
     layout: "heading",
     frappeFieldtype: "HTML",
@@ -298,6 +345,7 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
   {
     name: Fieldtype.HEADING_3,
     component: Heading,
+    icon: Heading3,
     props: {},
     layout: "heading",
     frappeFieldtype: "HTML",

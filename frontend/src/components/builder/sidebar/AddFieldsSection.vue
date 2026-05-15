@@ -24,15 +24,23 @@ const editFormStore = useEditForm();
                 variant="outline"
                 placeholder="Search Fields"
             />
-            <div class="flex flex-col gap-2">
+            <p v-if="!filteredFields.length" class="text-sm text-gray-500 px-1 py-2">
+                No fields match "{{ search }}"
+            </p>
+            <div v-else class="flex flex-col gap-2">
                 <button
                     v-for="field in filteredFields"
                     :key="field.name"
                     type="button"
-                    class="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200 hover:border-gray-400 hover:bg-gray-100 transition-all text-left"
+                    :title="field.name"
+                    class="flex items-center gap-2 px-2.5 py-2 bg-gray-50 rounded border border-gray-200 hover:border-gray-400 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-1 transition-colors duration-150 text-left"
                     @click="editFormStore.addField(field.name as Fieldtype)"
                 >
-                    <component :is="field.icon" class="w-4 h-4 text-gray-600 shrink-0" />
+                    <component
+                        :is="field.icon"
+                        class="w-4 h-4 text-gray-600 shrink-0"
+                        aria-hidden="true"
+                    />
                     <span class="text-sm truncate">{{ field.name }}</span>
                 </button>
             </div>

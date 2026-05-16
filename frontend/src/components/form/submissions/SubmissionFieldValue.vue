@@ -100,7 +100,12 @@ const classNames = computed<string>(() =>
             editorClass="prose-sm !border-none !p-0 !shadow-none"
         />
 
-        <Rating v-else-if="fieldtype === Fieldtype.RATING" :modelValue="value" readonly />
+        <Rating
+            v-else-if="fieldtype === Fieldtype.RATING"
+            :modelValue="Math.round((Number(value) || 0) * 5)"
+            :rating_from="5"
+            readonly
+        />
 
         <a
             v-else-if="fieldtype === Fieldtype.ATTACH && safeAttachUrl"

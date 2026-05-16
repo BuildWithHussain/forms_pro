@@ -266,12 +266,9 @@ export class FormBuilderPage {
   }
 
   async addField(fieldType: string) {
-    // Each card shows the field type name as visible text
-    const card = this.sidebar()
-      .getByText(fieldType, { exact: true })
-      .locator("..");
-    await card.hover();
-    await card.getByRole("button").click();
+    await this.sidebar()
+      .getByRole("button", { name: fieldType, exact: true })
+      .click();
   }
 
   // The canvas shows "Click on fields to add them…" when empty

@@ -25,7 +25,6 @@ import {
   DateRangePicker,
   DateTimePicker,
   Password,
-  Rating,
   Select,
   Switch,
   Textarea,
@@ -62,6 +61,7 @@ import Heading from "@/components/fields/Heading.vue";
 import Multiselect from "@/components/fields/multiselect/Multiselect.vue";
 import MultiselectBuilderExtras from "@/components/fields/multiselect/MultiselectBuilderExtras.vue";
 import Phone from "@/components/fields/Phone.vue";
+import Rating from "@/components/fields/Rating.vue";
 import Table from "@/components/fields/Table.vue";
 import { Fieldtype } from "@/types/FormsPro/form_field.types";
 

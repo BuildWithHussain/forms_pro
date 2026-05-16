@@ -31,7 +31,7 @@ const editFormStore = useEditForm();
                     v-for="field in filteredFields"
                     :key="field.name"
                     type="button"
-                    class="flex w-full items-center gap-2 px-2.5 py-2 bg-gray-50 rounded border border-gray-200 hover:border-gray-400 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-1 transition-all duration-150 text-left"
+                    class="flex w-full items-center gap-2 px-2.5 py-2 bg-surface-gray-1 rounded border border-outline-gray-1 hover:border-outline-gray-2 hover:bg-surface-gray-2 active:scale-[0.98] active:bg-surface-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-1 transition-all duration-150 text-left"
                     @click="editFormStore.addField(field.name)"
                 >
                     <component

@@ -1,7 +1,34 @@
 import { userResource } from "@/data/user";
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import { session } from "./data/session";
+import { session } from "@/data/session";
+import { useRouteData } from "@/stores/routeData";
+import { useUser } from "@/stores/user";
 import { isLoginRequired } from "@/utils/form";
+import { createResource } from "frappe-ui";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+
+const formForViewResource = (id: string) =>
+  createResource({
+    url: "forms_pro.api.form.get_form_for_view",
+    params: { form_id: id },
+    cache: ["FormView", id],
+    auto: false,
+  });
+
+const formForEditResource = (id: string) =>
+  createResource({
+    url: "forms_pro.api.form.get_form_for_edit",
+    params: { form_id: id },
+    cache: ["FormEdit", id],
+    auto: false,
+  });
+
+const teamForManageResource = (teamId: string) =>
+  createResource({
+    url: "forms_pro.api.team.get_team_for_manage",
+    params: { team_id: teamId },
+    cache: ["TeamManage", teamId],
+    auto: false,
+  });
 
 const routes: RouteRecordRaw[] = [
   {
@@ -18,6 +45,12 @@ const routes: RouteRecordRaw[] = [
         path: "team",
         name: "Manage Team",
         component: () => import("@/pages/team/ManageTeam.vue"),
+        meta: {
+          fetch: () => {
+            const user = useUser();
+            return teamForManageResource(user.currentTeam?.name ?? "");
+          },
+        },
       },
     ],
   },
@@ -26,6 +59,9 @@ const routes: RouteRecordRaw[] = [
     name: "Manage Form",
     component: () => import("@/pages/manage/ManageForm.vue"),
     redirect: { name: "Manage Form Overview" },
+    meta: {
+      fetch: (route) => formForViewResource(route.params.id as string),
+    },
     children: [
       {
         path: "overview",
@@ -43,6 +79,9 @@ const routes: RouteRecordRaw[] = [
     path: "/edit-form/:id",
     name: "Edit Form",
     component: () => import("@/pages/EditForm.vue"),
+    meta: {
+      fetch: (route) => formForEditResource(route.params.id as string),
+    },
   },
   {
     path: "/p/:route(.*)",
@@ -71,7 +110,7 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, _from) => {
   let isLoggedIn = session.isLoggedIn;
   try {
     await userResource.promise;
@@ -79,17 +118,16 @@ router.beforeEach(async (to, _from, next) => {
     isLoggedIn = false;
   }
 
-  if (to.name === "Login" && isLoggedIn) {
-    next({ name: "Home" });
-  } else if (
-    to.name !== "Login" &&
-    !isLoggedIn &&
-    to.meta.allowGuest !== true
-  ) {
+  if (to.name === "Login" && isLoggedIn) return { name: "Home" };
+  if (to.meta.allowGuest) return true;
+  if (!isLoggedIn) {
     window.location.href = `/login?redirect-to=/forms${to.fullPath}`;
-  } else {
-    next();
+    return false;
   }
+
+  const store = useRouteData();
+  await store.resolve(to);
+  return true;
 });
 
 export default router;

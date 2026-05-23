@@ -47,21 +47,13 @@ def get_team_forms(team_id: str) -> list[GetTeamFormsResponseSchema]:
 
 
 @frappe.whitelist()
+@require_permission("FP Team", "read", param="team_id")
 def get_team_members(team_id: str) -> list[GetTeamMembersResponse]:
+    """Get the list of team members in a FP Team.
+
+    Requires ``read`` permission on the FP Team (HTTP 403 otherwise,
+    HTTP 404 when the team does not exist).
     """
-
-    Get the list of team members in a FP Team.
-    This endpoint checks if the session user has the permission to read this FP Team DocType
-
-    """
-    frappe.has_permission(
-        doctype="FP Team",
-        ptype="read",
-        doc=team_id,
-        user=frappe.session.user,
-        throw=True,
-    )
-
     # Clear cache so we read fresh DocShare data (e.g. after toggle_can_edit_team)
     frappe.clear_document_cache("FP Team", team_id)
 
@@ -109,21 +101,13 @@ def switch_team(team_id: str) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
+@require_permission("FP Team", "write", param="team_id")
 def invite_team_members(team_id: str, emails: list[str]) -> None:
-    """
-    Invite team members to a team
-    """
+    """Invite team members to a team.
 
-    if not frappe.has_permission(
-        doctype="FP Team",
-        ptype="write",
-        doc=team_id,
-        user=frappe.session.user,
-    ):
-        raise frappe.PermissionError(
-            "You do not have write permission on this team; write access is required to invite members"
-        )
-
+    Requires ``write`` permission on the FP Team (HTTP 403 otherwise,
+    HTTP 404 when the team does not exist).
+    """
     emails_str = ", ".join(emails)
 
     invite_by_email(
@@ -174,21 +158,13 @@ def add_member_to_team_via_invitation(team_id: str, invite_id: str | None = None
 
 
 @frappe.whitelist(methods=["POST"])
+@require_permission("FP Team", "write", param="team_id")
 def toggle_can_edit_team(team_id: str, member_email: str) -> None:
-    """
-    Toggle the can_edit_team permission for a team member
-    """
+    """Toggle the can_edit_team permission for a team member.
 
-    if not frappe.has_permission(
-        doctype="FP Team",
-        ptype="write",
-        doc=team_id,
-        user=frappe.session.user,
-    ):
-        raise frappe.PermissionError(
-            "You do not have permission to toggle the can_edit_team permission for this team member"
-        )
-
+    Requires ``write`` permission on the FP Team (HTTP 403 otherwise,
+    HTTP 404 when the team does not exist).
+    """
     team: FPTeam = frappe.get_doc("FP Team", team_id)
     if team.owner == member_email:
         raise frappe.PermissionError(
@@ -208,18 +184,13 @@ def toggle_can_edit_team(team_id: str, member_email: str) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
+@require_permission("FP Team", "write", param="team_id")
 def save(team_id: str, fields: dict) -> None:
-    """
-    Update team fields. Only fields present in the dict are updated.
-    """
-    frappe.has_permission(
-        doctype="FP Team",
-        ptype="write",
-        doc=team_id,
-        user=frappe.session.user,
-        throw=True,
-    )
+    """Update team fields. Only fields present in the dict are updated.
 
+    Requires ``write`` permission on the FP Team (HTTP 403 otherwise,
+    HTTP 404 when the team does not exist).
+    """
     ALLOWED_SAVE_FIELDS = ["team_name", "logo"]
 
     team: FPTeam = frappe.get_doc("FP Team", team_id)
@@ -231,18 +202,12 @@ def save(team_id: str, fields: dict) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
+@require_permission("FP Team", "write", param="team_id")
 def remove_member_from_team(team_id: str, member_email: str) -> None:
-    """
-    Remove a member from a team
-    """
+    """Remove a member from a team.
 
-    if not frappe.has_permission(
-        doctype="FP Team",
-        ptype="write",
-        doc=team_id,
-        user=frappe.session.user,
-    ):
-        raise frappe.PermissionError("You do not have permission to remove a member from this team")
-
+    Requires ``write`` permission on the FP Team (HTTP 403 otherwise,
+    HTTP 404 when the team does not exist).
+    """
     team: FPTeam = frappe.get_doc("FP Team", team_id)
     team.remove_from_team(member_email)

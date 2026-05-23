@@ -114,6 +114,9 @@ router.beforeEach(async (to, _from) => {
   let isLoggedIn = session.isLoggedIn;
   try {
     await userResource.promise;
+    if (isLoggedIn) {
+      await useUser().initialize();
+    }
   } catch {
     isLoggedIn = false;
   }

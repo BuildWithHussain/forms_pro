@@ -52,7 +52,7 @@ class FPTeam(Document):
             _user = get_user(member.user)
             _user["email"] = member.user
             share_name = get_share_name(doctype="FP Team", name=self.name, user=member.user, everyone=0)
-            _user["can_edit_team"] = frappe.db.get_value("DocShare", share_name, "write")
+            _user["can_edit_team"] = bool(share_name and frappe.db.get_value("DocShare", share_name, "write"))
             _user["is_owner"] = self.owner == member.user
             members.append(GetTeamMembersResponse.model_validate(_user).model_dump())
 

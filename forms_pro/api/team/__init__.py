@@ -1,6 +1,7 @@
 from .endpoints import (
     add_member_to_team_via_invitation,
     create_team,
+    get_team_for_manage,
     get_team_forms,
     get_team_members,
     invite_team_members,
@@ -13,6 +14,7 @@ from .endpoints import (
 __all__ = [
     "add_member_to_team_via_invitation",
     "create_team",
+    "get_team_for_manage",
     "get_team_forms",
     "get_team_members",
     "invite_team_members",

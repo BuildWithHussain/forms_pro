@@ -5,6 +5,7 @@ from frappe.core.doctype.user_invitation.user_invitation import UserInvitation
 from frappe.share import get_share_name
 
 from forms_pro.forms_pro.doctype.fp_team.fp_team import FPTeam, GetTeamMembersResponse
+from forms_pro.utils.permissions import require_permission
 from forms_pro.utils.teams import (
     GetTeamFormsResponseSchema,
     set_current_team,
@@ -12,6 +13,22 @@ from forms_pro.utils.teams import (
 from forms_pro.utils.teams import (
     get_team_forms as get_team_forms_utils,
 )
+
+
+@frappe.whitelist()
+@require_permission("FP Team", "read", param="team_id")
+def get_team_for_manage(team_id: str) -> dict:
+    """Return team details for the Manage Team page.
+
+    Requires ``read`` permission on the FP Team. Returns HTTP 404/403
+    accordingly.
+    """
+    team: FPTeam = frappe.get_doc("FP Team", team_id)
+    return {
+        "name": team.name,
+        "team_name": team.team_name,
+        "logo": team.logo,
+    }
 
 
 @frappe.whitelist()

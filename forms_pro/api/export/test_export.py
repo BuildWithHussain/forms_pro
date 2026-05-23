@@ -301,7 +301,7 @@ class TestExportSessionRestoration(IntegrationTestCase):
         frappe.set_user(FORMS_PRO_TEST_USER)
 
         with patch(
-            "forms_pro.api.export.DataExporter.build_response",
+            "forms_pro.api.export.endpoints.DataExporter.build_response",
             side_effect=RuntimeError("boom"),
         ):
             with self.assertRaises(RuntimeError):

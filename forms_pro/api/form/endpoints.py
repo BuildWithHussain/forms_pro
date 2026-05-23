@@ -1,21 +1,12 @@
 import frappe
 from frappe import _
 from frappe.share import add_docshare, remove
-from pydantic import BaseModel, Field
 
 from forms_pro.api.user import get_user
 from forms_pro.forms_pro.doctype.form.form import Form
 from forms_pro.utils.constants import FORMS_PRO_SYSTEM_FIELDNAMES, UNSUPPORTED_FRAPPE_FIELDTYPES
 
-
-class FormSharedWithResponse(BaseModel):
-    full_name: str
-    user_image: str | None
-    email: str = Field(alias="user")
-    read: bool
-    write: bool
-    share: bool
-    submit: bool
+from .schema import FormSharedWithResponse
 
 
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method

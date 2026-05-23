@@ -213,10 +213,19 @@ class TestExportPermissions(IntegrationTestCase):
 
         frappe.set_user(FORMS_PRO_TEST_USER)
         try:
-            with self.assertRaises(frappe.PermissionError):
+            with self.assertRaises(frappe.PermissionError) as ctx:
                 export_submissions(form_id=form.name, file_type="CSV")
+            self.assertEqual(ctx.exception.http_status_code, 403)
         finally:
             frappe.set_user("Administrator")
+
+    def test_raises_404_when_form_missing(self) -> None:
+        """A missing form_id must surface as DoesNotExistError (404) so the
+        frontend renders the Not Found state, not Access Denied."""
+        frappe.set_user("Administrator")
+        with self.assertRaises(frappe.DoesNotExistError) as ctx:
+            export_submissions(form_id="MISSING_FORM_XYZ", file_type="CSV")
+        self.assertEqual(ctx.exception.http_status_code, 404)
 
 
 class TestExportAccessLog(IntegrationTestCase):

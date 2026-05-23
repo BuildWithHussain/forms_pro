@@ -7,11 +7,13 @@ from frappe.core.doctype.data_export.exporter import DataExporter
 from werkzeug.utils import secure_filename
 
 from forms_pro.forms_pro.doctype.form.form import Form
+from forms_pro.utils.permissions import require_permission
 
 _SUPPORTED_FILE_TYPES = ("CSV", "Excel")
 
 
 @frappe.whitelist()
+@require_permission("Form", "write", param="form_id")
 def export_submissions(form_id: str, file_type: Literal["CSV", "Excel"] = "CSV") -> None:
     """
     Export submissions for a form as a CSV or XLSX download.
@@ -29,12 +31,6 @@ def export_submissions(form_id: str, file_type: Literal["CSV", "Excel"] = "CSV")
         frappe.throw(
             _("Unsupported file_type {0}. Allowed: {1}.").format(file_type, ", ".join(_SUPPORTED_FILE_TYPES)),
             frappe.ValidationError,
-        )
-
-    if not frappe.has_permission(doctype="Form", ptype="write", doc=form_id):
-        frappe.throw(
-            _("You do not have permission to export submissions for this form."),
-            frappe.PermissionError,
         )
 
     form: Form = frappe.get_doc("Form", form_id)

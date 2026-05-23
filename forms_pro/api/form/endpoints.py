@@ -5,6 +5,7 @@ from frappe.share import add_docshare, remove
 from forms_pro.api.user import get_user
 from forms_pro.forms_pro.doctype.form.form import Form
 from forms_pro.utils.constants import FORMS_PRO_SYSTEM_FIELDNAMES, UNSUPPORTED_FRAPPE_FIELDTYPES
+from forms_pro.utils.permissions import require_permission
 
 from .schema import FormSharedWithResponse
 
@@ -54,6 +55,17 @@ def get_form(form_id: str) -> dict:
         "success_title": form.success_title,
         "success_description": form.success_description,
     }
+
+
+@frappe.whitelist()
+@require_permission("Form", "read", param="form_id")
+def get_form_for_view(form_id: str) -> dict:
+    """Return the form document for the Manage Form page.
+
+    Requires ``read`` permission on the Form. Returns HTTP 404 when the
+    form does not exist and HTTP 403 when the user lacks permission.
+    """
+    return get_form(form_id)
 
 
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method

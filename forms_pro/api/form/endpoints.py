@@ -68,6 +68,16 @@ def get_form_for_view(form_id: str) -> dict:
     return get_form(form_id)
 
 
+@frappe.whitelist()
+@require_permission("Form", "write", param="form_id")
+def get_form_for_edit(form_id: str) -> dict:
+    """Return the form document for the Edit Form page.
+
+    Requires ``write`` permission on the Form. Returns HTTP 404/403 accordingly.
+    """
+    return get_form(form_id)
+
+
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def get_link_field_options(
     doctype: str,

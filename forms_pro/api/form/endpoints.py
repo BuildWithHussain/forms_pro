@@ -97,19 +97,13 @@ def get_link_field_options(
 
 
 @frappe.whitelist()
+@require_permission("Form", "read", param="form_id")
 def get_form_shared_with(form_id: str) -> list[frappe.Any]:
-    """
-    Get list of users with which a form is shared.
+    """Get list of users with whom a form is shared.
 
-    We validate the current user has read access to the form.
+    Requires ``read`` permission on the Form (HTTP 403 otherwise, HTTP 404
+    when the form does not exist).
     """
-    if not frappe.has_permission(
-        "Form",
-        "read",
-        form_id,
-    ):
-        frappe.throw(_("You do not have read access to this form"))
-
     form: Form = frappe.get_doc("Form", form_id)
     shared_with = form.shared_with()
 
@@ -126,25 +120,22 @@ def get_form_shared_with(form_id: str) -> list[frappe.Any]:
 
 
 @frappe.whitelist()
+@require_permission("Form", "write", param="form_id")
 def remove_form_access(form_id: str, user_email: str) -> None:
+    """Remove access to a form for a user.
+
+    Requires ``write`` permission on the Form (HTTP 403 otherwise, HTTP 404
+    when the form does not exist).
+
+    Args:
+        form_id: The ID of the form to remove access from.
+        user_email: The email of the user whose access is being removed.
     """
-    Remove access to a form for a user.
-
-    We validate the current user has write access to the form.
-
-    args:
-        form_id: str - The ID of the form to remove access to.
-        user_email: str - The email of the user to remove access to.
-
-    """
-
-    if not frappe.has_permission("Form", "write", form_id):
-        frappe.throw(_("You do not have write access to this form"))
-
     return remove(doctype="Form", name=form_id, user=user_email, flags={"ignore_permissions": True})
 
 
 @frappe.whitelist()
+@require_permission("Form", "share", param="form_id")
 def add_form_access(
     form_id: str,
     user: str,
@@ -153,13 +144,12 @@ def add_form_access(
     share: bool = False,
     submit: bool = False,
 ) -> None:
-    """
-    Grant a user access to a form with the specified permissions.
+    """Grant a user access to a form with the specified permissions.
 
     Uses ``ignore_share_permission`` so the record can be shared regardless of
-    the caller's role-level DocShare permissions — the explicit
-    ``frappe.has_permission`` check below enforces that only users with share
-    access on this particular form can invoke this endpoint.
+    the caller's role-level DocShare permissions — the ``@require_permission``
+    decorator enforces that only users with share access on this particular form
+    can invoke this endpoint.
 
     Args:
         form_id: Name of the Form document to share.
@@ -170,12 +160,9 @@ def add_form_access(
         submit: Allow the user to submit the form (default False).
 
     Raises:
-        frappe.PermissionError: If the calling user does not have share access
-            on the specified form.
+        frappe.PermissionError: HTTP 403, when the caller lacks share access.
+        frappe.DoesNotExistError: HTTP 404, when the form does not exist.
     """
-    if not frappe.has_permission("Form", "share", form_id):
-        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
-
     add_docshare(
         doctype="Form",
         name=form_id,
@@ -189,14 +176,14 @@ def add_form_access(
 
 
 @frappe.whitelist()
+@require_permission("Form", "share", param="form_id")
 def set_form_permission(
     form_id: str,
     user: str,
     permission_to: str,
     value: bool,
 ) -> None:
-    """
-    Toggle a single permission bit for a user on a form.
+    """Toggle a single permission bit for a user on a form.
 
     Designed for per-toggle updates from the sharing UI — only the specified
     permission field is changed; all other existing permissions are preserved by
@@ -210,14 +197,11 @@ def set_form_permission(
         value: ``True`` to grant the permission, ``False`` to revoke it.
 
     Raises:
-        frappe.PermissionError: If the calling user does not have share access
-            on the specified form.
+        frappe.PermissionError: HTTP 403, when the caller lacks share access.
+        frappe.DoesNotExistError: HTTP 404, when the form does not exist.
         frappe.ValidationError: If ``permission_to`` is not a recognised
             permission type.
     """
-    if not frappe.has_permission("Form", "share", form_id):
-        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
-
     # Guard against arbitrary kwargs being forwarded to add_docshare
     allowed_permissions = {"read", "write", "share", "submit"}
     if permission_to not in allowed_permissions:

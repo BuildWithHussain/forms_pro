@@ -7,7 +7,7 @@ import {
     type Condition,
     Actions,
 } from "@/types/conditional-render.types";
-import { EllipsisVertical, Trash, Workflow, Zap } from "lucide-vue-next";
+import { EllipsisVertical, Trash, Workflow, Zap } from "@lucide/vue";
 import { FormControl, Popover } from "frappe-ui";
 import type { FormField } from "@/types/formfield";
 

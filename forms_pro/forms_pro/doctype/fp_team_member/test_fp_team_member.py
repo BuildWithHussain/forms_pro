@@ -2,16 +2,16 @@
 # See license.txt
 
 # import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
-# On FrappeTestCase, the doctype test records and all
+# On IntegrationTestCase, the doctype test records and all
 # link-field test record dependencies are recursively loaded
 # Use these module variables to add/remove to/from that list
 EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class IntegrationTestFPTeamMember(FrappeTestCase):
+class IntegrationTestFPTeamMember(IntegrationTestCase):
     """
     Integration tests for FPTeamMember.
     Use this class for testing interactions between multiple components.

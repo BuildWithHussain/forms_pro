@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Checkbox, Switch, Rating, TextEditor } from "frappe-ui";
-import { FormFieldTypes } from "@/types/formfield";
+import { Fieldtype } from "@/types/formfield";
 import { getFieldTypeDef } from "@/config/fieldTypes";
-import { Fieldtype } from "@/types/FormsPro/form_field.types";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
 import { isHeading } from "@/utils/form_fields";
@@ -12,20 +11,20 @@ const props = defineProps<{
     fieldname: string;
     label: string;
     description?: string;
-    fieldtype: FormFieldTypes;
+    fieldtype: Fieldtype;
     value: any;
 }>();
 
 const formattedDateValue = computed(() => {
     if (!props.value) return "";
     switch (props.fieldtype) {
-        case FormFieldTypes.Date:
+        case Fieldtype.DATE:
             return formatDate(props.value);
-        case FormFieldTypes.DateTime:
+        case Fieldtype.DATE_TIME:
             return formatDateTime(props.value);
-        case FormFieldTypes.TimePicker:
+        case Fieldtype.TIME_PICKER:
             return formatTime(props.value);
-        case FormFieldTypes.DateRange:
+        case Fieldtype.DATE_RANGE:
             try {
                 const dates = JSON.parse(props.value);
                 if (Array.isArray(dates) && dates.length === 2) {
@@ -40,7 +39,7 @@ const formattedDateValue = computed(() => {
     }
 });
 
-const typeDef = computed(() => getFieldTypeDef(props.fieldtype as unknown as Fieldtype));
+const typeDef = computed(() => getFieldTypeDef(props.fieldtype));
 const isDateField = computed(() => typeDef.value?.isDate ?? false);
 
 const parsedMultiselectValue = computed(() => {
@@ -78,26 +77,22 @@ const classNames = computed<string>(() =>
 
 <template>
     <div :class="classNames">
-        <div v-if="!isHeading(fieldtype as unknown as Fieldtype)">
+        <div v-if="!isHeading(fieldtype)">
             <span class="text-sm text-ink-gray-5">{{ label }}</span>
             <p v-if="description" class="text-xs text-ink-gray-4">{{ description }}</p>
         </div>
 
         <Checkbox
-            v-if="fieldtype === FormFieldTypes.Checkbox"
+            v-if="fieldtype === Fieldtype.CHECKBOX"
             class="mt-1"
             :modelValue="Boolean(value)"
             disabled
         />
 
-        <Switch
-            v-else-if="fieldtype === FormFieldTypes.Switch"
-            :modelValue="Boolean(value)"
-            disabled
-        />
+        <Switch v-else-if="fieldtype === Fieldtype.SWITCH" :modelValue="Boolean(value)" disabled />
 
         <TextEditor
-            v-else-if="fieldtype === FormFieldTypes.TextEditor"
+            v-else-if="fieldtype === Fieldtype.TEXT_EDITOR"
             :content="value"
             :editable="false"
             :bubbleMenu="false"
@@ -105,23 +100,32 @@ const classNames = computed<string>(() =>
             editorClass="prose-sm !border-none !p-0 !shadow-none"
         />
 
-        <Rating v-else-if="fieldtype === FormFieldTypes.Rating" :modelValue="value" readonly />
+        <Rating
+            v-else-if="fieldtype === Fieldtype.RATING"
+            :modelValue="Math.round((Number(value) || 0) * 5)"
+            :rating_from="5"
+            readonly
+        />
 
         <a
-            v-else-if="fieldtype === FormFieldTypes.Attach && safeAttachUrl"
+            v-else-if="fieldtype === Fieldtype.ATTACH && safeAttachUrl"
             :href="safeAttachUrl"
             target="_blank"
+            rel="noopener noreferrer"
             class="text-sm text-blue-600 hover:text-blue-700 underline truncate"
         >
             {{ value }}
         </a>
+        <span v-else-if="fieldtype === Fieldtype.ATTACH && value" class="text-sm text-ink-gray-5">
+            {{ value }}
+        </span>
 
-        <span v-else-if="fieldtype === FormFieldTypes.Multiselect" class="text-sm text-ink-gray-7">
+        <span v-else-if="fieldtype === Fieldtype.MULTISELECT" class="text-sm text-ink-gray-7">
             {{ parsedMultiselectValue }}
         </span>
 
         <span
-            v-else-if="fieldtype === FormFieldTypes.Textarea"
+            v-else-if="fieldtype === Fieldtype.TEXTAREA"
             class="text-sm text-ink-gray-7 whitespace-pre-wrap"
         >
             {{ value ?? "–" }}
@@ -132,8 +136,8 @@ const classNames = computed<string>(() =>
         </span>
 
         <Heading
-            v-else-if="isHeading(fieldtype as unknown as Fieldtype)"
-            :field="{ label, fieldtype: fieldtype as unknown as Fieldtype }"
+            v-else-if="isHeading(fieldtype)"
+            :field="{ label, fieldtype }"
             :in-edit-mode="false"
         />
 

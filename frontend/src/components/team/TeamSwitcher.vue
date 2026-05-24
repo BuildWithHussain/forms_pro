@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUser } from "@/stores/user";
 import { Dropdown, TextInput } from "frappe-ui";
-import { ChevronsUpDown, Search } from "lucide-vue-next";
+import { ChevronsUpDown, Search } from "@lucide/vue";
 import { computed, inject, ref } from "vue";
 import CreateTeamDialog from "@/components/team/CreateTeamDialog.vue";
 import TeamSwitcherItem from "@/components/team/TeamSwitcherItem.vue";

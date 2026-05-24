@@ -40,9 +40,14 @@ export const useUser = defineStore("user", () => {
     },
   });
 
-  async function initialize() {
-    await userResource.fetch();
-    await userTeamsResource.fetch();
+  let initPromise: Promise<void> | null = null;
+  async function initialize(): Promise<void> {
+    if (initPromise) return initPromise;
+    initPromise = (async () => {
+      await userResource.fetch();
+      await userTeamsResource.fetch();
+    })();
+    return initPromise;
   }
 
   function fetchUser() {
@@ -51,11 +56,6 @@ export const useUser = defineStore("user", () => {
 
   function fetchUserTeams() {
     userTeamsResource.fetch();
-  }
-
-  // @ts-ignore
-  function getCurrentTeamFromAllTeams() {
-    return userTeams.value?.find((team) => team.is_current);
   }
 
   function setCurrentTeam(team: UserTeam) {

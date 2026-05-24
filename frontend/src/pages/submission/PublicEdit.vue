@@ -6,7 +6,7 @@ import { useSubmissionForm } from "@/stores/submissionForm";
 import { useEditSubmission } from "@/stores/editSubmission";
 import { computed, watch } from "vue";
 import FormRenderer from "@/components/submission/FormRenderer.vue";
-import { CircleDashed } from "lucide-vue-next";
+import { CircleDashed } from "@lucide/vue";
 import { formatDateTime } from "@/utils/date";
 
 const route = useRoute();

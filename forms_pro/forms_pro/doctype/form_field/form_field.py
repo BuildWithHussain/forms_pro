@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 # import frappe
+from frappe.model import no_value_fields
 from frappe.model.document import Document
 from frappe.utils import escape_html
 
@@ -48,6 +49,8 @@ class FormField(Document):
     if TYPE_CHECKING:
         from frappe.types import DF
 
+        cell_index: DF.Int
+        column_index: DF.Int
         conditional_logic: DF.Code | None
         default: DF.SmallText | None
         description: DF.SmallText | None
@@ -83,38 +86,29 @@ class FormField(Document):
         parentfield: DF.Data
         parenttype: DF.Data
         reqd: DF.Check
+        row_index: DF.Int
     # end: auto-generated types
 
     @property
+    def frappe_fieldtype(self) -> str:
+        """Resolved underlying Frappe fieldtype (post-mapping)."""
+        mapping = FORM_TO_FRAPPE_FIELDTYPE.get(self.fieldtype, {})
+        return mapping.get("fieldtype", self.fieldtype)
+
+    @property
+    def stores_value(self) -> bool:
+        """False for display-only field types (Heading, etc.) that have no DB column."""
+        return self.frappe_fieldtype not in no_value_fields
+
+    @property
     def to_frappe_field(self) -> dict:
-        _fieldtype = self.fieldtype
-
-        if self.fieldtype == "Email":
-            _fieldtype = "Data"
-            self.options = "Email"
-        elif self.fieldtype == "Number":
-            _fieldtype = "Int"
-        elif self.fieldtype == "Date Time":
-            _fieldtype = "Datetime"
-        elif self.fieldtype == "Date Range":
-            _fieldtype = "Data"
-        elif self.fieldtype == "Time Picker":
-            _fieldtype = "Time"
-        elif self.fieldtype == "Switch" or self.fieldtype == "Checkbox":
-            _fieldtype = "Check"
-        elif self.fieldtype == "Textarea":
-            _fieldtype = "Text"
-        elif self.fieldtype == "Multiselect":
-            _fieldtype = "JSON"
-        elif self.fieldtype in _DISPLAY_ONLY_FIELDTYPES:
-            _fieldtype = "HTML"
-
+        mapping = FORM_TO_FRAPPE_FIELDTYPE.get(self.fieldtype, {})
         return {
             "fieldname": self.fieldname,
-            "fieldtype": _fieldtype,
+            "fieldtype": self.frappe_fieldtype,
             "label": self.label,
             "reqd": self.reqd,
-            "options": self.get_options(),
+            "options": mapping.get("options", self.get_options()),
             "description": self.description,
             "default": self.default,
         }

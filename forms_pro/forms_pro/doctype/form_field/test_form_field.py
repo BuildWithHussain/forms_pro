@@ -74,3 +74,34 @@ class TestFormFieldToFrappeField(IntegrationTestCase):
             with self.subTest(fieldtype=fieldtype):
                 self.assertIn(fieldtype, FORM_TO_FRAPPE_FIELDTYPE)
                 self.assertEqual(FORM_TO_FRAPPE_FIELDTYPE[fieldtype]["fieldtype"], "HTML")
+
+
+class TestLayoutFieldsNotSyncedToDoctype(IntegrationTestCase):
+    """row_index, column_index, cell_index are layout-only and must never appear in to_frappe_field."""
+
+    def test_row_index_excluded_from_frappe_field(self):
+        field = _build_field("Data", label="Name", fieldname="name_field")
+        field.row_index = 3
+        self.assertNotIn("row_index", field.to_frappe_field)
+
+    def test_column_index_excluded_from_frappe_field(self):
+        field = _build_field("Data", label="Name", fieldname="name_field")
+        field.column_index = 2
+        self.assertNotIn("column_index", field.to_frappe_field)
+
+    def test_cell_index_excluded_from_frappe_field(self):
+        field = _build_field("Data", label="Name", fieldname="name_field")
+        field.cell_index = 4
+        self.assertNotIn("cell_index", field.to_frappe_field)
+
+    def test_layout_fields_excluded_for_all_fieldtypes(self):
+        for fieldtype in FORM_TO_FRAPPE_FIELDTYPE:
+            with self.subTest(fieldtype=fieldtype):
+                field = _build_field(fieldtype, label="Test", fieldname="test_f")
+                field.row_index = 1
+                field.column_index = 1
+                field.cell_index = 1
+                result = field.to_frappe_field
+                self.assertNotIn("row_index", result)
+                self.assertNotIn("column_index", result)
+                self.assertNotIn("cell_index", result)

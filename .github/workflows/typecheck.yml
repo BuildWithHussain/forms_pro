@@ -1,6 +1,6 @@
 name: Frontend TypeScript
 
-# Frappe version-15 deployment branch: Node 18
+# Frappe version-15 deployment branch: Node 20
 on:
   push:
     branches:
@@ -14,7 +14,6 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/typecheck.yml"
-  merge_group:
 
 concurrency:
   group: typecheck-version-15-forms_pro-${{ github.event.number || github.sha }}

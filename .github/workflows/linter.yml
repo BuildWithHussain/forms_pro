@@ -7,7 +7,6 @@ on:
       - version-15
     paths-ignore:
       - ".github/**"
-  merge_group:
   workflow_dispatch:
 
 permissions:
@@ -21,7 +20,7 @@ jobs:
   linter:
     name: 'Frappe Linter'
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+    if: github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v6

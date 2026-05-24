@@ -1,20 +1,13 @@
 import frappe
 from frappe import _
 from frappe.share import add_docshare, remove
-from pydantic import BaseModel, Field
 
 from forms_pro.api.user import get_user
 from forms_pro.forms_pro.doctype.form.form import Form
+from forms_pro.utils.constants import FORMS_PRO_SYSTEM_FIELDNAMES, UNSUPPORTED_FRAPPE_FIELDTYPES
+from forms_pro.utils.permissions import require_permission
 
-
-class FormSharedWithResponse(BaseModel):
-    full_name: str
-    user_image: str | None
-    email: str = Field(alias="user")
-    read: bool
-    write: bool
-    share: bool
-    submit: bool
+from .schema import FormSharedWithResponse
 
 
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
@@ -36,9 +29,11 @@ def is_login_required(route: str) -> bool:
     return bool(login_enabled)
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def get_form_by_route(route: str) -> dict:
     form_id = frappe.db.get_value("Form", {"route": route}, pluck="name")
+    if not form_id:
+        frappe.throw(_("Form not found"), frappe.DoesNotExistError)
     return get_form(form_id)
 
 
@@ -62,6 +57,27 @@ def get_form(form_id: str) -> dict:
     }
 
 
+@frappe.whitelist()
+@require_permission("Form", "read", param="form_id")
+def get_form_for_view(form_id: str) -> dict:
+    """Return the form document for the Manage Form page.
+
+    Requires ``read`` permission on the Form. Returns HTTP 404 when the
+    form does not exist and HTTP 403 when the user lacks permission.
+    """
+    return get_form(form_id)
+
+
+@frappe.whitelist()
+@require_permission("Form", "write", param="form_id")
+def get_form_for_edit(form_id: str) -> dict:
+    """Return the form document for the Edit Form page.
+
+    Requires ``write`` permission on the Form. Returns HTTP 404/403 accordingly.
+    """
+    return get_form(form_id)
+
+
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
 def get_link_field_options(
     doctype: str,
@@ -81,19 +97,13 @@ def get_link_field_options(
 
 
 @frappe.whitelist()
+@require_permission("Form", "read", param="form_id")
 def get_form_shared_with(form_id: str) -> list[frappe.Any]:
-    """
-    Get list of users with which a form is shared.
+    """Get list of users with whom a form is shared.
 
-    We validate the current user has read access to the form.
+    Requires ``read`` permission on the Form (HTTP 403 otherwise, HTTP 404
+    when the form does not exist).
     """
-    if not frappe.has_permission(
-        "Form",
-        "read",
-        form_id,
-    ):
-        frappe.throw(_("You do not have read access to this form"))
-
     form: Form = frappe.get_doc("Form", form_id)
     shared_with = form.shared_with()
 
@@ -110,25 +120,22 @@ def get_form_shared_with(form_id: str) -> list[frappe.Any]:
 
 
 @frappe.whitelist()
+@require_permission("Form", "write", param="form_id")
 def remove_form_access(form_id: str, user_email: str) -> None:
+    """Remove access to a form for a user.
+
+    Requires ``write`` permission on the Form (HTTP 403 otherwise, HTTP 404
+    when the form does not exist).
+
+    Args:
+        form_id: The ID of the form to remove access from.
+        user_email: The email of the user whose access is being removed.
     """
-    Remove access to a form for a user.
-
-    We validate the current user has write access to the form.
-
-    args:
-        form_id: str - The ID of the form to remove access to.
-        user_email: str - The email of the user to remove access to.
-
-    """
-
-    if not frappe.has_permission("Form", "write", form_id):
-        frappe.throw(_("You do not have write access to this form"))
-
     return remove(doctype="Form", name=form_id, user=user_email, flags={"ignore_permissions": True})
 
 
 @frappe.whitelist()
+@require_permission("Form", "share", param="form_id")
 def add_form_access(
     form_id: str,
     user: str,
@@ -137,13 +144,12 @@ def add_form_access(
     share: bool = False,
     submit: bool = False,
 ) -> None:
-    """
-    Grant a user access to a form with the specified permissions.
+    """Grant a user access to a form with the specified permissions.
 
     Uses ``ignore_share_permission`` so the record can be shared regardless of
-    the caller's role-level DocShare permissions — the explicit
-    ``frappe.has_permission`` check below enforces that only users with share
-    access on this particular form can invoke this endpoint.
+    the caller's role-level DocShare permissions — the ``@require_permission``
+    decorator enforces that only users with share access on this particular form
+    can invoke this endpoint.
 
     Args:
         form_id: Name of the Form document to share.
@@ -154,12 +160,9 @@ def add_form_access(
         submit: Allow the user to submit the form (default False).
 
     Raises:
-        frappe.PermissionError: If the calling user does not have share access
-            on the specified form.
+        frappe.PermissionError: HTTP 403, when the caller lacks share access.
+        frappe.DoesNotExistError: HTTP 404, when the form does not exist.
     """
-    if not frappe.has_permission("Form", "share", form_id):
-        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
-
     add_docshare(
         doctype="Form",
         name=form_id,
@@ -173,14 +176,14 @@ def add_form_access(
 
 
 @frappe.whitelist()
+@require_permission("Form", "share", param="form_id")
 def set_form_permission(
     form_id: str,
     user: str,
     permission_to: str,
     value: bool,
 ) -> None:
-    """
-    Toggle a single permission bit for a user on a form.
+    """Toggle a single permission bit for a user on a form.
 
     Designed for per-toggle updates from the sharing UI — only the specified
     permission field is changed; all other existing permissions are preserved by
@@ -194,14 +197,11 @@ def set_form_permission(
         value: ``True`` to grant the permission, ``False`` to revoke it.
 
     Raises:
-        frappe.PermissionError: If the calling user does not have share access
-            on the specified form.
+        frappe.PermissionError: HTTP 403, when the caller lacks share access.
+        frappe.DoesNotExistError: HTTP 404, when the form does not exist.
         frappe.ValidationError: If ``permission_to`` is not a recognised
             permission type.
     """
-    if not frappe.has_permission("Form", "share", form_id):
-        frappe.throw(_("You do not have share access to this form"), frappe.PermissionError)
-
     # Guard against arbitrary kwargs being forwarded to add_docshare
     allowed_permissions = {"read", "write", "share", "submit"}
     if permission_to not in allowed_permissions:
@@ -231,24 +231,12 @@ def get_doctype_list() -> list[str]:
 
 
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
-def get_doctype_fields(doctype: str) -> dict:
+def get_doctype_fields(doctype: str) -> list:
     doctype = frappe.get_doc("DocType", doctype)
-    fields = doctype.fields
-
-    FIELDTYPES_TO_REMOVE = [
-        "Section Break",
-        "HTML",
-        "Button",
-        "Column Break",
-        "Tab Break",
-        "Barcode",
-        "Dynamic Link",
-        "Fold",
+    fields = [
+        field
+        for field in doctype.fields
+        if field.fieldtype not in UNSUPPORTED_FRAPPE_FIELDTYPES
+        and field.fieldname not in FORMS_PRO_SYSTEM_FIELDNAMES
     ]
-
-    FIELDS_TO_REMOVE = ["fp_submission_status", "fp_linked_form"]
-
-    fields = [field for field in fields if field.fieldtype not in FIELDTYPES_TO_REMOVE]
-    fields = [field for field in fields if field.fieldname not in FIELDS_TO_REMOVE]
-
     return fields

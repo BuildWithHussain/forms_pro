@@ -3,7 +3,7 @@ import { Checkbox, Dialog, FormControl, TextEditor, Tooltip } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 import { validateFormRoute } from "@/utils/form_generator";
 import { ref, watch } from "vue";
-import { CircleCheck } from "lucide-vue-next";
+import { CircleCheck } from "@lucide/vue";
 
 const editFormStore = useEditForm();
 

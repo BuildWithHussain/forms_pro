@@ -1,29 +1,10 @@
-export enum FormFieldTypes {
-  Attach = "Attach",
-  Data = "Data",
-  Number = "Number",
-  Email = "Email",
-  Date = "Date",
-  DateTime = "Date Time",
-  DateRange = "Date Range",
-  TimePicker = "Time Picker",
-  Password = "Password",
-  Select = "Select",
-  Phone = "Phone",
-  Switch = "Switch",
-  Textarea = "Textarea",
-  TextEditor = "Text Editor",
-  Link = "Link",
-  Checkbox = "Checkbox",
-  Rating = "Rating",
-  Table = "Table",
-  Multiselect = "Multiselect",
-}
+export { Fieldtype } from "@/types/FormsPro/form_field.types";
+import { Fieldtype } from "@/types/FormsPro/form_field.types";
 
 export type FormField = {
   label: string;
   fieldname: string;
-  fieldtype: FormFieldTypes;
+  fieldtype: Fieldtype;
   description?: string;
   reqd?: boolean;
   hidden?: boolean;
@@ -31,4 +12,7 @@ export type FormField = {
   default?: string;
   idx?: number;
   conditional_logic?: string;
+  row_index?: number;
+  column_index?: number;
+  cell_index?: number;
 };

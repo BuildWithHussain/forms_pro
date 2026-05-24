@@ -1,6 +1,6 @@
 name: CI
 
-# Deployment branch for Frappe version-15 (Python 3.10, Node 18, MariaDB 10.6.24)
+# Deployment branch for Frappe version-15 (Python 3.10, Node 20, MariaDB 10.6.24)
 on:
   push:
     branches:
@@ -12,7 +12,6 @@ on:
       - version-15
     paths-ignore:
       - ".github/**"
-  merge_group:
 
 concurrency:
   group: version-15-forms_pro-${{ github.event.number }}

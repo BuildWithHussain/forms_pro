@@ -4,7 +4,8 @@ import {
   Condition,
   Actions,
 } from "@/types/conditional-render.types";
-import { FormField } from "@/types/formfield";
+import { FormField, Fieldtype } from "@/types/formfield";
+import { getFieldTypeDef } from "@/config/fieldTypes";
 
 /**
  * Parse conditional_logic string into ConditionalLogic object
@@ -35,13 +36,14 @@ function getFieldValue(
     return null;
   }
 
-  // Handle boolean/switch fields
-  if (fieldType === "Switch" || fieldType === "Checkbox") {
+  const typeDef = getFieldTypeDef(fieldType as Fieldtype);
+
+  if (typeDef?.isBoolean) {
     return Boolean(fieldValue);
   }
 
   // Handle number fields
-  if (fieldType === "Number") {
+  if (fieldType === Fieldtype.NUMBER) {
     const num = Number(fieldValue);
     return isNaN(num) ? null : num;
   }

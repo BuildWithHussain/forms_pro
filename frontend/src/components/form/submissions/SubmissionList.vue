@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useManageForm } from "@/stores/form/manageForm";
-import { ListView, Badge, createResource } from "frappe-ui";
+import { FileText, Sheet, Download } from "@lucide/vue";
+import { ListView, Badge, createResource, Dropdown } from "frappe-ui";
 import { formatDateTime } from "@/utils/date";
 import Avatar from "@/components/ui/Avatar.vue";
 import Drawer from "@/components/ui/Drawer.vue";
@@ -64,8 +65,40 @@ const columns = computed(() => [
         width: 1,
     },
 ]);
+
+const onExport = (fileType: "CSV" | "Excel") => {
+    const formId = manageFormStore.currentFormId;
+    if (!formId) {
+        toast.error("Unable to export", { description: "No form selected." });
+        return;
+    }
+    const params = new URLSearchParams({ form_id: formId, file_type: fileType });
+    window.location.href = `/api/method/forms_pro.api.export.export_submissions?${params}`;
+};
+
+const dropdownItems = computed(() => [
+    {
+        label: "Export as CSV",
+        icon: FileText,
+        onClick: () => onExport("CSV"),
+    },
+    {
+        label: "Export as Excel",
+        icon: Sheet,
+        onClick: () => onExport("Excel"),
+    },
+]);
 </script>
 <template>
+    <div>
+        <Dropdown
+            :button="{
+                label: 'Export',
+                iconLeft: Download,
+            }"
+            :options="dropdownItems"
+        />
+    </div>
     <ListView
         :columns="columns"
         :rows="allSubmissions"

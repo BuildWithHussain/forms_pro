@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useEditForm } from "@/stores/editForm";
 import { FormControl } from "frappe-ui";
-import { FormField, FormFieldTypes } from "@/types/formfield";
+import { FormField } from "@/types/formfield";
+import { FIELD_TYPE_DEFINITIONS } from "@/config/fieldTypes";
 import { computed } from "vue";
 import type { Component } from "vue";
 import ConditionalLogicSection from "./ConditionalLogicSection.vue";
@@ -44,7 +45,7 @@ const fieldProperties = computed(() => {
                 label: "Fieldtype",
                 required: true,
                 variant: "outline",
-                options: Object.values(FormFieldTypes),
+                options: FIELD_TYPE_DEFINITIONS.map((d) => d.name),
             },
         },
         {

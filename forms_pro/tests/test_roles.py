@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.roles import FORMS_PRO_ROLE
 from forms_pro.tests.factories import UserFactory

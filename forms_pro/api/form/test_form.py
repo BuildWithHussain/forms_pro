@@ -1,6 +1,6 @@
 import frappe
 from frappe.share import add_docshare
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.api.form import (
     add_form_access,

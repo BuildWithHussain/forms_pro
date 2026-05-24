@@ -1,5 +1,5 @@
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.tests import FORMS_PRO_TEST_USER
 from forms_pro.tests.factories.form_factory import FormFactory

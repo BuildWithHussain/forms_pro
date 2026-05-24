@@ -1,14 +1,20 @@
 name: CI
 
+# Deployment branch for Frappe version-15 (Python 3.10, Node 20, MariaDB 10.6.24)
 on:
   push:
     branches:
-      - develop
+      - version-15
+    paths-ignore:
+      - ".github/**"
   pull_request:
-  merge_group:
+    branches:
+      - version-15
+    paths-ignore:
+      - ".github/**"
 
 concurrency:
-  group: develop-forms_pro-${{ github.event.number }}
+  group: version-15-forms_pro-${{ github.event.number }}
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +34,7 @@ jobs:
         ports:
           - 11000:6379
       mariadb:
-        image: mariadb:10.6
+        image: mariadb:10.6.24
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
@@ -47,12 +53,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: "3.10"
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 20
           check-latest: true
 
       - name: Cache pip
@@ -84,7 +90,7 @@ jobs:
       - name: Setup
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init ~/frappe-bench --version version-15 --skip-redis-config-generation --skip-assets --python "$(which python)"
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
 
@@ -99,6 +105,13 @@ jobs:
           bench build
         env:
           CI: "Yes"
+
+      - name: Log Frappe version
+        working-directory: /home/runner/frappe-bench
+        run: |
+          FRAPPE_VERSION=$(./env/bin/python -c "import frappe; print(frappe.__version__)" 2>/dev/null || echo "unknown")
+          echo "Installed Frappe version: $FRAPPE_VERSION"
+          echo "FRAPPE_VERSION=$FRAPPE_VERSION" >> $GITHUB_ENV
 
       - name: Run Tests
         working-directory: /home/runner/frappe-bench

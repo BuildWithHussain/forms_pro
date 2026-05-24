@@ -6,7 +6,7 @@ These endpoints gate on session state, not DocShare, so they take no
 behavior so future regressions are caught.
 """
 
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.api.user import get_current_user, get_user, get_user_teams
 from forms_pro.tests import FORMS_PRO_TEST_USER

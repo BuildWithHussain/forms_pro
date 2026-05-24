@@ -18,7 +18,7 @@ real user, session user restored on success and on failure.
 from unittest.mock import patch
 
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.api.export import export_submissions
 from forms_pro.api.submission import submit_form_response

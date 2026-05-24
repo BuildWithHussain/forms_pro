@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.defaults import get_user_default
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.tests.factories import FPTeamFactory, UserFactory
 

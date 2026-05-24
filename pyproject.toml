@@ -5,12 +5,12 @@ authors = [
     { name = "BWH Studios", email = "developers@buildwithhussain.com" },
 ]
 description = "Web Forms on steroids!"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
-    "Faker>=40.13,<40.19",
+    "Faker~=38.2.0",
     "dnspython==2.8.0",
     "email-validator==2.3.0",
 ]
@@ -22,16 +22,18 @@ Repository = "https://github.com/buildwithhussain/forms_pro"
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
+# Required Frappe version; bench uses this for get-app/install validation (version-15 deployment).
+# NPM-style bounded range only (no ^, ~, or single-sided constraints).
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
+
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
 # package_name = "~=1.1.0"
 
-[tool.bench.frappe-dependencies]
-frappe = ">=16.0.0-dev,<18.0.0"
-
 [tool.ruff]
 line-length = 110
-target-version = "py313"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "UP", "B", "RUF"]

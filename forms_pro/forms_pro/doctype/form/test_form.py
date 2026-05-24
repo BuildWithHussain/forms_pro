@@ -2,7 +2,7 @@
 # See license.txt
 
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.patches.v0_x.backfill_field_layout import execute as backfill_execute
 from forms_pro.utils.teams import get_user_teams

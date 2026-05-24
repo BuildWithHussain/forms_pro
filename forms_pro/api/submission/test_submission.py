@@ -1,5 +1,5 @@
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.api.submission import get_all_submissions, get_user_submissions
 from forms_pro.tests import FORMS_PRO_TEST_USER

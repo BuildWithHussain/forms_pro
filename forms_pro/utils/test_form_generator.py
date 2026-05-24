@@ -4,7 +4,7 @@
 import unittest
 
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.utils.form_generator import FormGenerator
 from forms_pro.utils.teams import get_user_teams

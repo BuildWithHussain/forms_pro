@@ -6,7 +6,7 @@ from unittest.mock import patch
 import frappe
 from faker import Faker
 from frappe.model.document import Document
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
 
 from forms_pro.api.team import add_member_to_team_via_invitation, invite_team_members
 from forms_pro.overrides.invitations import after_accept, after_insert

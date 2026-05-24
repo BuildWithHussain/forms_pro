@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { createResource, useDoc } from "frappe-ui";
+import { createResource } from "frappe-ui";
 import { toast } from "vue-sonner";
 // @ts-ignore
 import { sessionUser } from "@/data/session";
+import { useRouteData as useRouteDataStore } from "@/stores/routeData";
 
 export type PermissionTypes = "read" | "write" | "share" | "submit";
 
@@ -25,11 +26,15 @@ export type SharedAccessUser = {
 };
 
 export const useManageForm = defineStore("manageForm", () => {
+  const routeData = useRouteDataStore();
   const currentFormId = ref<string>("");
-  const formData = computed(() => formResource.value?.doc || null);
-  const formFields = computed(() => formResource.value?.doc?.fields || []);
-  const formResource = ref<any>(null);
-  const formOwner = computed(() => formResource.value?.doc?.owner || null);
+
+  // Primary form document is now resolved by the router guard via
+  // get_form_for_view and surfaced through the routeData store. This
+  // store no longer fetches the Form doc itself.
+  const formData = computed<any>(() => routeData.state.data as any);
+  const formFields = computed(() => formData.value?.fields || []);
+  const formOwner = computed(() => formData.value?.owner || null);
   const sharedAccessUsers = computed<SharedAccessUser[]>(
     () => formAccessResource.data || []
   );
@@ -54,10 +59,6 @@ export const useManageForm = defineStore("manageForm", () => {
 
   async function initialize(formId: string) {
     currentFormId.value = formId;
-    formResource.value = useDoc({
-      doctype: "Form",
-      name: formId,
-    });
     formAccessResource.fetch();
   }
 
@@ -162,7 +163,6 @@ export const useManageForm = defineStore("manageForm", () => {
     currentFormId,
     formData,
     formFields,
-    formResource,
     formAccessResource,
   };
 });

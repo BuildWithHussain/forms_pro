@@ -49,7 +49,7 @@ class TestPageBreakIntegration(IntegrationTestCase):
         fieldtypes = [f.fieldtype for f in form.fields]
         self.assertIn("Page Break", fieldtypes)
 
-    def test_page_break_syncs_as_html_to_linked_doctype(self):
+    def test_page_break_syncs_as_tab_break_to_linked_doctype(self):
         form = FormFactory.create()
         form.append(
             "fields",
@@ -68,5 +68,4 @@ class TestPageBreakIntegration(IntegrationTestCase):
         doctype_doc = frappe.get_doc("DocType", form.linked_doctype)
         synced = {f.fieldname: f for f in doctype_doc.fields}
         self.assertIn("step_2", synced)
-        self.assertEqual(synced["step_2"].fieldtype, "HTML")
-        self.assertEqual(synced["step_2"].options, "<hr>")
+        self.assertEqual(synced["step_2"].fieldtype, "Tab Break")

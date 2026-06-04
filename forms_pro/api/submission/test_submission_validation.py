@@ -269,7 +269,7 @@ class TestPageBreakValidation(unittest.TestCase):
 
 class TestPageBreakProperties(unittest.TestCase):
     def test_page_break_stores_value_is_false(self):
-        """Page Break maps to HTML which is a no_value_field — stores_value must be False."""
+        """Page Break maps to Tab Break which is a no_value_field — stores_value must be False."""
         from frappe.model import no_value_fields
 
         from forms_pro.forms_pro.doctype.form_field.form_field import FORM_TO_FRAPPE_FIELDTYPE
@@ -277,20 +277,7 @@ class TestPageBreakProperties(unittest.TestCase):
         mapped = FORM_TO_FRAPPE_FIELDTYPE["Page Break"]
         self.assertIn(mapped["fieldtype"], no_value_fields)
 
-    def test_page_break_frappe_fieldtype_is_html(self):
+    def test_page_break_frappe_fieldtype_is_tab_break(self):
         from forms_pro.forms_pro.doctype.form_field.form_field import FORM_TO_FRAPPE_FIELDTYPE
 
-        self.assertEqual(FORM_TO_FRAPPE_FIELDTYPE["Page Break"]["fieldtype"], "HTML")
-
-
-class TestPageBreakOptions(unittest.TestCase):
-    def test_page_break_get_options_returns_hr_tag(self):
-        """Page Break should generate an hr HTML element as its options value."""
-        from forms_pro.forms_pro.doctype.form_field.form_field import FormField
-
-        field = FormField.__new__(FormField)
-        field.fieldtype = "Page Break"
-        field.label = "Step 2"
-        field.options = None
-        result = field.get_options()
-        self.assertEqual(result, "<hr>")
+        self.assertEqual(FORM_TO_FRAPPE_FIELDTYPE["Page Break"]["fieldtype"], "Tab Break")

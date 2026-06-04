@@ -34,10 +34,11 @@ FORM_TO_FRAPPE_FIELDTYPE: dict[str, dict] = {
     "Heading 1": {"fieldtype": "HTML"},
     "Heading 2": {"fieldtype": "HTML"},
     "Heading 3": {"fieldtype": "HTML"},
+    "Page Break": {"fieldtype": "HTML"},
 }
 
 
-_DISPLAY_ONLY_FIELDTYPES = {"Heading 1", "Heading 2", "Heading 3"}
+_DISPLAY_ONLY_FIELDTYPES = {"Heading 1", "Heading 2", "Heading 3", "Page Break"}
 
 
 class FormField(Document):
@@ -115,6 +116,9 @@ class FormField(Document):
 
     def get_options(self) -> str | None:
         if self.fieldtype in _DISPLAY_ONLY_FIELDTYPES:
+            if self.fieldtype == "Page Break":
+                return "<hr>"
+
             HEADING_MAP = {
                 "Heading 1": "h1",
                 "Heading 2": "h2",

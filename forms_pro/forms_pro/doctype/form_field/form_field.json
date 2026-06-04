@@ -40,7 +40,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Fieldtype",
-   "options": "Attach\nData\nNumber\nEmail\nDate\nDate Time\nDate Range\nTime Picker\nPassword\nSelect\nSwitch\nTextarea\nText Editor\nLink\nCheckbox\nRating\nPhone\nTable\nMultiselect\nHeading 1\nHeading 2\nHeading 3",
+   "options": "Attach\nData\nNumber\nEmail\nDate\nDate Time\nDate Range\nTime Picker\nPassword\nSelect\nSwitch\nTextarea\nText Editor\nLink\nCheckbox\nRating\nPhone\nTable\nMultiselect\nHeading 1\nHeading 2\nHeading 3\nPage Break",
    "reqd": 1
   },
   {

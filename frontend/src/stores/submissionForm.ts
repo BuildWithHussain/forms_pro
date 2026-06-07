@@ -170,18 +170,17 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     await _submit_doc.fetch();
   }
 
-  function validateValues() {
+  function validateValues(fieldsToValidate?: FormField[]) {
     errors.value = [];
     const allFields = formResource.value.data.fields || [];
+    const fieldsToCheck = fieldsToValidate ?? allFields;
 
-    allFields.forEach((field: FormField) => {
-      // Only validate visible fields
+    fieldsToCheck.forEach((field: FormField) => {
       const isVisible = shouldFieldBeVisible(field, fields.value, allFields);
       if (!isVisible) {
         return;
       }
 
-      // Check if field is required (including conditional requirements)
       const isRequired = shouldFieldBeRequired(field, fields.value, allFields);
 
       if (isRequired && !fields.value[field.fieldname]) {

@@ -63,3 +63,11 @@ export const isHeading = (fieldtype: Fieldtype): boolean => {
     Fieldtype.HEADING_3,
   ].includes(fieldtype);
 };
+
+export const isPageBreak = (fieldtype: Fieldtype): boolean => {
+  return fieldtype === Fieldtype.PAGE_BREAK;
+};
+
+export const isDisplayOnly = (fieldtype: Fieldtype): boolean => {
+  return isHeading(fieldtype) || isPageBreak(fieldtype);
+};

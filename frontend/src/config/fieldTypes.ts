@@ -50,6 +50,7 @@ import {
   Paperclip,
   Phone as PhoneIcon,
   Pilcrow,
+  SeparatorHorizontal,
   SquareCheck,
   Star,
   Table as TableIcon,
@@ -58,6 +59,7 @@ import {
 } from "@lucide/vue";
 import Attachment from "@/components/fields/Attachment.vue";
 import Heading from "@/components/fields/Heading.vue";
+import PageBreak from "@/components/fields/PageBreak.vue";
 import Multiselect from "@/components/fields/multiselect/Multiselect.vue";
 import MultiselectBuilderExtras from "@/components/fields/multiselect/MultiselectBuilderExtras.vue";
 import Phone from "@/components/fields/Phone.vue";
@@ -80,7 +82,8 @@ export type FieldLayout =
   | "inline"
   | "description-first"
   | "custom"
-  | "heading";
+  | "heading"
+  | "page-break";
 
 export type FieldTypeDefinition = {
   /** Canonical name — must match a Fieldtype enum value */
@@ -349,6 +352,16 @@ export const FIELD_TYPE_DEFINITIONS: FieldTypeDefinition[] = [
     props: {},
     layout: "heading",
     frappeFieldtype: "HTML",
+    isBoolean: false,
+    isDate: false,
+  },
+  {
+    name: Fieldtype.PAGE_BREAK,
+    component: PageBreak,
+    icon: SeparatorHorizontal,
+    props: {},
+    layout: "page-break",
+    frappeFieldtype: "Tab Break",
     isBoolean: false,
     isDate: false,
   },

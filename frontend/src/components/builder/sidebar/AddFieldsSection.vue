@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { formFields, type FormFields } from "@/utils/form_fields";
+import { Fieldtype } from "@/types/FormsPro/form_field.types";
 import { FormControl } from "frappe-ui";
 import { useEditForm } from "@/stores/editForm";
 
 const search = ref("");
 
+const HIDDEN_FROM_SIDEBAR = new Set<string>([Fieldtype.PAGE_BREAK]);
+
 const filteredFields = computed(() => {
     const q = search.value.toLowerCase();
-    return formFields.filter((field: FormFields) => field.name.toLowerCase().includes(q));
+    return formFields
+        .filter((field: FormFields) => !HIDDEN_FROM_SIDEBAR.has(field.name))
+        .filter((field: FormFields) => field.name.toLowerCase().includes(q));
 });
 
 const editFormStore = useEditForm();

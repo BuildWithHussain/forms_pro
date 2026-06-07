@@ -3,6 +3,7 @@ import { computed } from "vue";
 import RenderField from "../RenderField.vue";
 import FieldLabel from "./FieldLabel.vue";
 import Heading from "@/components/fields/Heading.vue";
+import PageBreak from "@/components/fields/PageBreak.vue";
 import Table from "@/components/fields/Table.vue";
 import { useFieldOptions } from "@/utils/selectOptions";
 import { getFieldTypeDef, Fieldtype } from "@/config/fieldTypes";
@@ -81,6 +82,15 @@ const { options: selectOptions } = useFieldOptions(fieldData);
                 :in-edit-mode="inEditMode"
                 :class="{ 'pointer-events-none': inEditMode }"
                 :disabled="disabled"
+            />
+        </div>
+
+        <!-- page-break: horizontal separator with step label -->
+        <div v-else-if="layout === 'page-break'" class="w-full py-1">
+            <PageBreak
+                :field="fieldData"
+                :in-edit-mode="inEditMode"
+                @update:label="fieldData.label = $event"
             />
         </div>
 

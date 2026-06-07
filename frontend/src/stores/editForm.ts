@@ -15,10 +15,13 @@ function scrubFieldname(label: string) {
     .replace(/_{2,}/g, "_"); // collapse multiple underscores
 }
 
+type Section = { label: string; fields: FormField[] };
+
 export const useEditForm = defineStore("editForm", () => {
   const formResource = ref<any>(null);
   const currentFormId = ref<string | null>(null);
   const selectedField = ref<FormField | null>(null);
+  const activeSectionIndex = ref(0);
   const isUnsaved = computed(() => formResource.value?.isDirty || false);
   const isLoading = computed(() => formResource.value?.loading || false);
   const isSaving = computed(
@@ -35,6 +38,48 @@ export const useEditForm = defineStore("editForm", () => {
   const fields = computed(() => {
     return formResource.value?.doc?.fields || [];
   });
+
+  const sections = computed<Section[]>(() => {
+    const all: FormField[] = fields.value;
+    const result: Section[] = [];
+    let current: FormField[] = [];
+    let nextLabel = "";
+    let isFirst = true;
+
+    for (const field of all) {
+      if (field.fieldtype === Fieldtype.PAGE_BREAK) {
+        if (isFirst) {
+          nextLabel = field.label || "Section 1";
+          isFirst = false;
+          continue;
+        }
+        result.push({
+          label: nextLabel || `Section ${result.length + 1}`,
+          fields: current,
+        });
+        current = [];
+        nextLabel = field.label || "";
+        continue;
+      }
+      isFirst = false;
+      current.push(field);
+    }
+
+    result.push({
+      label:
+        nextLabel ||
+        (result.length === 0 ? "Section 1" : `Section ${result.length + 1}`),
+      fields: current,
+    });
+
+    return result;
+  });
+
+  const isMultiSection = computed(() => sections.value.length > 1);
+
+  const activeSectionFields = computed(
+    () => sections.value[activeSectionIndex.value]?.fields ?? []
+  );
   const originalFormData = computed(
     () => formResource.value?.originalDoc || null
   );
@@ -246,24 +291,30 @@ export const useEditForm = defineStore("editForm", () => {
   }
 
   function addField(fieldtype: Fieldtype) {
-    if (formResource.value?.doc) {
-      const fs: FormField[] = formResource.value.doc.fields;
+    if (!formResource.value?.doc) return;
+    const fs: FormField[] = formResource.value.doc.fields;
 
-      const newField: FormField = {
-        idx: fs.length + 1,
-        fieldtype,
-        label: "",
-        fieldname: "",
-        options: "",
-        default: "",
-        description: "",
-        row_index: lastRowIndex(fs) + 1,
-        column_index: 0,
-        cell_index: 0,
-      };
+    const sectionFields = activeSectionFields.value;
+    const newRowIndex =
+      sectionFields.length > 0
+        ? Math.max(...sectionFields.map((f) => f.row_index ?? 0)) + 1
+        : 0;
 
-      fs.push(newField);
-    }
+    const newField: FormField = {
+      idx: fs.length + 1,
+      fieldtype,
+      label: "",
+      fieldname: "",
+      options: "",
+      default: "",
+      description: "",
+      row_index: newRowIndex,
+      column_index: 0,
+      cell_index: 0,
+    };
+
+    const insertAt = getActiveSectionEndIndex();
+    fs.splice(insertAt, 0, newField);
   }
 
   function addFieldFromDoctype(field: any) {
@@ -364,6 +415,149 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
+  function getActiveSectionEndIndex(): number {
+    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
+    if (!isMultiSection.value) return fs.length;
+
+    let sectionIdx = 0;
+    for (let i = 0; i < fs.length; i++) {
+      if (fs[i].fieldtype === Fieldtype.PAGE_BREAK) {
+        if (sectionIdx === activeSectionIndex.value) return i;
+        sectionIdx++;
+      }
+    }
+    return fs.length;
+  }
+
+  function addSection() {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+
+    const count = sections.value.length;
+    fs.push({
+      idx: fs.length + 1,
+      fieldtype: Fieldtype.PAGE_BREAK,
+      label: `Section ${count + 1}`,
+      fieldname: scrubFieldname(`section_${count + 1}`),
+      row_index: lastRowIndex(fs) + 1,
+      column_index: 0,
+      cell_index: 0,
+    } as FormField);
+
+    activeSectionIndex.value = count;
+  }
+
+  function findSectionPBIndex(sectionIndex: number): number {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return -1;
+    const hasLeadingPB = fs[0]?.fieldtype === Fieldtype.PAGE_BREAK;
+    const target = sectionIndex + (hasLeadingPB ? 1 : 0);
+    let pbCount = 0;
+    for (let i = 0; i < fs.length; i++) {
+      if (fs[i].fieldtype === Fieldtype.PAGE_BREAK) {
+        pbCount++;
+        if (pbCount === target) return i;
+      }
+    }
+    return -1;
+  }
+
+  function stripOrphanedLeadingPB() {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+    const hasLeadingPB = fs[0]?.fieldtype === Fieldtype.PAGE_BREAK;
+    const pbCount = fs.filter(
+      (f) => f.fieldtype === Fieldtype.PAGE_BREAK
+    ).length;
+    if (hasLeadingPB && pbCount === 1) {
+      fs.splice(0, 1);
+    }
+  }
+
+  function removeSectionKeepFields(index: number) {
+    if (index <= 0) return;
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+
+    const pbIdx = findSectionPBIndex(index);
+    if (pbIdx === -1) return;
+
+    const prevFields = sections.value[index - 1]?.fields ?? [];
+    const movedFields = sections.value[index]?.fields ?? [];
+
+    const maxPrevRow = prevFields.reduce(
+      (max, f) => Math.max(max, f.row_index ?? 0),
+      -1
+    );
+    const minMovedRow = movedFields.reduce(
+      (min, f) => Math.min(min, f.row_index ?? 0),
+      Infinity
+    );
+
+    if (movedFields.length > 0 && isFinite(minMovedRow)) {
+      const offset = maxPrevRow - minMovedRow + 1;
+      for (const f of movedFields) {
+        f.row_index = (f.row_index ?? 0) + offset;
+      }
+    }
+
+    fs.splice(pbIdx, 1);
+    stripOrphanedLeadingPB();
+    compact();
+    if (activeSectionIndex.value >= sections.value.length) {
+      activeSectionIndex.value = sections.value.length - 1;
+    }
+  }
+
+  function removeSectionWithFields(index: number) {
+    if (index <= 0) return;
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+
+    const sectionFields = sections.value[index]?.fields ?? [];
+    const fieldSet = new Set(sectionFields);
+    const pbIdx = findSectionPBIndex(index);
+
+    const toRemove = new Set<number>();
+    if (pbIdx !== -1) toRemove.add(pbIdx);
+    for (let i = 0; i < fs.length; i++) {
+      if (fieldSet.has(fs[i])) toRemove.add(i);
+    }
+
+    for (const i of [...toRemove].sort((a, b) => b - a)) {
+      fs.splice(i, 1);
+    }
+
+    stripOrphanedLeadingPB();
+    compact();
+    if (activeSectionIndex.value >= sections.value.length) {
+      activeSectionIndex.value = sections.value.length - 1;
+    }
+  }
+
+  function renameSection(index: number, newLabel: string) {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+
+    if (index === 0 && fs[0]?.fieldtype !== Fieldtype.PAGE_BREAK) {
+      fs.unshift({
+        idx: 0,
+        fieldtype: Fieldtype.PAGE_BREAK,
+        label: newLabel,
+        fieldname: scrubFieldname("section_1"),
+        row_index: 0,
+        column_index: 0,
+        cell_index: 0,
+      } as FormField);
+      return;
+    }
+
+    const pbIdx = findSectionPBIndex(index);
+    if (pbIdx !== -1) {
+      fs[pbIdx].label = newLabel;
+    }
+  }
+
   function selectField(field: FormField | null) {
     selectedField.value = field;
   }
@@ -395,6 +589,10 @@ export const useEditForm = defineStore("editForm", () => {
     selectedField,
     isPublished,
     doctypeFields,
+    sections,
+    isMultiSection,
+    activeSectionFields,
+    activeSectionIndex,
 
     // Actions
     initialize,
@@ -406,6 +604,10 @@ export const useEditForm = defineStore("editForm", () => {
     updateFormData,
     addField,
     addFieldFromDoctype,
+    addSection,
+    removeSectionKeepFields,
+    removeSectionWithFields,
+    renameSection,
     selectField,
     updateField,
     removeField,

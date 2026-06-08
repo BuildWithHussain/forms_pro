@@ -1152,15 +1152,15 @@
   dependencies:
     rfdc "^1.4.1"
 
-"@vue/language-core@3.2.8":
-  version "3.2.8"
-  resolved "https://registry.yarnpkg.com/@vue/language-core/-/language-core-3.2.8.tgz#3bd38c343b89976208b7996bc670df56313047de"
-  integrity sha512-9OiSPQFiAAWNVnXb0d2dcTmcKnFQamhuNES6ayyISrb/mwPWVgoGdAqSfCWqKhQpa3D5gDTcYD+w7ObiheZ81g==
+"@vue/language-core@3.3.4":
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/@vue/language-core/-/language-core-3.3.4.tgz#5bf7c867862513ef42d002a0dbeddfceabcdecfb"
+  integrity sha512-IuHqQ5zGGOE7CXP72VX6A42IVeIzYv4WAhO6arej11TRNqtdZfGyH8Yr2FOCaDX0dSQG+JwULLoFHGY1igYVjQ==
   dependencies:
     "@volar/language-core" "2.4.28"
     "@vue/compiler-dom" "^3.5.0"
     "@vue/shared" "^3.5.0"
-    alien-signals "^3.1.2"
+    alien-signals "^3.2.0"
     muggle-string "^0.4.1"
     path-browserify "^1.0.1"
     picomatch "^4.0.4"
@@ -1271,10 +1271,10 @@ acorn@^8.14.1, acorn@^8.15.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
 
-alien-signals@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/alien-signals/-/alien-signals-3.1.2.tgz#26e623e3ed81e401df1a7c503f726e2288a4fa02"
-  integrity sha512-d9dYqZTS90WLiU0I5c6DHj/HcKkF8ZyGN3G5x8wSbslulz70KOxaqCT0hQCo9KOyhVqzqGojvNdJXoTumZOtcw==
+alien-signals@^3.2.0:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/alien-signals/-/alien-signals-3.2.1.tgz#eb66256949bce90b7d30d055e2752e62d6930c7c"
+  integrity sha512-I8FjmltrfnDFoZedi5CG8DghVYNhzb/Ijluz7tCSJH0xpd0484Kowhbb1XDYOxfJpU1p5wnM2X54dA+IfGyD1g==
 
 ansi-regex@^5.0.1:
   version "5.0.1"
@@ -3537,13 +3537,13 @@ vue-sonner@^2.0.9:
   resolved "https://registry.yarnpkg.com/vue-sonner/-/vue-sonner-2.0.9.tgz#32ec9a394eb8903bb40e48d974ce55ffa6be8dc4"
   integrity sha512-i6BokNlNDL93fpzNxN/LZSn6D6MzlO+i3qXt6iVZne3x1k7R46d5HlFB4P8tYydhgqOrRbIZEsnRd3kG7qGXyw==
 
-vue-tsc@^3.2.8:
-  version "3.2.8"
-  resolved "https://registry.yarnpkg.com/vue-tsc/-/vue-tsc-3.2.8.tgz#92e6190f198b460c92b35f4f66eb791e374f0c01"
-  integrity sha512-27vTLJ6Q2370obOd0PFYoYoKnmXJ521uUIedrs3Zhhhg/8YG10VOCMmwt+JQslatpAMTDbnWiitLnoD5VlIvog==
+vue-tsc@^3.3.4:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/vue-tsc/-/vue-tsc-3.3.4.tgz#851658ea7d1a24960774087d4bc0146439b9d2b2"
+  integrity sha512-XA/JqmQwS2GZmfgpjOEGdrKwaTSEuPwxpHa7/t6f4yiGrJb3gVHTPb9wBfByMNZwQ+xDXs41b8gaS2DKsOozUw==
   dependencies:
     "@volar/typescript" "2.4.28"
-    "@vue/language-core" "3.2.8"
+    "@vue/language-core" "3.3.4"
 
 vue@^3.5.13, vue@^3.5.34:
   version "3.5.34"

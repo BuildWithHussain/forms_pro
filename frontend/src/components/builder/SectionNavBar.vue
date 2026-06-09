@@ -44,7 +44,7 @@ function confirmRemoveSection(index: number) {
 
     dialog.show({
         title: `Remove "${section.label}"?`,
-        message: `This section has ${section.fields.length} field(s). What would you like to do?`,
+        message: `This step has ${section.fields.length} field(s). What would you like to do?`,
         actions: [
             {
                 label: "Cancel",
@@ -52,7 +52,7 @@ function confirmRemoveSection(index: number) {
                 onClick: () => dialog.close(false),
             },
             {
-                label: "Move fields to previous section",
+                label: "Move fields to previous step",
                 variant: "subtle",
                 onClick: () => {
                     store.removeSectionKeepFields(index);
@@ -60,7 +60,7 @@ function confirmRemoveSection(index: number) {
                 },
             },
             {
-                label: "Remove section and fields",
+                label: "Remove step and fields",
                 variant: "solid",
                 theme: "red",
                 onClick: () => {
@@ -74,7 +74,7 @@ function confirmRemoveSection(index: number) {
 </script>
 
 <template>
-    <nav aria-label="Form sections" class="flex items-center gap-1.5 px-2 py-1.5 flex-wrap">
+    <nav aria-label="Form steps" class="flex items-center gap-1.5 px-2 py-1.5 flex-wrap">
         <template v-if="sectionCount <= 1">
             <Button
                 variant="ghost"

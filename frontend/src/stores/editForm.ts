@@ -49,12 +49,12 @@ export const useEditForm = defineStore("editForm", () => {
     for (const field of all) {
       if (field.fieldtype === Fieldtype.PAGE_BREAK) {
         if (isFirst) {
-          nextLabel = field.label || "Section 1";
+          nextLabel = field.label || "Step 1";
           isFirst = false;
           continue;
         }
         result.push({
-          label: nextLabel || `Section ${result.length + 1}`,
+          label: nextLabel || `Step ${result.length + 1}`,
           fields: current,
         });
         current = [];
@@ -68,7 +68,7 @@ export const useEditForm = defineStore("editForm", () => {
     result.push({
       label:
         nextLabel ||
-        (result.length === 0 ? "Section 1" : `Section ${result.length + 1}`),
+        (result.length === 0 ? "Step 1" : `Step ${result.length + 1}`),
       fields: current,
     });
 
@@ -437,7 +437,7 @@ export const useEditForm = defineStore("editForm", () => {
     fs.push({
       idx: fs.length + 1,
       fieldtype: Fieldtype.PAGE_BREAK,
-      label: `Section ${count + 1}`,
+      label: `Step ${count + 1}`,
       fieldname: scrubFieldname(`section_${count + 1}`),
       row_index: lastRowIndex(fs) + 1,
       column_index: 0,

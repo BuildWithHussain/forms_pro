@@ -3,6 +3,7 @@ import { useRoute } from "vue-router";
 import { useSubmissionForm } from "@/stores/submissionForm";
 import FormHeader from "@/components/submission/FormHeader.vue";
 import FormRenderer from "@/components/submission/FormRenderer.vue";
+import StepIndicator from "@/components/submission/StepIndicator.vue";
 import Logo from "@/assets/Logo.vue";
 import PageHeader from "@/components/submission/PageHeader.vue";
 import PreviousSubmissionSection from "@/components/submission/PreviousSubmissionSection.vue";
@@ -20,12 +21,25 @@ submissionFormStore.initialize(route.params.route as string);
             v-if="!submissionFormStore.formIsPublished"
             class="form-container-simple"
         />
-        <div v-else class="form-container-simple">
-            <div class="space-y-4" v-if="submissionFormStore.inFormFillingState">
-                <FormHeader />
-                <FormRenderer :disabled="false" />
+        <div v-else>
+            <div class="px-8 my-6">
+                <StepIndicator
+                    v-if="
+                        submissionFormStore.isMultiStep && submissionFormStore.inFormFillingState
+                    "
+                    :steps="submissionFormStore.steps"
+                    :currentIndex="submissionFormStore.currentStepIndex"
+                    class="mb-4"
+                    @go-to="submissionFormStore.goToStep"
+                />
             </div>
-            <SuccessSection v-if="submissionFormStore.inSuccessState" />
+            <div class="form-container-simple overflow-hidden mb-6">
+                <div class="space-y-4" v-if="submissionFormStore.inFormFillingState">
+                    <FormHeader />
+                    <FormRenderer :disabled="false" />
+                </div>
+                <SuccessSection v-if="submissionFormStore.inSuccessState" />
+            </div>
         </div>
 
         <div class="z-10 fixed bottom-0 right-0 p-8">

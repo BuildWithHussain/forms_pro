@@ -9,6 +9,7 @@ import {
   shouldFieldBeRequired,
   shouldFieldBeVisible,
 } from "@/utils/conditionals";
+import { useFormSteps } from "@/composables/useFormSteps";
 
 export type UserSubmission = {
   name: string;
@@ -50,6 +51,30 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   const inFormFillingState = ref<boolean>(true);
 
   const fields = ref<Record<string, any>>({});
+
+  const allFormFields = computed<FormField[]>(
+    () => formResource.value?.data?.fields || []
+  );
+
+  const {
+    steps,
+    currentStepIndex,
+    currentStepFields,
+    isMultiStep,
+    isFirstStep,
+    isLastStep,
+    totalSteps,
+    stepDirection,
+    nextStep,
+    prevStep,
+    goToStep,
+  } = useFormSteps(allFormFields);
+
+  function handleNextStep() {
+    validateValues(currentStepFields.value);
+    if (errors.value.length > 0) return;
+    nextStep();
+  }
 
   const userSubmissionsResource = createResource({
     url: "forms_pro.api.submission.get_user_submissions",
@@ -212,5 +237,17 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     initialize,
     submitForm,
     saveAsDraft,
+    steps,
+    currentStepIndex,
+    currentStepFields,
+    isMultiStep,
+    isFirstStep,
+    isLastStep,
+    totalSteps,
+    nextStep,
+    prevStep,
+    goToStep,
+    handleNextStep,
+    stepDirection,
   };
 });

@@ -64,21 +64,26 @@ export function useFormSteps(
   );
 
   const totalSteps = computed(() => steps.value.length);
+  const stepDirection = ref<"forward" | "backward">("forward");
 
   function nextStep() {
     if (!isLastStep.value) {
+      stepDirection.value = "forward";
       currentStepIndex.value++;
     }
   }
 
   function prevStep() {
     if (!isFirstStep.value) {
+      stepDirection.value = "backward";
       currentStepIndex.value--;
     }
   }
 
   function goToStep(index: number) {
     if (index >= 0 && index < steps.value.length) {
+      stepDirection.value =
+        index > currentStepIndex.value ? "forward" : "backward";
       currentStepIndex.value = index;
     }
   }
@@ -92,6 +97,7 @@ export function useFormSteps(
     isFirstStep,
     isLastStep,
     totalSteps,
+    stepDirection,
     nextStep,
     prevStep,
     goToStep,

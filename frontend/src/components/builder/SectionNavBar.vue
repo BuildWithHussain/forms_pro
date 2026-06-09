@@ -25,6 +25,14 @@ function finishRename(index: number) {
     editingIndex.value = null;
 }
 
+function onEditKeydown(event: KeyboardEvent, index: number) {
+    if (event.key === "Enter") {
+        finishRename(index);
+    } else if (event.key === "Escape") {
+        editingIndex.value = null;
+    }
+}
+
 function confirmRemoveSection(index: number) {
     const section = store.sections[index];
     const hasFields = section.fields.length > 0;
@@ -71,11 +79,11 @@ function confirmRemoveSection(index: number) {
             <Button
                 variant="ghost"
                 size="sm"
-                label="Add page"
+                label="Add Step"
                 :icon-left="Plus"
-                aria-label="Add page"
-                tooltip="Click to add a new page"
-                @click="store.addSection()"
+                aria-label="Add Step"
+                tooltip="Click to add a new step to the form"
+                @click="store.addStep()"
             />
         </template>
         <template v-else>
@@ -107,8 +115,7 @@ function confirmRemoveSection(index: number) {
                     size="sm"
                     variant="outline"
                     @blur="finishRename(idx)"
-                    @keydown.enter="finishRename(idx)"
-                    @keydown.escape="editingIndex = null"
+                    @keydown="onEditKeydown($event, idx)"
                     class="w-fit"
                 />
                 <span
@@ -121,9 +128,9 @@ function confirmRemoveSection(index: number) {
                 variant="ghost"
                 size="sm"
                 :icon="Plus"
-                aria-label="Add page"
-                tooltip="Click to add a new page"
-                @click="store.addSection()"
+                aria-label="Add Step"
+                tooltip="Click to add a new step to the form"
+                @click="store.addStep()"
             />
         </template>
         <span class="w-1 h-1 rounded-full bg-outline-gray-3" />

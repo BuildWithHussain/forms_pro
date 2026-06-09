@@ -429,7 +429,7 @@ export const useEditForm = defineStore("editForm", () => {
     return fs.length;
   }
 
-  function addSection() {
+  function addStep() {
     const fs: FormField[] = formResource.value?.doc?.fields;
     if (!fs) return;
 
@@ -604,7 +604,7 @@ export const useEditForm = defineStore("editForm", () => {
     updateFormData,
     addField,
     addFieldFromDoctype,
-    addSection,
+    addStep,
     removeSectionKeepFields,
     removeSectionWithFields,
     renameSection,

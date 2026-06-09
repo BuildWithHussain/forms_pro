@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import type { FormStep } from "@/composables/useFormSteps";
 import { Check } from "@lucide/vue";
 
-const props = defineProps<{
+defineProps<{
     steps: FormStep[];
     currentIndex: number;
 }>();
@@ -11,20 +10,15 @@ const props = defineProps<{
 const emit = defineEmits<{
     "go-to": [index: number];
 }>();
-
-const stepperWidth = computed(() => {
-    const pct = Math.min(100, (props.steps.length - 1) * 20);
-    return `${pct}%`;
-});
 </script>
 
 <template>
-    <nav aria-label="Form steps" class="flex flex-col items-center w-full">
-        <div class="flex items-start" :style="{ width: stepperWidth }">
+    <nav aria-label="Form steps" class="w-full overflow-x-auto">
+        <div class="flex items-start w-max mx-auto px-1">
             <template v-for="(step, idx) in steps" :key="idx">
                 <!-- Step node -->
                 <div
-                    class="flex flex-col items-center gap-2 select-none min-w-[72px]"
+                    class="flex flex-col items-center gap-2 select-none shrink-0 min-w-[60px] max-w-[96px]"
                     :class="idx < currentIndex ? 'cursor-pointer' : 'cursor-default'"
                     @click="idx < currentIndex && emit('go-to', idx)"
                 >
@@ -54,7 +48,7 @@ const stepperWidth = computed(() => {
                     <div class="flex flex-col items-center gap-0.5">
                         <span
                             v-if="step.label"
-                            class="text-[11.5px] whitespace-nowrap transition-colors duration-200 ease-out"
+                            class="block max-w-[88px] truncate text-center text-[11.5px] transition-colors duration-200 ease-out"
                             :class="{
                                 'font-semibold text-ink-gray-9': idx === currentIndex,
                                 'font-medium text-ink-gray-5': idx < currentIndex,
@@ -76,7 +70,7 @@ const stepperWidth = computed(() => {
                 <!-- Connector -->
                 <div
                     v-if="idx < steps.length - 1"
-                    class="flex-1 relative overflow-hidden h-0.5 mt-[15px] rounded-sm bg-surface-gray-2"
+                    class="w-10 sm:w-16 relative overflow-hidden h-0.5 mt-[15px] rounded-sm bg-surface-gray-2"
                 >
                     <div
                         class="absolute inset-0 bg-surface-gray-7 origin-left transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]"

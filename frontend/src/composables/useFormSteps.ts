@@ -1,52 +1,17 @@
 import { computed, ref, type Ref, type ComputedRef } from "vue";
 import type { FormField } from "@/types/formfield";
-import { Fieldtype } from "@/types/FormsPro/form_field.types";
+import { groupFieldsIntoSteps, type FormStep } from "@/utils/form_steps";
 
-export type FormStep = {
-  label: string;
-  fields: FormField[];
-};
+export type { FormStep };
 
 export function useFormSteps(
   allFields: Ref<FormField[]> | ComputedRef<FormField[]>
 ) {
   const currentStepIndex = ref(0);
 
-  const steps = computed<FormStep[]>(() => {
-    const fields = allFields.value;
-    const result: FormStep[] = [];
-    let currentFields: FormField[] = [];
-    let nextLabel = "";
-    let isFirst = true;
-
-    for (const field of fields) {
-      if (field.fieldtype === Fieldtype.PAGE_BREAK) {
-        if (isFirst) {
-          nextLabel = field.label || "";
-          isFirst = false;
-          continue;
-        }
-        result.push({
-          label: nextLabel,
-          fields: currentFields,
-        });
-        currentFields = [];
-        nextLabel = field.label || "";
-        continue;
-      }
-      isFirst = false;
-      currentFields.push(field);
-    }
-
-    if (currentFields.length > 0 || result.length > 0) {
-      result.push({
-        label: nextLabel,
-        fields: currentFields,
-      });
-    }
-
-    return result;
-  });
+  const steps = computed<FormStep[]>(() =>
+    groupFieldsIntoSteps(allFields.value)
+  );
 
   const isMultiStep = computed(() => steps.value.length > 1);
 

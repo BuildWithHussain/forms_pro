@@ -20,7 +20,7 @@ function startRename(index: number) {
 
 function finishRename(index: number) {
     if (editValue.value.trim()) {
-        store.renameSection(index, editValue.value.trim());
+        store.renameStep(index, editValue.value.trim());
     }
     editingIndex.value = null;
 }
@@ -38,7 +38,7 @@ function confirmRemoveSection(index: number) {
     const hasFields = section.fields.length > 0;
 
     if (!hasFields) {
-        store.removeSectionKeepFields(index);
+        store.removeStepKeepFields(index);
         return;
     }
 
@@ -55,7 +55,7 @@ function confirmRemoveSection(index: number) {
                 label: "Move fields to previous step",
                 variant: "subtle",
                 onClick: () => {
-                    store.removeSectionKeepFields(index);
+                    store.removeStepKeepFields(index);
                     dialog.close(true);
                 },
             },
@@ -64,7 +64,7 @@ function confirmRemoveSection(index: number) {
                 variant: "solid",
                 theme: "red",
                 onClick: () => {
-                    store.removeSectionWithFields(index);
+                    store.removeStepWithFields(index);
                     dialog.close(true);
                 },
             },

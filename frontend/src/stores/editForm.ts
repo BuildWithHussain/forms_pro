@@ -1,21 +1,25 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { createDocumentResource, createResource } from "frappe-ui";
-import { mapDoctypeFieldForForm } from "@/utils/form_fields";
+import {
+  mapDoctypeFieldForForm,
+  scrubFieldname,
+  lastRowIndex,
+  compact,
+} from "@/utils/form_fields";
+import {
+  groupFieldsIntoSteps,
+  getActiveStepEndIndex,
+  appendStep,
+  removeStepKeepFields as removeStepKeepFieldsUtil,
+  removeStepWithFields as removeStepWithFieldsUtil,
+  renameStep as renameStepUtil,
+  type FormStep,
+} from "@/utils/form_steps";
 import { FormField, Fieldtype } from "@/types/formfield";
 import { Form } from "@/types/form";
 import { toast } from "vue-sonner";
 import { dialog } from "@/utils/dialog";
-
-function scrubFieldname(label: string) {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_") // replace non-alphanumeric with underscores
-    .replace(/^_+|_+$/g, "") // trim leading/trailing underscores
-    .replace(/_{2,}/g, "_"); // collapse multiple underscores
-}
-
-type Section = { label: string; fields: FormField[] };
 
 export const useEditForm = defineStore("editForm", () => {
   const formResource = ref<any>(null);
@@ -39,41 +43,12 @@ export const useEditForm = defineStore("editForm", () => {
     return formResource.value?.doc?.fields || [];
   });
 
-  const sections = computed<Section[]>(() => {
-    const all: FormField[] = fields.value;
-    const result: Section[] = [];
-    let current: FormField[] = [];
-    let nextLabel = "";
-    let isFirst = true;
-
-    for (const field of all) {
-      if (field.fieldtype === Fieldtype.PAGE_BREAK) {
-        if (isFirst) {
-          nextLabel = field.label || "Step 1";
-          isFirst = false;
-          continue;
-        }
-        result.push({
-          label: nextLabel || `Step ${result.length + 1}`,
-          fields: current,
-        });
-        current = [];
-        nextLabel = field.label || "";
-        continue;
-      }
-      isFirst = false;
-      current.push(field);
-    }
-
-    result.push({
-      label:
-        nextLabel ||
-        (result.length === 0 ? "Step 1" : `Step ${result.length + 1}`),
-      fields: current,
-    });
-
-    return result;
-  });
+  const sections = computed<FormStep[]>(() =>
+    groupFieldsIntoSteps(fields.value, {
+      labelFallback: (n) => `Step ${n}`,
+      alwaysIncludeTrailing: true,
+    })
+  );
 
   const isMultiSection = computed(() => sections.value.length > 1);
 
@@ -239,57 +214,6 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
-  function compact() {
-    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
-    if (!fs.length) return;
-
-    // Remap row_index values to 0..N-1 (closes gaps left by deletions/moves)
-    const distinctRows = [...new Set(fs.map((f) => f.row_index ?? 0))].sort(
-      (a, b) => a - b
-    );
-    const rowRemap = new Map(distinctRows.map((r, i) => [r, i]));
-    for (const f of fs) {
-      f.row_index = rowRemap.get(f.row_index ?? 0) ?? 0;
-    }
-
-    // Remap distinct column_index values within each row to 0..M-1
-    // (cells sharing a column_index stay grouped — multi-cell columns preserved)
-    const rowColsMap = new Map<number, Set<number>>();
-    for (const f of fs) {
-      const r = f.row_index!;
-      if (!rowColsMap.has(r)) rowColsMap.set(r, new Set());
-      rowColsMap.get(r)!.add(f.column_index ?? 0);
-    }
-    const colRemapByRow = new Map<number, Map<number, number>>();
-    for (const [r, cols] of rowColsMap) {
-      const sorted = [...cols].sort((a, b) => a - b);
-      colRemapByRow.set(r, new Map(sorted.map((c, i) => [c, i])));
-    }
-    for (const f of fs) {
-      f.column_index =
-        colRemapByRow.get(f.row_index!)!.get(f.column_index ?? 0) ?? 0;
-    }
-
-    // Renumber cell_index within each (row, column) to 0..K-1
-    const cellMap = new Map<string, FormField[]>();
-    for (const f of fs) {
-      const key = `${f.row_index}-${f.column_index}`;
-      if (!cellMap.has(key)) cellMap.set(key, []);
-      cellMap.get(key)!.push(f);
-    }
-    for (const cells of cellMap.values()) {
-      cells
-        .sort((a, b) => (a.cell_index ?? 0) - (b.cell_index ?? 0))
-        .forEach((f, i) => {
-          f.cell_index = i;
-        });
-    }
-  }
-
-  function lastRowIndex(fs: FormField[]): number {
-    return fs.reduce((m, f) => Math.max(m, f.row_index ?? 0), -1);
-  }
-
   function addField(fieldtype: Fieldtype) {
     if (!formResource.value?.doc) return;
     const fs: FormField[] = formResource.value.doc.fields;
@@ -313,7 +237,11 @@ export const useEditForm = defineStore("editForm", () => {
       cell_index: 0,
     };
 
-    const insertAt = getActiveSectionEndIndex();
+    const insertAt = getActiveStepEndIndex(
+      fs,
+      activeSectionIndex.value,
+      isMultiSection.value
+    );
     fs.splice(insertAt, 0, newField);
   }
 
@@ -357,7 +285,7 @@ export const useEditForm = defineStore("editForm", () => {
     field.column_index = targetCol;
     field.cell_index = 0;
 
-    compact();
+    compact(fs);
   }
 
   function insertCell(
@@ -385,7 +313,7 @@ export const useEditForm = defineStore("editForm", () => {
     field.column_index = targetCol;
     field.cell_index = atCell;
 
-    compact();
+    compact(fs);
   }
 
   function insertNewRow(field: FormField, atRow: number) {
@@ -403,7 +331,7 @@ export const useEditForm = defineStore("editForm", () => {
     field.column_index = 0;
     field.cell_index = 0;
 
-    compact();
+    compact(fs);
   }
 
   function removeField(field: FormField) {
@@ -411,22 +339,14 @@ export const useEditForm = defineStore("editForm", () => {
       formResource.value.doc.fields = formResource.value.doc.fields.filter(
         (f: FormField) => f !== field
       );
-      compact();
+      compact(formResource.value.doc.fields);
     }
   }
 
-  function getActiveSectionEndIndex(): number {
-    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
-    if (!isMultiSection.value) return fs.length;
-
-    let sectionIdx = 0;
-    for (let i = 0; i < fs.length; i++) {
-      if (fs[i].fieldtype === Fieldtype.PAGE_BREAK) {
-        if (sectionIdx === activeSectionIndex.value) return i;
-        sectionIdx++;
-      }
+  function clampActiveStep() {
+    if (activeSectionIndex.value >= sections.value.length) {
+      activeSectionIndex.value = sections.value.length - 1;
     }
-    return fs.length;
   }
 
   function addStep() {
@@ -434,128 +354,28 @@ export const useEditForm = defineStore("editForm", () => {
     if (!fs) return;
 
     const count = sections.value.length;
-    fs.push({
-      idx: fs.length + 1,
-      fieldtype: Fieldtype.PAGE_BREAK,
-      label: `Step ${count + 1}`,
-      fieldname: scrubFieldname(`section_${count + 1}`),
-      row_index: lastRowIndex(fs) + 1,
-      column_index: 0,
-      cell_index: 0,
-    } as FormField);
-
+    appendStep(fs, count);
     activeSectionIndex.value = count;
   }
 
-  function findSectionPBIndex(sectionIndex: number): number {
-    const fs: FormField[] = formResource.value?.doc?.fields;
-    if (!fs) return -1;
-    const hasLeadingPB = fs[0]?.fieldtype === Fieldtype.PAGE_BREAK;
-    const target = sectionIndex + (hasLeadingPB ? 1 : 0);
-    let pbCount = 0;
-    for (let i = 0; i < fs.length; i++) {
-      if (fs[i].fieldtype === Fieldtype.PAGE_BREAK) {
-        pbCount++;
-        if (pbCount === target) return i;
-      }
-    }
-    return -1;
-  }
-
-  function stripOrphanedLeadingPB() {
+  function removeStepKeepFields(index: number) {
     const fs: FormField[] = formResource.value?.doc?.fields;
     if (!fs) return;
-    const hasLeadingPB = fs[0]?.fieldtype === Fieldtype.PAGE_BREAK;
-    const pbCount = fs.filter(
-      (f) => f.fieldtype === Fieldtype.PAGE_BREAK
-    ).length;
-    if (hasLeadingPB && pbCount === 1) {
-      fs.splice(0, 1);
-    }
+    removeStepKeepFieldsUtil(fs, sections.value, index);
+    clampActiveStep();
   }
 
-  function removeSectionKeepFields(index: number) {
-    if (index <= 0) return;
+  function removeStepWithFields(index: number) {
     const fs: FormField[] = formResource.value?.doc?.fields;
     if (!fs) return;
-
-    const pbIdx = findSectionPBIndex(index);
-    if (pbIdx === -1) return;
-
-    const prevFields = sections.value[index - 1]?.fields ?? [];
-    const movedFields = sections.value[index]?.fields ?? [];
-
-    const maxPrevRow = prevFields.reduce(
-      (max, f) => Math.max(max, f.row_index ?? 0),
-      -1
-    );
-    const minMovedRow = movedFields.reduce(
-      (min, f) => Math.min(min, f.row_index ?? 0),
-      Infinity
-    );
-
-    if (movedFields.length > 0 && isFinite(minMovedRow)) {
-      const offset = maxPrevRow - minMovedRow + 1;
-      for (const f of movedFields) {
-        f.row_index = (f.row_index ?? 0) + offset;
-      }
-    }
-
-    fs.splice(pbIdx, 1);
-    stripOrphanedLeadingPB();
-    compact();
-    if (activeSectionIndex.value >= sections.value.length) {
-      activeSectionIndex.value = sections.value.length - 1;
-    }
+    removeStepWithFieldsUtil(fs, sections.value, index);
+    clampActiveStep();
   }
 
-  function removeSectionWithFields(index: number) {
-    if (index <= 0) return;
+  function renameStep(index: number, newLabel: string) {
     const fs: FormField[] = formResource.value?.doc?.fields;
     if (!fs) return;
-
-    const sectionFields = sections.value[index]?.fields ?? [];
-    const fieldSet = new Set(sectionFields);
-    const pbIdx = findSectionPBIndex(index);
-
-    const toRemove = new Set<number>();
-    if (pbIdx !== -1) toRemove.add(pbIdx);
-    for (let i = 0; i < fs.length; i++) {
-      if (fieldSet.has(fs[i])) toRemove.add(i);
-    }
-
-    for (const i of [...toRemove].sort((a, b) => b - a)) {
-      fs.splice(i, 1);
-    }
-
-    stripOrphanedLeadingPB();
-    compact();
-    if (activeSectionIndex.value >= sections.value.length) {
-      activeSectionIndex.value = sections.value.length - 1;
-    }
-  }
-
-  function renameSection(index: number, newLabel: string) {
-    const fs: FormField[] = formResource.value?.doc?.fields;
-    if (!fs) return;
-
-    if (index === 0 && fs[0]?.fieldtype !== Fieldtype.PAGE_BREAK) {
-      fs.unshift({
-        idx: 0,
-        fieldtype: Fieldtype.PAGE_BREAK,
-        label: newLabel,
-        fieldname: scrubFieldname("section_1"),
-        row_index: 0,
-        column_index: 0,
-        cell_index: 0,
-      } as FormField);
-      return;
-    }
-
-    const pbIdx = findSectionPBIndex(index);
-    if (pbIdx !== -1) {
-      fs[pbIdx].label = newLabel;
-    }
+    renameStepUtil(fs, index, newLabel);
   }
 
   function selectField(field: FormField | null) {
@@ -605,9 +425,9 @@ export const useEditForm = defineStore("editForm", () => {
     addField,
     addFieldFromDoctype,
     addStep,
-    removeSectionKeepFields,
-    removeSectionWithFields,
-    renameSection,
+    removeStepKeepFields,
+    removeStepWithFields,
+    renameStep,
     selectField,
     updateField,
     removeField,

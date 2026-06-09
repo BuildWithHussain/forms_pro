@@ -38,7 +38,7 @@ const store = useSubmissionForm();
     </div>
 
     <!-- Default full header (step 1 or single-step) -->
-    <div v-else-if="store.formResource.data" class="flex flex-col gap-4 text-gray-800">
+    <div v-else-if="store.formResource.data" class="flex flex-col gap-4 text-ink-gray-8">
         <h1 class="text-3xl font-bold">
             {{ store.formResource.data.title }}
         </h1>

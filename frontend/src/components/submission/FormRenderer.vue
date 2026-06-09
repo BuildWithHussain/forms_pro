@@ -94,9 +94,9 @@ function colKey(col: FormField[], cIdx: number) {
                     :key="idx"
                     class="h-[5px] rounded-full transition-all duration-[280ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
                     :class="{
-                        'w-1.5 bg-gray-400': idx - 1 < store.currentStepIndex,
-                        'w-5 bg-gray-900': idx - 1 === store.currentStepIndex,
-                        'w-1.5 bg-gray-300': idx - 1 > store.currentStepIndex,
+                        'w-1.5 bg-surface-gray-5': idx - 1 < store.currentStepIndex,
+                        'w-5 bg-surface-gray-7': idx - 1 === store.currentStepIndex,
+                        'w-1.5 bg-surface-gray-3': idx - 1 > store.currentStepIndex,
                     }"
                 />
             </div>

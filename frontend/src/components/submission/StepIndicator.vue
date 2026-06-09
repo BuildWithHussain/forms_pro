@@ -32,20 +32,20 @@ const stepperWidth = computed(() => {
                     <div
                         class="relative z-10 flex items-center justify-center shrink-0 w-8 h-8 rounded-full border-2 transition-[background-color,border-color] duration-200 ease-out"
                         :class="{
-                            'bg-gray-900 border-gray-900': idx <= currentIndex,
-                            'bg-transparent border-gray-400': idx > currentIndex,
+                            'bg-surface-gray-7 border-outline-gray-4': idx <= currentIndex,
+                            'bg-transparent border-outline-gray-3': idx > currentIndex,
                             'shadow-[0_0_0_5px_rgba(10,10,10,0.08)]': idx === currentIndex,
                         }"
                     >
                         <Check
                             v-if="idx < currentIndex"
-                            class="w-3 h-3 text-white animate-check-in"
+                            class="w-3 h-3 text-ink-white animate-check-in"
                             :stroke-width="2.5"
                         />
                         <span
                             v-else
                             class="text-xs font-bold leading-none"
-                            :class="idx === currentIndex ? 'text-white' : 'text-gray-400'"
+                            :class="idx === currentIndex ? 'text-ink-white' : 'text-ink-gray-4'"
                         >
                             {{ idx + 1 }}
                         </span>
@@ -76,10 +76,10 @@ const stepperWidth = computed(() => {
                 <!-- Connector -->
                 <div
                     v-if="idx < steps.length - 1"
-                    class="flex-1 relative overflow-hidden h-0.5 mt-[15px] rounded-sm bg-gray-200"
+                    class="flex-1 relative overflow-hidden h-0.5 mt-[15px] rounded-sm bg-surface-gray-2"
                 >
                     <div
-                        class="absolute inset-0 bg-gray-900 origin-left transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+                        class="absolute inset-0 bg-surface-gray-7 origin-left transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
                         :style="{
                             transform: `scaleX(${idx < currentIndex ? 1 : 0})`,
                         }"

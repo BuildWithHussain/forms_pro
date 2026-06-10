@@ -315,6 +315,18 @@ export class FormBuilderPage {
     return this.stepNav().getByRole("button", { name: label, exact: true });
   }
 
+  // The remove control is a sibling of the step tab inside its [data-step-tab]
+  // group, not nested in the tab button — scope to the group to target it.
+  stepTabGroup(label: string): Locator {
+    return this.stepNav()
+      .locator("[data-step-tab]")
+      .filter({ has: this.stepTab(label) });
+  }
+
+  removeStepControl(label: string): Locator {
+    return this.stepTabGroup(label).getByLabel("Remove step");
+  }
+
   activeStepTab(): Locator {
     return this.stepNav().locator('button[aria-current="true"]');
   }
@@ -339,9 +351,7 @@ export class FormBuilderPage {
   // mode "delete"-> "Remove step and fields"
   // omit mode for empty steps (no dialog appears)
   async removeStep(label: string, mode?: "keep" | "delete") {
-    const tab = this.stepTab(label);
-    await tab.hover();
-    await tab.getByLabel("Remove step").click();
+    await this.removeStepControl(label).click();
     if (mode === "keep") {
       await this.page
         .getByRole("button", { name: "Move fields to previous step" })

@@ -14,6 +14,10 @@ const editValue = ref("");
 const cancelRename = ref(false);
 
 function startRename(index: number) {
+    // Reset in case a prior Escape never triggered the input's @blur (DOM
+    // removal does not reliably fire blur), which would otherwise leave the
+    // flag stuck true and silently drop this rename.
+    cancelRename.value = false;
     editValue.value = store.sections[index].label;
     editingIndex.value = index;
     nextTick(() => editInput.value?.el?.select());
@@ -95,38 +99,44 @@ function confirmRemoveSection(index: number) {
         </template>
         <template v-else>
             <template v-for="(section, idx) in store.sections" :key="section.label">
-                <Button
-                    v-if="editingIndex !== idx"
-                    :variant="idx === store.activeSectionIndex ? 'outline' : 'ghost'"
-                    size="sm"
-                    :label="section.label"
-                    :aria-current="idx === store.activeSectionIndex ? 'true' : undefined"
-                    @click="store.activeSectionIndex = idx"
-                    @dblclick="startRename(idx)"
-                    tooltip="Double-click to rename"
-                    :class="{
-                        'shadow-sm': idx === store.activeSectionIndex,
-                    }"
-                >
-                    <template v-if="idx > 0" #suffix>
-                        <X
-                            class="w-3 h-3 text-ink-gray-4 hover:text-ink-gray-7 rounded-sm"
-                            role="button"
+                <!-- Step tab + its remove control are siblings, not nested, so the
+                     remove control is a real focusable <button> (keyboard-usable)
+                     and we avoid an interactive element inside another button. -->
+                <div data-step-tab class="flex items-center gap-0.5">
+                    <TextInput
+                        v-if="editingIndex === idx"
+                        ref="editInput"
+                        v-model="editValue"
+                        size="sm"
+                        variant="outline"
+                        @blur="finishRename(idx)"
+                        @keydown="onEditKeydown($event, idx)"
+                        class="w-fit"
+                    />
+                    <template v-else>
+                        <Button
+                            :variant="idx === store.activeSectionIndex ? 'outline' : 'ghost'"
+                            size="sm"
+                            :label="section.label"
+                            :aria-current="idx === store.activeSectionIndex ? 'true' : undefined"
+                            @click="store.activeSectionIndex = idx"
+                            @dblclick="startRename(idx)"
+                            tooltip="Double-click to rename"
+                            :class="{
+                                'shadow-sm': idx === store.activeSectionIndex,
+                            }"
+                        />
+                        <Button
+                            v-if="idx > 0"
+                            variant="ghost"
+                            size="sm"
+                            :icon="X"
                             aria-label="Remove step"
+                            tooltip="Remove step"
                             @click.stop="confirmRemoveSection(idx)"
                         />
                     </template>
-                </Button>
-                <TextInput
-                    v-else
-                    ref="editInput"
-                    v-model="editValue"
-                    size="sm"
-                    variant="outline"
-                    @blur="finishRename(idx)"
-                    @keydown="onEditKeydown($event, idx)"
-                    class="w-fit"
-                />
+                </div>
                 <span
                     v-if="idx < store.sections.length - 1"
                     class="w-1 h-1 rounded-full bg-outline-gray-3"

@@ -1,4 +1,4 @@
-import type { APIRequestContext } from "@playwright/test";
+import { expect, type APIRequestContext } from "@playwright/test";
 
 export type SeedField = {
   label: string;
@@ -27,7 +27,7 @@ export async function setFormFields(
   formId: string,
   fields: SeedField[]
 ) {
-  await apiContext.put(`/api/resource/Form/${formId}`, {
+  const res = await apiContext.put(`/api/resource/Form/${formId}`, {
     data: {
       fields: fields.map((f, i) => ({
         idx: i + 1,
@@ -43,6 +43,11 @@ export async function setFormFields(
       })),
     },
   });
+  // Fail loudly here rather than as a confusing locator timeout downstream.
+  expect(
+    res.ok(),
+    `setFormFields PUT failed: ${res.status()} ${await res.text()}`
+  ).toBeTruthy();
 }
 
 export function pageBreak(label = "", fieldname?: string): SeedField {

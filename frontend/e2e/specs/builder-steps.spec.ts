@@ -154,14 +154,8 @@ test.describe("Builder step navigation", () => {
     await builder.goto(formId, { skipTitleFill: true });
     await builder.waitForFields(["Full Name"]);
 
-    await builder.stepTab("Basics").hover();
-    await expect(
-      builder.stepTab("Basics").getByLabel("Remove step")
-    ).toHaveCount(0);
-    await builder.stepTab("Contact").hover();
-    await expect(
-      builder.stepTab("Contact").getByLabel("Remove step")
-    ).toHaveCount(1);
+    await expect(builder.removeStepControl("Basics")).toHaveCount(0);
+    await expect(builder.removeStepControl("Contact")).toHaveCount(1);
   });
 
   test("remove step keeping fields merges them into previous step", async ({

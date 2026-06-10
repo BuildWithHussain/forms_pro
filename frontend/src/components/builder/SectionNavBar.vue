@@ -11,6 +11,7 @@ const sectionCount = computed(() => store.sections.length);
 const editingIndex = ref<number | null>(null);
 const editInput = ref<InstanceType<typeof TextInput> | null>(null);
 const editValue = ref("");
+const cancelRename = ref(false);
 
 function startRename(index: number) {
     editValue.value = store.sections[index].label;
@@ -19,6 +20,11 @@ function startRename(index: number) {
 }
 
 function finishRename(index: number) {
+    if (cancelRename.value) {
+        cancelRename.value = false;
+        editingIndex.value = null;
+        return;
+    }
     if (editValue.value.trim()) {
         store.renameStep(index, editValue.value.trim());
     }
@@ -29,6 +35,7 @@ function onEditKeydown(event: KeyboardEvent, index: number) {
     if (event.key === "Enter") {
         finishRename(index);
     } else if (event.key === "Escape") {
+        cancelRename.value = true;
         editingIndex.value = null;
     }
 }
@@ -104,6 +111,8 @@ function confirmRemoveSection(index: number) {
                     <template v-if="idx > 0" #suffix>
                         <X
                             class="w-3 h-3 text-ink-gray-4 hover:text-ink-gray-7 rounded-sm"
+                            role="button"
+                            aria-label="Remove step"
                             @click.stop="confirmRemoveSection(idx)"
                         />
                     </template>
@@ -127,6 +136,7 @@ function confirmRemoveSection(index: number) {
             <Button
                 variant="ghost"
                 size="sm"
+                label="Add Step"
                 :icon="Plus"
                 aria-label="Add Step"
                 tooltip="Click to add a new step to the form"

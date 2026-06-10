@@ -304,4 +304,61 @@ export class FormBuilderPage {
   publishButton() {
     return this.page.getByRole("button", { name: /^publish$/i });
   }
+
+  // ---- Step navigation (SectionNavBar) ----
+
+  stepNav(): Locator {
+    return this.page.locator('nav[aria-label="Form steps"]');
+  }
+
+  stepTab(label: string): Locator {
+    return this.stepNav().getByRole("button", { name: label, exact: true });
+  }
+
+  activeStepTab(): Locator {
+    return this.stepNav().locator('button[aria-current="true"]');
+  }
+
+  async addStep() {
+    await this.stepNav().getByRole("button", { name: "Add Step" }).click();
+  }
+
+  async switchToStep(label: string) {
+    await this.stepTab(label).click();
+  }
+
+  async renameStep(oldLabel: string, newLabel: string) {
+    await this.stepTab(oldLabel).dblclick();
+    const input = this.stepNav().getByRole("textbox");
+    await input.waitFor({ state: "visible" });
+    await input.fill(newLabel);
+    await input.press("Enter");
+  }
+
+  // mode "keep"  -> "Move fields to previous step"
+  // mode "delete"-> "Remove step and fields"
+  // omit mode for empty steps (no dialog appears)
+  async removeStep(label: string, mode?: "keep" | "delete") {
+    const tab = this.stepTab(label);
+    await tab.hover();
+    await tab.getByLabel("Remove step").click();
+    if (mode === "keep") {
+      await this.page
+        .getByRole("button", { name: "Move fields to previous step" })
+        .click();
+    } else if (mode === "delete") {
+      await this.page
+        .getByRole("button", { name: "Remove step and fields" })
+        .click();
+    }
+  }
+
+  async save() {
+    const saveBtn = this.page.getByRole("button", {
+      name: "Save",
+      exact: true,
+    });
+    await saveBtn.click();
+    await saveBtn.waitFor({ state: "hidden", timeout: 30000 });
+  }
 }

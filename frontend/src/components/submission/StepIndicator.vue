@@ -13,13 +13,18 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <nav aria-label="Form steps" class="w-full overflow-x-auto">
+    <nav aria-label="Form steps" class="w-full overflow-x-auto py-1.5">
         <div class="flex items-start w-max mx-auto px-1">
             <template v-for="(step, idx) in steps" :key="idx">
                 <!-- Step node -->
                 <div
                     class="flex flex-col items-center gap-2 select-none shrink-0 min-w-[60px] max-w-[96px]"
                     :class="idx < currentIndex ? 'cursor-pointer' : 'cursor-default'"
+                    data-step-component="step-node"
+                    :data-step-index="idx"
+                    :data-step-state="
+                        idx < currentIndex ? 'done' : idx === currentIndex ? 'current' : 'todo'
+                    "
                     @click="idx < currentIndex && emit('go-to', idx)"
                 >
                     <!-- Circle -->

@@ -311,20 +311,18 @@ export class FormBuilderPage {
     return this.page.locator('nav[aria-label="Form steps"]');
   }
 
+  // The remove "X" is nested inside the tab button, so tabs after the first
+  // have the accessible name "<label> Remove step" — match the label exactly,
+  // with that suffix optional.
   stepTab(label: string): Locator {
-    return this.stepNav().getByRole("button", { name: label, exact: true });
-  }
-
-  // The remove control is a sibling of the step tab inside its [data-step-tab]
-  // group, not nested in the tab button — scope to the group to target it.
-  stepTabGroup(label: string): Locator {
-    return this.stepNav()
-      .locator("[data-step-tab]")
-      .filter({ has: this.stepTab(label) });
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return this.stepNav().getByRole("button", {
+      name: new RegExp(`^${escaped}( Remove step)?$`),
+    });
   }
 
   removeStepControl(label: string): Locator {
-    return this.stepTabGroup(label).getByLabel("Remove step");
+    return this.stepTab(label).getByLabel("Remove step");
   }
 
   activeStepTab(): Locator {

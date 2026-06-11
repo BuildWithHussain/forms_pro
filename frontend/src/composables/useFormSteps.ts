@@ -10,7 +10,9 @@ export function useFormSteps(
   const currentStepIndex = ref(0);
 
   const steps = computed<FormStep[]>(() =>
-    groupFieldsIntoSteps(allFields.value)
+    // Always at least one step, even for a fieldless form — isLastStep must
+    // hold on step 0 or the Submit button never renders.
+    groupFieldsIntoSteps(allFields.value, { alwaysIncludeTrailing: true })
   );
 
   const isMultiStep = computed(() => steps.value.length > 1);

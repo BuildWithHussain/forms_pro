@@ -79,6 +79,7 @@ class FormField(Document):
             "Heading 1",
             "Heading 2",
             "Heading 3",
+            "Page Break",
         ]
         hidden: DF.Check
         label: DF.Data

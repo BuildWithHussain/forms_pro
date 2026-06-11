@@ -288,30 +288,28 @@ test.describe("Builder step navigation", () => {
     await expect(builder.stepTab("Step 4")).toBeVisible();
   });
 
-  // KNOWN BUG (pre-existing): getActiveStepEndIndex does not offset for a
-  // leading Page Break, so the palette-added field lands in the previous
-  // step. Flip to test() once src/utils/form_steps.ts is fixed.
-  test.fixme(
-    "palette field is added to the active step",
-    async ({ page, createForm, apiContext }) => {
-      const formId = await createForm();
-      await setFormFields(apiContext, formId, threeStepFields());
-      const builder = new FormBuilderPage(page);
-      await builder.goto(formId, { skipTitleFill: true });
-      await builder.waitForFields(["Full Name"]);
+  test("palette field is added to the active step", async ({
+    page,
+    createForm,
+    apiContext,
+  }) => {
+    const formId = await createForm();
+    await setFormFields(apiContext, formId, threeStepFields());
+    const builder = new FormBuilderPage(page);
+    await builder.goto(formId, { skipTitleFill: true });
+    await builder.waitForFields(["Full Name"]);
 
-      await builder.switchToStep("Final");
-      await builder.addField("Data");
+    await builder.switchToStep("Final");
+    await builder.addField("Data");
 
-      // New field renders as a card in the ACTIVE step's canvas
-      await expect(
-        page.locator('[data-form-builder-component="field-card"]')
-      ).toHaveCount(2); // "Notes" + the new unlabeled Data field
-      // And is NOT in step 2
-      await builder.switchToStep("Contact");
-      await expect(
-        page.locator('[data-form-builder-component="field-card"]')
-      ).toHaveCount(1); // only "Work Email"
-    }
-  );
+    // New field renders as a card in the ACTIVE step's canvas
+    await expect(
+      page.locator('[data-form-builder-component="field-card"]')
+    ).toHaveCount(2); // "Notes" + the new unlabeled Data field
+    // And is NOT in step 2
+    await builder.switchToStep("Contact");
+    await expect(
+      page.locator('[data-form-builder-component="field-card"]')
+    ).toHaveCount(1); // only "Work Email"
+  });
 });

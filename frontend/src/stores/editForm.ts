@@ -4,12 +4,11 @@ import { createDocumentResource, createResource } from "frappe-ui";
 import {
   mapDoctypeFieldForForm,
   scrubFieldname,
-  lastRowIndex,
   compact,
 } from "@/utils/form_fields";
 import {
   groupFieldsIntoSteps,
-  getActiveStepEndIndex,
+  insertFieldAtStepEnd,
   appendStep,
   removeStepKeepFields as removeStepKeepFieldsUtil,
   removeStepWithFields as removeStepWithFieldsUtil,
@@ -218,12 +217,6 @@ export const useEditForm = defineStore("editForm", () => {
     if (!formResource.value?.doc) return;
     const fs: FormField[] = formResource.value.doc.fields;
 
-    const sectionFields = activeSectionFields.value;
-    const newRowIndex =
-      sectionFields.length > 0
-        ? Math.max(...sectionFields.map((f) => f.row_index ?? 0)) + 1
-        : 0;
-
     const newField: FormField = {
       idx: fs.length + 1,
       fieldtype,
@@ -232,17 +225,17 @@ export const useEditForm = defineStore("editForm", () => {
       options: "",
       default: "",
       description: "",
-      row_index: newRowIndex,
+      row_index: 0,
       column_index: 0,
       cell_index: 0,
     };
 
-    const insertAt = getActiveStepEndIndex(
+    insertFieldAtStepEnd(
       fs,
+      newField,
       activeSectionIndex.value,
       isMultiSection.value
     );
-    fs.splice(insertAt, 0, newField);
   }
 
   function addFieldFromDoctype(field: any) {
@@ -257,12 +250,17 @@ export const useEditForm = defineStore("editForm", () => {
       options: field.options,
       default: field.default,
       description: field.description,
-      row_index: lastRowIndex(fs) + 1,
+      row_index: 0,
       column_index: 0,
       cell_index: 0,
     };
 
-    fs.push(_newField);
+    insertFieldAtStepEnd(
+      fs,
+      _newField,
+      activeSectionIndex.value,
+      isMultiSection.value
+    );
   }
 
   function moveField(field: FormField, targetRow: number, targetCol: number) {

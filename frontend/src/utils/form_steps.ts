@@ -5,7 +5,7 @@ import {
   scrubFieldname,
   lastRowIndex,
   compact,
-} from "@/utils/form_fields";
+} from "@/utils/form_layout";
 
 export type FormStep = {
   label: string;
@@ -96,14 +96,41 @@ export function getActiveStepEndIndex(
 ): number {
   if (!isMultiStep) return fields.length;
 
-  let stepIdx = 0;
+  // A leading Page Break names step 0 rather than ending it, so the
+  // step's end is the (activeIndex + 1)-th Page Break in that case.
+  const hasLeadingPB = fields[0] ? isPageBreak(fields[0].fieldtype) : false;
+  const target = activeIndex + (hasLeadingPB ? 1 : 0);
+
+  let pbCount = 0;
   for (let i = 0; i < fields.length; i++) {
     if (isPageBreak(fields[i].fieldtype)) {
-      if (stepIdx === activeIndex) return i;
-      stepIdx++;
+      if (pbCount === target) return i;
+      pbCount++;
     }
   }
   return fields.length;
+}
+
+/**
+ * Inserts `field` at the end of step `stepIndex`, assigning it the next
+ * row after everything before the insertion point and shifting the rows
+ * of all later fields to keep row_index globally unique.
+ */
+export function insertFieldAtStepEnd(
+  fields: FormField[],
+  field: FormField,
+  stepIndex: number,
+  isMultiStep: boolean
+): void {
+  const insertAt = getActiveStepEndIndex(fields, stepIndex, isMultiStep);
+  const newRowIndex = lastRowIndex(fields.slice(0, insertAt)) + 1;
+  for (const f of fields.slice(insertAt)) {
+    f.row_index = (f.row_index ?? 0) + 1;
+  }
+  field.row_index = newRowIndex;
+  field.column_index = 0;
+  field.cell_index = 0;
+  fields.splice(insertAt, 0, field);
 }
 
 /**
@@ -209,6 +236,11 @@ export function renameStep(
   newLabel: string
 ): void {
   if (index === 0 && (!fields[0] || !isPageBreak(fields[0].fieldtype))) {
+    // Make room at row 0 — existing fields shift down so the new Page
+    // Break doesn't collide with them in the layout grid.
+    for (const f of fields) {
+      f.row_index = (f.row_index ?? 0) + 1;
+    }
     fields.unshift({
       idx: 0,
       fieldtype: Fieldtype.PAGE_BREAK,
@@ -218,6 +250,7 @@ export function renameStep(
       column_index: 0,
       cell_index: 0,
     } as FormField);
+    compact(fields);
     return;
   }
 

@@ -1,24 +1,30 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { createDocumentResource, createResource } from "frappe-ui";
-import { mapDoctypeFieldForForm } from "@/utils/form_fields";
+import {
+  mapDoctypeFieldForForm,
+  scrubFieldname,
+  compact,
+} from "@/utils/form_fields";
+import {
+  groupFieldsIntoSteps,
+  insertFieldAtStepEnd,
+  appendStep,
+  removeStepKeepFields as removeStepKeepFieldsUtil,
+  removeStepWithFields as removeStepWithFieldsUtil,
+  renameStep as renameStepUtil,
+  type FormStep,
+} from "@/utils/form_steps";
 import { FormField, Fieldtype } from "@/types/formfield";
 import { Form } from "@/types/form";
 import { toast } from "vue-sonner";
 import { dialog } from "@/utils/dialog";
 
-function scrubFieldname(label: string) {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_") // replace non-alphanumeric with underscores
-    .replace(/^_+|_+$/g, "") // trim leading/trailing underscores
-    .replace(/_{2,}/g, "_"); // collapse multiple underscores
-}
-
 export const useEditForm = defineStore("editForm", () => {
   const formResource = ref<any>(null);
   const currentFormId = ref<string | null>(null);
   const selectedField = ref<FormField | null>(null);
+  const activeSectionIndex = ref(0);
   const isUnsaved = computed(() => formResource.value?.isDirty || false);
   const isLoading = computed(() => formResource.value?.loading || false);
   const isSaving = computed(
@@ -35,6 +41,19 @@ export const useEditForm = defineStore("editForm", () => {
   const fields = computed(() => {
     return formResource.value?.doc?.fields || [];
   });
+
+  const sections = computed<FormStep[]>(() =>
+    groupFieldsIntoSteps(fields.value, {
+      labelFallback: (n) => `Step ${n}`,
+      alwaysIncludeTrailing: true,
+    })
+  );
+
+  const isMultiSection = computed(() => sections.value.length > 1);
+
+  const activeSectionFields = computed(
+    () => sections.value[activeSectionIndex.value]?.fields ?? []
+  );
   const originalFormData = computed(
     () => formResource.value?.originalDoc || null
   );
@@ -194,76 +213,29 @@ export const useEditForm = defineStore("editForm", () => {
     }
   }
 
-  function compact() {
-    const fs: FormField[] = formResource.value?.doc?.fields ?? [];
-    if (!fs.length) return;
-
-    // Remap row_index values to 0..N-1 (closes gaps left by deletions/moves)
-    const distinctRows = [...new Set(fs.map((f) => f.row_index ?? 0))].sort(
-      (a, b) => a - b
-    );
-    const rowRemap = new Map(distinctRows.map((r, i) => [r, i]));
-    for (const f of fs) {
-      f.row_index = rowRemap.get(f.row_index ?? 0) ?? 0;
-    }
-
-    // Remap distinct column_index values within each row to 0..M-1
-    // (cells sharing a column_index stay grouped — multi-cell columns preserved)
-    const rowColsMap = new Map<number, Set<number>>();
-    for (const f of fs) {
-      const r = f.row_index!;
-      if (!rowColsMap.has(r)) rowColsMap.set(r, new Set());
-      rowColsMap.get(r)!.add(f.column_index ?? 0);
-    }
-    const colRemapByRow = new Map<number, Map<number, number>>();
-    for (const [r, cols] of rowColsMap) {
-      const sorted = [...cols].sort((a, b) => a - b);
-      colRemapByRow.set(r, new Map(sorted.map((c, i) => [c, i])));
-    }
-    for (const f of fs) {
-      f.column_index =
-        colRemapByRow.get(f.row_index!)!.get(f.column_index ?? 0) ?? 0;
-    }
-
-    // Renumber cell_index within each (row, column) to 0..K-1
-    const cellMap = new Map<string, FormField[]>();
-    for (const f of fs) {
-      const key = `${f.row_index}-${f.column_index}`;
-      if (!cellMap.has(key)) cellMap.set(key, []);
-      cellMap.get(key)!.push(f);
-    }
-    for (const cells of cellMap.values()) {
-      cells
-        .sort((a, b) => (a.cell_index ?? 0) - (b.cell_index ?? 0))
-        .forEach((f, i) => {
-          f.cell_index = i;
-        });
-    }
-  }
-
-  function lastRowIndex(fs: FormField[]): number {
-    return fs.reduce((m, f) => Math.max(m, f.row_index ?? 0), -1);
-  }
-
   function addField(fieldtype: Fieldtype) {
-    if (formResource.value?.doc) {
-      const fs: FormField[] = formResource.value.doc.fields;
+    if (!formResource.value?.doc) return;
+    const fs: FormField[] = formResource.value.doc.fields;
 
-      const newField: FormField = {
-        idx: fs.length + 1,
-        fieldtype,
-        label: "",
-        fieldname: "",
-        options: "",
-        default: "",
-        description: "",
-        row_index: lastRowIndex(fs) + 1,
-        column_index: 0,
-        cell_index: 0,
-      };
+    const newField: FormField = {
+      idx: fs.length + 1,
+      fieldtype,
+      label: "",
+      fieldname: "",
+      options: "",
+      default: "",
+      description: "",
+      row_index: 0,
+      column_index: 0,
+      cell_index: 0,
+    };
 
-      fs.push(newField);
-    }
+    insertFieldAtStepEnd(
+      fs,
+      newField,
+      activeSectionIndex.value,
+      isMultiSection.value
+    );
   }
 
   function addFieldFromDoctype(field: any) {
@@ -278,12 +250,17 @@ export const useEditForm = defineStore("editForm", () => {
       options: field.options,
       default: field.default,
       description: field.description,
-      row_index: lastRowIndex(fs) + 1,
+      row_index: 0,
       column_index: 0,
       cell_index: 0,
     };
 
-    fs.push(_newField);
+    insertFieldAtStepEnd(
+      fs,
+      _newField,
+      activeSectionIndex.value,
+      isMultiSection.value
+    );
   }
 
   function moveField(field: FormField, targetRow: number, targetCol: number) {
@@ -306,7 +283,7 @@ export const useEditForm = defineStore("editForm", () => {
     field.column_index = targetCol;
     field.cell_index = 0;
 
-    compact();
+    compact(fs);
   }
 
   function insertCell(
@@ -334,7 +311,7 @@ export const useEditForm = defineStore("editForm", () => {
     field.column_index = targetCol;
     field.cell_index = atCell;
 
-    compact();
+    compact(fs);
   }
 
   function insertNewRow(field: FormField, atRow: number) {
@@ -352,7 +329,7 @@ export const useEditForm = defineStore("editForm", () => {
     field.column_index = 0;
     field.cell_index = 0;
 
-    compact();
+    compact(fs);
   }
 
   function removeField(field: FormField) {
@@ -360,8 +337,43 @@ export const useEditForm = defineStore("editForm", () => {
       formResource.value.doc.fields = formResource.value.doc.fields.filter(
         (f: FormField) => f !== field
       );
-      compact();
+      compact(formResource.value.doc.fields);
     }
+  }
+
+  function clampActiveStep() {
+    if (activeSectionIndex.value >= sections.value.length) {
+      activeSectionIndex.value = sections.value.length - 1;
+    }
+  }
+
+  function addStep() {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+
+    const count = sections.value.length;
+    appendStep(fs, count);
+    activeSectionIndex.value = count;
+  }
+
+  function removeStepKeepFields(index: number) {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+    removeStepKeepFieldsUtil(fs, sections.value, index);
+    clampActiveStep();
+  }
+
+  function removeStepWithFields(index: number) {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+    removeStepWithFieldsUtil(fs, sections.value, index);
+    clampActiveStep();
+  }
+
+  function renameStep(index: number, newLabel: string) {
+    const fs: FormField[] = formResource.value?.doc?.fields;
+    if (!fs) return;
+    renameStepUtil(fs, index, newLabel);
   }
 
   function selectField(field: FormField | null) {
@@ -395,6 +407,10 @@ export const useEditForm = defineStore("editForm", () => {
     selectedField,
     isPublished,
     doctypeFields,
+    sections,
+    isMultiSection,
+    activeSectionFields,
+    activeSectionIndex,
 
     // Actions
     initialize,
@@ -406,6 +422,10 @@ export const useEditForm = defineStore("editForm", () => {
     updateFormData,
     addField,
     addFieldFromDoctype,
+    addStep,
+    removeStepKeepFields,
+    removeStepWithFields,
+    renameStep,
     selectField,
     updateField,
     removeField,

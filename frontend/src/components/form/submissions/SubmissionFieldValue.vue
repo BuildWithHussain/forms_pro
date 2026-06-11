@@ -4,7 +4,7 @@ import { Fieldtype } from "@/types/formfield";
 import { getFieldTypeDef } from "@/config/fieldTypes";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { computed } from "vue";
-import { isHeading } from "@/utils/form_fields";
+import { isHeading, isPageBreak } from "@/utils/form_fields";
 import Heading from "@/components/fields/Heading.vue";
 
 const props = defineProps<{
@@ -76,7 +76,8 @@ const classNames = computed<string>(() =>
 </script>
 
 <template>
-    <div :class="classNames">
+    <div v-if="isPageBreak(fieldtype)" />
+    <div v-else :class="classNames">
         <div v-if="!isHeading(fieldtype)">
             <span class="text-sm text-ink-gray-5">{{ label }}</span>
             <p v-if="description" class="text-xs text-ink-gray-4">{{ description }}</p>

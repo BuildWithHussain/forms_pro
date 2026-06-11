@@ -243,3 +243,41 @@ class TestHeadingFieldValidation(unittest.TestCase):
     def test_display_only_fieldtypes_contains_all_heading_levels(self):
         for fieldtype in ("Heading 1", "Heading 2", "Heading 3"):
             self.assertIn(fieldtype, _DISPLAY_ONLY_FIELDTYPES)
+
+
+class TestPageBreakValidation(unittest.TestCase):
+    def test_page_break_in_display_only_fieldtypes(self):
+        self.assertIn("Page Break", _DISPLAY_ONLY_FIELDTYPES)
+
+    def test_page_break_skipped_even_when_required(self):
+        """reqd=1 Page Break must never trigger a validation error."""
+        form = _form(_field("pb", fieldtype="Page Break", reqd=1))
+        _validate_form_response(form, {})  # must not raise
+
+    def test_required_data_field_still_validated_when_page_break_present(self):
+        """Page Break being skipped must not suppress validation of adjacent required fields."""
+        import frappe
+
+        form = _form(
+            _field("step_two", fieldtype="Page Break"),
+            _field("full_name", fieldtype="Data", reqd=1),
+        )
+        with self.assertRaises(frappe.ValidationError) as ctx:
+            _validate_form_response(form, {})
+        self.assertIn("Full Name", str(ctx.exception))
+
+
+class TestPageBreakProperties(unittest.TestCase):
+    def test_page_break_stores_value_is_false(self):
+        """Page Break maps to Tab Break which is a no_value_field — stores_value must be False."""
+        from frappe.model import no_value_fields
+
+        from forms_pro.forms_pro.doctype.form_field.form_field import FORM_TO_FRAPPE_FIELDTYPE
+
+        mapped = FORM_TO_FRAPPE_FIELDTYPE["Page Break"]
+        self.assertIn(mapped["fieldtype"], no_value_fields)
+
+    def test_page_break_frappe_fieldtype_is_tab_break(self):
+        from forms_pro.forms_pro.doctype.form_field.form_field import FORM_TO_FRAPPE_FIELDTYPE
+
+        self.assertEqual(FORM_TO_FRAPPE_FIELDTYPE["Page Break"]["fieldtype"], "Tab Break")

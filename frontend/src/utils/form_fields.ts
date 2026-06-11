@@ -56,10 +56,13 @@ export const mapDoctypeFieldForForm = (
   return FRAPPE_TO_FORM_TYPE[fieldtype];
 };
 
-export const isHeading = (fieldtype: Fieldtype): boolean => {
-  return [
-    Fieldtype.HEADING_1,
-    Fieldtype.HEADING_2,
-    Fieldtype.HEADING_3,
-  ].includes(fieldtype);
-};
+// Pure layout-grid helpers live in form_layout.ts (unit-testable without
+// pulling in the component registry); re-exported here for existing imports.
+export {
+  isHeading,
+  isPageBreak,
+  isDisplayOnly,
+  scrubFieldname,
+  lastRowIndex,
+  compact,
+} from "@/utils/form_layout";

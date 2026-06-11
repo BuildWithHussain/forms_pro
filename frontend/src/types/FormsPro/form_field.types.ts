@@ -21,6 +21,7 @@ export enum Fieldtype {
   "HEADING_1" = "Heading 1",
   "HEADING_2" = "Heading 2",
   "HEADING_3" = "Heading 3",
+  "PAGE_BREAK" = "Page Break",
 }
 
 export interface FormField {

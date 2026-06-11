@@ -31,7 +31,7 @@ const successDescription = computed(() => {
 });
 </script>
 <template>
-    <div class="flex flex-col gap-4 items-center">
+    <div class="flex flex-col gap-4 items-center anim-success">
         <DotLottieVue
             src="https://lottie.host/b9ba5ce8-d753-497a-946c-76e0da2ec22d/QcoLWNS7AP.lottie"
             autoplay
@@ -47,3 +47,20 @@ const successDescription = computed(() => {
         />
     </div>
 </template>
+
+<style scoped>
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.anim-success {
+    animation: fadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+</style>

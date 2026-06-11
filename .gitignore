@@ -77,3 +77,6 @@ frontend/e2e/playwright-report/
 skills-lock.json
 
 semgrep-rules/
+
+# Screenshots
+*.png

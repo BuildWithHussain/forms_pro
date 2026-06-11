@@ -9,6 +9,7 @@ import {
   shouldFieldBeRequired,
   shouldFieldBeVisible,
 } from "@/utils/conditionals";
+import { useFormSteps } from "@/composables/useFormSteps";
 
 export type UserSubmission = {
   name: string;
@@ -50,6 +51,30 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
   const inFormFillingState = ref<boolean>(true);
 
   const fields = ref<Record<string, any>>({});
+
+  const allFormFields = computed<FormField[]>(
+    () => formResource.value?.data?.fields || []
+  );
+
+  const {
+    steps,
+    currentStepIndex,
+    currentStepFields,
+    isMultiStep,
+    isFirstStep,
+    isLastStep,
+    totalSteps,
+    stepDirection,
+    nextStep,
+    prevStep,
+    goToStep,
+  } = useFormSteps(allFormFields);
+
+  function handleNextStep() {
+    validateValues(currentStepFields.value);
+    if (errors.value.length > 0) return;
+    nextStep();
+  }
 
   const userSubmissionsResource = createResource({
     url: "forms_pro.api.submission.get_user_submissions",
@@ -170,18 +195,17 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     await _submit_doc.fetch();
   }
 
-  function validateValues() {
+  function validateValues(fieldsToValidate?: FormField[]) {
     errors.value = [];
     const allFields = formResource.value.data.fields || [];
+    const fieldsToCheck = fieldsToValidate ?? allFields;
 
-    allFields.forEach((field: FormField) => {
-      // Only validate visible fields
+    fieldsToCheck.forEach((field: FormField) => {
       const isVisible = shouldFieldBeVisible(field, fields.value, allFields);
       if (!isVisible) {
         return;
       }
 
-      // Check if field is required (including conditional requirements)
       const isRequired = shouldFieldBeRequired(field, fields.value, allFields);
 
       if (isRequired && !fields.value[field.fieldname]) {
@@ -213,5 +237,17 @@ export const useSubmissionForm = defineStore("submissionForm", () => {
     initialize,
     submitForm,
     saveAsDraft,
+    steps,
+    currentStepIndex,
+    currentStepFields,
+    isMultiStep,
+    isFirstStep,
+    isLastStep,
+    totalSteps,
+    nextStep,
+    prevStep,
+    goToStep,
+    handleNextStep,
+    stepDirection,
   };
 });

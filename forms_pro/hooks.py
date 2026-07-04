@@ -15,7 +15,7 @@ add_to_apps_screen = [
         "name": "forms_pro",
         "logo": "/assets/forms_pro/images/logo_300.png",
         "title": "Forms Pro",
-        "route": "/forms_pro",
+        "route": "/forms",
         "has_permission": "forms_pro.overrides.roles.has_forms_pro_permission",
     }
 ]
